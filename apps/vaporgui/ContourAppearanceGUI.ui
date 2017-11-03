@@ -42,7 +42,7 @@
     <number>0</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>12</number>
    </property>
    <property name="rightMargin">
     <number>0</number>
@@ -403,7 +403,7 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>484</height>
+       <height>600</height>
       </size>
      </property>
     </widget>

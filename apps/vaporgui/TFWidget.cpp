@@ -62,11 +62,14 @@ void TFWidget::Reinit(Flags flags) {
 	if (_flags & PRIORITYCOLORVAR) {
 		QVBoxLayout* myLayout = (QVBoxLayout*)layout();
 
-		myLayout->removeWidget(constColorFrame);
+		/*myLayout->removeWidget(constColorFrame);
 		myLayout->insertWidget(0, constColorFrame);
 
 		myLayout->removeWidget(colorMappingFrame);
 		myLayout->insertWidget(0, colorMappingFrame);
+		*/
+		myLayout->removeWidget(colorControlWidget);
+		myLayout->insertWidget(0, colorControlWidget);
 	}
 }
 

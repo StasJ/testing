@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
    <item>
     <widget class="GeometryWidget" name="_geometryWidget" native="true">
      <property name="minimumSize">
@@ -51,15 +51,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GeometryWidget</class>
-   <extends>QWidget</extends>
-   <header>GeometryWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>TransformTable</class>
    <extends>QWidget</extends>
    <header>TransformTable.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GeometryWidget</class>
+   <extends>QWidget</extends>
+   <header>GeometryWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
