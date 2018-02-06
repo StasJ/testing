@@ -26,7 +26,6 @@ share/fonts/Pacifico.ttf
 tags
 
 # CMake
-Makefile
 cmake_install.cmake
 CmakeFiles
 CMakeCache.txt
