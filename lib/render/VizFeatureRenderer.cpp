@@ -633,15 +633,15 @@ std::vector<double> VizFeatureRenderer::getDomainExtents(string dmName) const {
 	int ts = _currentTimestep;
 	vector <double> minExts, maxExts;
 
-	m_dataStatus->GetActiveExtents(
-		m_paramsMgr, m_winName, dmName, ts, minExts, maxExts
-	);
+//	m_dataStatus->GetActiveExtents(
+//		m_paramsMgr, m_winName, dmName, ts, minExts, maxExts
+//	);
 
-//	vector<int> axes;
-//	DataMgr* dataMgr = m_dataStatus->GetDataMgr(dmName);
-//	vector<string> varnames = dataMgr->GetDataVarNames();
-//	DataMgrUtils::GetExtents(dataMgr, ts, varnames,
-//		minExts, maxExts, axes);
+	vector<int> axes;
+	DataMgr* dataMgr = m_dataStatus->GetDataMgr(dmName);
+	vector<string> varnames = dataMgr->GetDataVarNames();
+	DataMgrUtils::GetExtents(dataMgr, ts, varnames,
+		minExts, maxExts, axes);
 
 	std::vector<double> extents;
 	for (int i=0; i<3; i++) {
