@@ -1,22 +1,23 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cassert>
+#include <cmath>
 #include <iostream>
 
 #include "voro++/voro++.hh"
 
-#define GRIDX 256
-#define GRIDY 256
-#define GRIDZ 256
+#define GRIDX 512
+#define GRIDY 512
+#define GRIDZ 512
 
 const long int totalGridPts = (GRIDX) * (GRIDY) * (GRIDZ);
 
 const float ptcXMin = 0.0;
-const float ptcXMax = 550.0;
+const float ptcXMax = 512.0;
 const float ptcYMin = 0.0;
-const float ptcYMax = 550.0;
+const float ptcYMax = 512.0;
 const float ptcZMin = 0.0;
-const float ptcZMax = 550.0;
+const float ptcZMax = 512.0;
 
 const float ptcXSpan = ptcXMax - ptcXMin;
 const float ptcYSpan = ptcYMax - ptcYMin;
@@ -44,6 +45,19 @@ void ReadParticles( const char* name,       // input
     fclose( f );
 }
 
+void ReadParticles2( const char* name,       // input
+                     long int&   len,        // number of particles
+                     float**     buf )
+{
+    FILE* f     = fopen( name, "r" );
+    float tmp[2];
+    long int rt = fread( tmp, sizeof(float), 2, f );
+    len         = tmp[0];
+    *buf        = new float[len*3];
+    rt          = fread( *buf, sizeof(float), len*3, f );
+    fclose( f );
+}
+
 
 int main(int argc, char** argv )
 {
@@ -55,10 +69,12 @@ int main(int argc, char** argv )
 
     // read in particles
     long int nParticles;
-    float*   ptcX;
-    float*   ptcY;
-    float*   ptcZ;
-    ReadParticles( argv[1], nParticles, &ptcX, &ptcY, &ptcZ );
+    float*   ptcX   = NULL;
+    float*   ptcY   = NULL;
+    float*   ptcZ   = NULL;
+    float*   ptcBuf = NULL;
+    //ReadParticles( argv[1], nParticles, &ptcX, &ptcY, &ptcZ );
+    ReadParticles2( argv[1], nParticles, &ptcBuf );
 
 
     // Use a Voro++ container 
@@ -66,10 +82,13 @@ int main(int argc, char** argv )
                          ptcYMin,       ptcYMax,
                          ptcZMin,       ptcZMax,
                          10,     10,     10,
-                         false, false, false, 100 );
+                         true,   true,   true, 100 );
     long int nPtcToUse = nParticles;           // use a subset of particles for experiments
     for( long int i = 0; i < nPtcToUse; i++ )
-        con.put( i, ptcX[i], ptcY[i], ptcZ[i] );
+    {
+        //con.put( i, ptcX[i], ptcY[i], ptcZ[i] );
+        con.put(i, ptcBuf[i*3], ptcBuf[i*3+1], ptcBuf[i*3+2] );
+    }
 
     // How many grid points in each Voronoi cell? 
     int* gridPtCount = new int[nPtcToUse];
@@ -87,9 +106,9 @@ int main(int argc, char** argv )
             long int yOffset = y * GRIDX + zOffset;
             for( long int x = 0; x < GRIDX; x++ )
             {
-                double gridX = (double)x * ptcXSpan / (double)(GRIDX) + ptcXMin;
-                double gridY = (double)y * ptcYSpan / (double)(GRIDY) + ptcYMin;
-                double gridZ = (double)z * ptcZSpan / (double)(GRIDZ) + ptcZMin;
+                float  gridX = (float)x * ptcXSpan / (float)(GRIDX) + ptcXMin;
+                float  gridY = (float)y * ptcYSpan / (float)(GRIDY) + ptcYMin;
+                float  gridZ = (float)z * ptcZSpan / (float)(GRIDZ) + ptcZMin;
                 double rx, ry, rz;
                 int    pid;             // particle ID
                 if( !con.find_voronoi_cell( gridX, gridY, gridZ, rx, ry, rz, pid ) )
@@ -105,15 +124,31 @@ int main(int argc, char** argv )
     for( long int i = 0; i < totalGridPts; i++ )
     {
         int idx = (int)density[i];
-        density[i] = 1.0f / (double)gridPtCount[idx];
+        density[i] = 1.0f / (float)gridPtCount[idx];
     }
 
     // How many Voronoi cells do not contain a grid point?
     long int emptyCellCount = 0;
     for( long int i = 0; i < nPtcToUse; i++ )
         if( gridPtCount[i] == 0 )
+        {
             emptyCellCount++;
-    std::cerr << "Number of Voronoi cells without a grid point: " << emptyCellCount << std::endl;
+
+            float particle[3], grid[3];
+            for( int j = 0; j < 3; j++ )
+                particle[j] = ptcBuf[i*3+j];
+            grid[0] = (particle[0] - ptcXMin) / ptcXSpan * (float)GRIDX;
+            grid[1] = (particle[1] - ptcYMin) / ptcYSpan * (float)GRIDY;
+            grid[2] = (particle[2] - ptcZMin) / ptcZSpan * (float)GRIDZ;
+            long int lgrid[3];
+            for( int j = 0; j < 3; j++ )
+                lgrid[j] = std::lround( grid[j] );
+            density[ lgrid[2] * GRIDX * GRIDY + lgrid[1] * GRIDY + lgrid[0] ] += 1.0;
+            
+            std::cerr << "Found a Voronoi cell without a grid point: " << std::endl;
+            for( int j = 0; j < 3; j++ )
+                std::cerr << "Particle coord = " << particle[j] << ";  Grid coord = " << lgrid[j] << std::endl; 
+        }
         
 
     // Output for gnuplot. The gnuplot commands to use:
@@ -130,8 +165,13 @@ int main(int argc, char** argv )
     
     delete[] density;
     delete[] gridPtCount;
-    delete[] ptcX;
-    delete[] ptcY;
-    delete[] ptcZ;
+    if( ptcX )
+        delete[] ptcX;
+    if( ptcY )
+        delete[] ptcY;
+    if( ptcZ )
+        delete[] ptcZ;
+    if( ptcBuf )
+        delete[] ptcBuf;
 }
 

@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define NX 64
-#define NY 64
-#define NZ 64
+#define NX 128
+#define NY 128
+#define NZ 128
 
 #define EXTENTX 550
 #define EXTENTY 550
