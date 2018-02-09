@@ -123,8 +123,8 @@ int main(int argc, char** argv )
     // Each grid point calculates its own weight
     for( long int i = 0; i < totalGridPts; i++ )
     {
-        int idx = (int)density[i];
-        density[i] = 1.0f / (float)gridPtCount[idx];
+        int ptcIdx = (int)density[i];
+        density[i] = 1.0f / (float)gridPtCount[ptcIdx];
     }
 
     // How many Voronoi cells do not contain a grid point?
