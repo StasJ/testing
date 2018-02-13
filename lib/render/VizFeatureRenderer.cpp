@@ -82,12 +82,6 @@ void VizFeatureRenderer::drawDomainFrame(size_t ts) const {
 		m_paramsMgr, m_winName, ts, minExts, maxExts
 	);
 
-
-#ifdef	DEAD
-	vector <double> stretchFac = vfParams->GetStretchFactors();
-
-#endif
-
 	int i; 
 	int numLines[3];
 	double fullSize[3], modMin[3],modMax[3];
@@ -126,26 +120,26 @@ void VizFeatureRenderer::drawDomainFrame(size_t ts) const {
 		for (y = 0; y<=numLines[1]; y++){
 			float yCrd = modMin[1] + ((float)y/(float)numLines[1])*fullSize[1];
 			
-			glVertex3f(  modMin[0],  yCrd, zCrd );   
+			glVertex3f( modMin[0],  yCrd, zCrd );   
 			glVertex3f( modMax[0],  yCrd, zCrd );
 		}
 		//Draw lines in y-direction for each x
 		for (x = 0; x<=numLines[0]; x++){
 			float xCrd = modMin[0] + ((float)x/(float)numLines[0])*fullSize[0];
 			
-			glVertex3f(  xCrd, modMin[1], zCrd );   
+			glVertex3f( xCrd, modMin[1], zCrd );   
 			glVertex3f( xCrd, modMax[1], zCrd );
 		}
 	}
-	//Do the lines in each y-plane
-	
+
+	//Do the lines in each y-plane	
 	for (y = 0; y<=numLines[1]; y++){
 		float yCrd = modMin[1] + ((float)y/(float)numLines[1])*fullSize[1];
 		//Draw lines in x direction for each z
 		for (z = 0; z<=numLines[2]; z++){
 			float zCrd = modMin[2] + ((float)z/(float)numLines[2])*fullSize[2];
 			
-			glVertex3f(  modMin[0],  yCrd, zCrd );   
+			glVertex3f( modMin[0],  yCrd, zCrd );   
 			glVertex3f( modMax[0],  yCrd, zCrd );
 			
 		}
@@ -153,9 +147,8 @@ void VizFeatureRenderer::drawDomainFrame(size_t ts) const {
 		for (x = 0; x<=numLines[0]; x++){
 			float xCrd = modMin[0] + ((float)x/(float)numLines[0])*fullSize[0];
 		
-			glVertex3f(  xCrd, yCrd, modMin[2] );   
+			glVertex3f( xCrd, yCrd, modMin[2] );   
 			glVertex3f( xCrd, yCrd, modMax[2]);
-			
 		}
 	}
 	
@@ -166,7 +159,7 @@ void VizFeatureRenderer::drawDomainFrame(size_t ts) const {
 		for (z = 0; z<=numLines[2]; z++){
 			float zCrd = modMin[2] + ((float)z/(float)numLines[2])*fullSize[2];
 			
-			glVertex3f(  xCrd, modMin[1], zCrd );   
+			glVertex3f( xCrd, modMin[1], zCrd );   
 			glVertex3f( xCrd, modMax[1], zCrd );
 			
 		}
@@ -174,9 +167,8 @@ void VizFeatureRenderer::drawDomainFrame(size_t ts) const {
 		for (y = 0; y<=numLines[1]; y++){
 			float yCrd = modMin[1] + ((float)y/(float)numLines[1])*fullSize[1];
 			
-			glVertex3f(  xCrd, yCrd, modMin[2] );   
+			glVertex3f( xCrd, yCrd, modMin[2] );   
 			glVertex3f( xCrd, yCrd, modMax[2]);
-			
 		}
 	}
 	
@@ -191,6 +183,7 @@ void VizFeatureRenderer::DrawText() {
 }
 
 void VizFeatureRenderer::DrawText(vector<billboard> billboards) {
+	cout << "DRAWING TEXT?!?" << endl;
 	double txtColor[] = {1.f, 1.f, 1.f, 1.f};
 	double bgColor[] = {0.f, 0.f, 0.f, 0.f};
 	double coords[] = {67.5f,31.6f,0.f}; 
@@ -219,7 +212,8 @@ void VizFeatureRenderer::DrawText(vector<billboard> billboards) {
 
 void VizFeatureRenderer::AddText(string text, 
 								int x, int y, int size, 
-								float color[3], int type) {
+								float color[3], float bgColor[3],
+								int type) {
 	//_billboards.clear();  // Temporary hack.  We eventually need separate
 							// billboard groups for time annotations, axis
 							// labels, etc.  Grouping them all in the same
@@ -244,6 +238,7 @@ void VizFeatureRenderer::AddText(string text,
 	else if (type == 2) {
 		_axisAnnot.push_back(myBoard);
 	}
+	cout << "AddText" << endl;
 }
 
 void VizFeatureRenderer::ClearText(int type) {

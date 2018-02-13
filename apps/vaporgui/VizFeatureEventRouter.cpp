@@ -108,9 +108,9 @@ void VizFeatureEventRouter::connectAnnotationWidgets() {
 		this, SLOT(setAxisDigits(int)));
 	connect(_ticWidthCombo, SIGNAL(valueChanged(double)),
 		this, SLOT(setAxisTicWidth(double)));
-	connect(axisColorButton, SIGNAL(pressed()),
+	connect(colorSelectButton, SIGNAL(pressed()),
 		this, SLOT(setAxisColor()));
-	connect(axisBackgroundColorButton, SIGNAL(pressed()),
+	connect(bgSelectButton, SIGNAL(pressed()),
 		this, SLOT(setAxisBackgroundColor()));
 	connect(_annotationVaporTable, SIGNAL(returnPressed()),
 		this, SLOT(axisAnnotationTableChanged()));
@@ -915,6 +915,16 @@ void VizFeatureEventRouter::setTimeColor() {
 	miscParams->SetTimeAnnotColor(rgb);
 }
 
+void VizFeatureEventRouter::setTimeBGColor() {
+	vector <double> rgb;
+
+	setColorHelper(timeColorEdit, rgb);
+	if (rgb.size() != 3) return;
+
+	MiscParams* miscParams = GetMiscParams();
+	miscParams->SetTimeAnnotBGColor(rgb);
+}
+
 void VizFeatureEventRouter::updateTimeColor() {
 
 	MiscParams* miscParams = GetMiscParams();
@@ -998,7 +1008,9 @@ void VizFeatureEventRouter::drawTimeStep(string myString) {
 	float color[3];
 	mp->GetTimeAnnotColor(color);
 
-	_controlExec->DrawText(myString, x, y, size, color, 1);
+	float bgColor[3];
+	mp->GetTimeAnnotBGColor(bgColor);
+	_controlExec->DrawText(myString, x, y, size, color, bgColor, 1);
 }
 
 void VizFeatureEventRouter::drawTimeUser() {

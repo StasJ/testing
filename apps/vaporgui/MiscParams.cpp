@@ -37,6 +37,7 @@ const string MiscParams::_timeAnnotLLXTag = "TimeAnnotLLX";
 const string MiscParams::_timeAnnotLLYTag = "TimeAnnotLLY";
 const string MiscParams::_timeAnnotSizeTag = "TimeAnnotSize";
 const string MiscParams::_timeAnnotColorTag = "TimeAnnotColor";
+const string MiscParams::_timeAnnotBGColorTag = "TimeAnnotBGColor";
 
 //
 // Register class with object factory!!!

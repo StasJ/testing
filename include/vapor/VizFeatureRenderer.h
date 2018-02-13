@@ -61,7 +61,7 @@ public:
 	void OverlayPaint(size_t ts);
 
 	void AddText(string text, int x, int y, int size, 
-				float color[3], int type=0);
+				float color[3], float bgColor[3], int type=0);
 
 	void DrawText();
 

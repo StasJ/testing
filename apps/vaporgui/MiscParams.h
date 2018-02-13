@@ -132,9 +132,37 @@ public:
 	}
  }
 
+ void SetTimeAnnotBGColor(const std::vector <double> &rgb) {
+	assert(rgb.size() == 3);
+	vector <double> v = rgb;
+	for (int i=0; i<v.size(); i++) {
+		if (v[i] < 0.0) v[i] = 0.0;
+		if (v[i] > 1.0) v[i] = 1.0;
+	}
+	SetValueDoubleVec(_timeAnnotBGColorTag, "Specify time "
+					"annotation color in RGB", v);
+ }
+
+ void GetTimeAnnotBGColor(std::vector <double> &rgb) const {
+	rgb.clear();
+
+	vector <double> defaultv(3,1.0);
+	rgb =  GetValueDoubleVec(_timeAnnotBGColorTag, defaultv);
+	for (int i=0; i<rgb.size(); i++) {
+		if (rgb[i] < 0.0) rgb[i] = 0.0;
+		if (rgb[i] > 1.0) rgb[i] = 1.0;
+	}
+ }
+
  void GetTimeAnnotColor(float rgb[3]) const {
     vector <double> rgbv;
 	GetTimeAnnotColor(rgbv);
+    for (int i=0; i<3; i++) rgb[i] = rgbv[i];
+ }
+
+ void GetTimeAnnotBGColor(float rgb[3]) const {
+    vector <double> rgbv;
+	GetTimeAnnotBGColor(rgbv);
     for (int i=0; i<3; i++) rgb[i] = rgbv[i];
  }
 
@@ -151,6 +179,7 @@ private:
  static const string _timeAnnotLLYTag;
  static const string _timeAnnotSizeTag;
  static const string _timeAnnotColorTag;
+ static const string _timeAnnotBGColorTag;
 
  //! Put a params instance into default state with no data.
  void _init();

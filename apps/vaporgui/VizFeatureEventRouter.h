@@ -95,6 +95,7 @@ protected slots:
 	void setUseRegionFrame();
 	void setUseDomainFrame();
 	void setTimeColor();
+	void setTimeBGColor();
 	void setLatLonAnnot(bool);
 	void setUseAxisArrows();
 	void timeAnnotationChanged();
