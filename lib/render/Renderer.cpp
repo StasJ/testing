@@ -324,9 +324,10 @@ int Renderer::makeColorbarTexture(){
 	}
 
 	//determine foreground color:
-	unsigned char fgr = 255 - bgr;
-	unsigned char fgg = 255 - bgg;
-	unsigned char fgb = 255 - bgb;
+	vector<double> color = cbpb->GetTextColor();
+	unsigned char fgr = (unsigned char)(color[0]*255);
+	unsigned char fgg = (unsigned char)(color[1]*255);
+	unsigned char fgb = (unsigned char)(color[2]*255);
 
 	vector<double> colorbarSize = cbpb->GetSize();
 	
@@ -462,16 +463,11 @@ void Renderer::renderColorbarText(ColorbarPbase* cbpb,
 	MapperFunction* mf = rParams->GetMapperFunc(rParams->GetVariableName());
 	float numEntries = mf->getNumEntries();
 
-	vector<double> bgc = cbpb->GetBackgroundColor();
+	vector<double> backgroundColor = cbpb->GetBackgroundColor();
+	backgroundColor.push_back(0.);
+	vector<double> color = cbpb->GetTextColor();
+	color.push_back(1.);
 
-	//determine text color; the compliment of the background color:
-	//
-	double fgr = 1.f - bgc[0];
-	double fgg = 1.f - bgc[1];
-	double fgb = 1.f - bgc[2];
-
-	double txtColor[] = {fgr, fgg, fgb, 1.};
-	double bgColor[] = {(double)bgc[0], (double)bgc[1], (double)bgc[2], 0.};
 	int precision = (int)cbpb->GetNumDigits();
 	double dummy[] = {0.,0.,0.}; // Dummy coordinates.  We won't know the correct 
 								// coords until we know image size.
@@ -480,7 +476,7 @@ void Renderer::renderColorbarText(ColorbarPbase* cbpb,
 	//
 	double Trx, Tlx, Tly, Tuy;
 
-	double maxWidth = 0;
+	double biggestTextWidth = 0;
 	int numtics = cbpb->GetNumTicks();
 	int fontSize = cbpb->GetFontSize();
 	for (int tic = 0; tic < numtics; tic++){
@@ -503,7 +499,7 @@ void Renderer::renderColorbarText(ColorbarPbase* cbpb,
 		_textObject = new TextObject();
 		_textObject->Initialize(
 			_fontFile, textString, fontSize, 
-			txtColor, bgColor
+			color, backgroundColor
 		);
 		_textObject->SetOrientation(TextObject::CENTERLEFT);
 		double texWidth = _textObject->getWidth();
@@ -540,17 +536,27 @@ void Renderer::renderColorbarText(ColorbarPbase* cbpb,
 		// Now that we know the x offset, check if the colorbar box is big enough
 		// to contain the text, and resize the colorbar if not
 		//
-		if (texWidth > maxWidth) {
-			maxWidth = texWidth;
+		if (texWidth > biggestTextWidth) {
+			biggestTextWidth = texWidth;
 		}
 		vector<double> size = cbpb->GetSize();
+
 		// size[0]/2 is the space we have to place text into
 		//
-		if (size[0]/2.f < maxWidth/fbWidth) {
-			size[0] = 2*maxWidth/fbWidth;
+		double horizontalTextSpace = size[0]/2.f;
+		double neededHorizontalSpace = biggestTextWidth/fbWidth;
+		if (horizontalTextSpace < neededHorizontalSpace) {
+			size[0] = 2.1*biggestTextWidth/fbWidth;
 			cbpb->SetSize(size);
 		}
-
+		double verticalTextSpace = size[1];
+		double neededVerticalSpace = numtics*texHeight/fbHeight;
+		if (verticalTextSpace < neededVerticalSpace) {
+			size[1] = 2*numtics*texHeight/fbHeight;
+			size[1] = numtics*texHeight/fbHeight;
+			cbpb->SetSize(size);
+		}
+		
 		double inCoords[] = {Tx, Ty, 0};
 
 		_textObject->drawMe(inCoords);
@@ -565,13 +571,13 @@ void Renderer::renderColorbarText(ColorbarPbase* cbpb,
 			_textObject = NULL;
 		}
 
-		txtColor[0] = bgColor[0];
-		txtColor[1] = bgColor[1];
-		txtColor[2] = bgColor[2];
-		txtColor[3] = 1.f;
+		vector<double> titleBackground = {0.f, 0.f, 0.f, 0.f};
+		vector<double> textColor = backgroundColor;
+		textColor[3] = 1.;
+		
 		_textObject = new TextObject();
 		_textObject->Initialize(_fontFile,
-	   		 title, fontSize, txtColor, bgColor);
+	   		 title, fontSize, textColor, titleBackground);
 		_textObject->SetOrientation(TextObject::CENTERLEFT);
 		Tuy -= _textObject->getHeight();
 		double coords[] = {Tlx, Tuy, 0.f};

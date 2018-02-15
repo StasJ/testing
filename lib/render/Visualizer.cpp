@@ -331,7 +331,7 @@ int Visualizer::paintEvent()
 
 	//Draw any features that are overlaid on scene
 
-	if (m_vizFeatures) m_vizFeatures->DrawText();
+	//if (m_vizFeatures) m_vizFeatures->DrawText();
 	renderColorbars(timeStep);
 #ifdef	DEAD
 	if (m_vizFeatures) m_vizFeatures ->OverlayPaint(timeStep);

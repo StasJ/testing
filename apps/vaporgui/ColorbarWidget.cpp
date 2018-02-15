@@ -52,6 +52,8 @@ void ColorbarWidget::connectWidgets() {
 		SLOT(enableDisable(int)));
 	connect(titleEdit, SIGNAL(returnPressed()), this,
 		SLOT(titleChanged()));
+	connect(colorSelectButton, SIGNAL(pressed()), this,
+		SLOT(setColor()));
 	connect(bgSelectButton, SIGNAL(pressed()), this,
 		SLOT(setBackgroundColor()));
 	connect(_xPosCombo, SIGNAL(valueChanged(double)), this,
@@ -153,6 +155,33 @@ void ColorbarWidget::Update(DataMgr* dataMgr,
 
 	int ticks = _cbPbase->GetNumTicks();
 	_numTicksCombo->Update(1, 20, ticks);
+
+	updateBackgroundColor();
+	updateTextColor();
+}
+
+void ColorbarWidget::updateBackgroundColor() {
+	vector<double> bgColor = _cbPbase->GetBackgroundColor();
+	QPalette pal(bgColorEdit->palette());
+	int r=bgColor[0]*255;
+	int g=bgColor[1]*255;
+	int b=bgColor[2]*255;
+	QColor newColor(r,g,b);
+	if (!newColor.isValid()) return;
+	pal.setColor(QPalette::Base, newColor);
+	bgColorEdit->setPalette(pal);
+}
+
+void ColorbarWidget::updateTextColor() {
+	vector<double> color = _cbPbase->GetTextColor();
+	QPalette pal(colorEdit->palette());
+	int r=color[0]*255;
+	int g=color[1]*255;
+	int b=color[2]*255;
+	QColor newColor(r,g,b);
+	if (!newColor.isValid()) return;
+	pal.setColor(QPalette::Base, newColor);
+	colorEdit->setPalette(pal);
 }
 
 void ColorbarWidget::enableDisable(int state){
@@ -163,6 +192,19 @@ void ColorbarWidget::enableDisable(int state){
 	else if (state==2) {
 		_cbPbase->SetEnabled(1);
 	}
+}
+
+void ColorbarWidget::setColor(){
+	QPalette pal(bgColorEdit->palette());
+	QColor newColor = QColorDialog::getColor(pal.color(QPalette::Base), this);
+	if (!newColor.isValid()) return;
+	pal.setColor(QPalette::Base, newColor);
+	bgColorEdit->setPalette(pal);
+	qreal rgb[3];
+	newColor.getRgbF(rgb,rgb+1,rgb+2);
+	vector<double> rgbd;
+	for (int i = 0; i<3; i++) rgbd.push_back((double)rgb[i]);
+	_cbPbase->SetTextColor(rgbd);
 }
 
 void ColorbarWidget::setBackgroundColor(){
@@ -177,6 +219,7 @@ void ColorbarWidget::setBackgroundColor(){
 	for (int i = 0; i<3; i++) rgbd.push_back((double)rgb[i]);
 	_cbPbase->SetBackgroundColor(rgbd);
 }
+
 void ColorbarWidget::applyToAll(){
 #ifdef	DEAD
 	_paramsMgr->CopyColorBarSettings((RenderParams*)_params);

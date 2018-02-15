@@ -78,12 +78,15 @@ protected slots:
 
 	void titleChanged();
 	void enableDisable(int);
+	void setColor();
 	void setBackgroundColor();
 	void applyToAll();
 
 private:
 	RenderEventRouter * _eventRouter;
 	void connectWidgets();
+	void updateBackgroundColor();
+	void updateTextColor();
 	
 	bool _textChangedFlag;
 	VAPoR::ParamsMgr* _paramsMgr;

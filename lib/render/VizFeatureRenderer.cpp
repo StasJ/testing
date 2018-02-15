@@ -183,7 +183,8 @@ void VizFeatureRenderer::DrawText() {
 }
 
 void VizFeatureRenderer::DrawText(vector<billboard> billboards) {
-	cout << "DRAWING TEXT?!?" << endl;
+	cout << "Delete VizFeatureRenderer::DrawText() " << endl;
+	return;
 	double txtColor[] = {1.f, 1.f, 1.f, 1.f};
 	double bgColor[] = {0.f, 0.f, 0.f, 0.f};
 	double coords[] = {67.5f,31.6f,0.f}; 

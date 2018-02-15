@@ -190,7 +190,6 @@ int TextObject::initFrameBuffer(void) {
 	// Check that status of our generated frame buffer
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);  
 	if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {	 
-		std::cout << "Couldn't create frame buffer" << std::endl;  
 		return -1;
 	}
 
@@ -317,7 +316,6 @@ void TextObject::processErrors(string functionName) {
 			errString = cppErrString.c_str();
 			Wasp::MyBase::SetErrMsg(errString);
 			glErr = glGetError();
-			cout << " ERROR " << errString << endl;
 		}
 	}
 }

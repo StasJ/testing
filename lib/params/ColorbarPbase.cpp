@@ -25,6 +25,7 @@
 
 using namespace VAPoR;
 const string ColorbarPbase::_colorbarBackColorTag = "ColorbarBackgroundColor";
+const string ColorbarPbase::_colorbarTextColorTag = "ColorbarTextColor";
 const string ColorbarPbase::_colorbarSizeTag = "ColorbarSize";
 const string ColorbarPbase::_colorbarPositionTag = "ColorbarPosition";
 const string ColorbarPbase::_colorbarFontSizeTag = "ColorbarFontsize";
@@ -48,12 +49,12 @@ ColorbarPbase::ColorbarPbase(ParamsBase::StateSave *ssave) :
 	//Initialize with default values
 	SetCornerPosition(vector<double>(2,0.1));
 	SetSize(vector<double>(2,0.1));
-	SetTitle("");
-	SetFontSize(10);
-	SetNumDigits(4);
-	SetNumTicks(6);
-	SetBackgroundColor(vector<double>(3,1.));
-	SetEnabled(false);
+//	SetTitle("");
+//	SetFontSize(10);
+//	SetNumDigits(4);
+//	SetNumTicks(6);
+//	SetBackgroundColor(vector<double>(3,1.));
+//	SetEnabled(false);
 
 	
 }
@@ -124,7 +125,7 @@ void ColorbarPbase::SetSize(vector<double> sz) {
 //! Determine colorbar text size
 //! \return pointsize
 long ColorbarPbase::GetFontSize() const {
-    float val = (float) GetValueLong(_colorbarFontSizeTag, 10);
+    float val = (float) GetValueLong(_colorbarFontSizeTag, 20.f);
     if (val < 2) val = 2;
     if (val > 96) val = 96;
     return(val);
@@ -141,7 +142,7 @@ void ColorbarPbase::SetFontSize(long val) {
 //! Determine colorbar num tics
 //! \return number of tics
 long ColorbarPbase::GetNumTicks() const {
-	long val =  GetValueLong(_colorbarNumTicksTag, 8);
+	long val =  GetValueLong(_colorbarNumTicksTag, 6);
 	if (val < 0) val = 0;
 	if (val > 20) val = 20;
 	return(val);
@@ -158,7 +159,7 @@ void ColorbarPbase::SetNumTicks(long val) {
 //! Determine colorbar num digits to display
 //! \return number of digits
 long ColorbarPbase::GetNumDigits() const {
-	long val = GetValueLong(_colorbarNumDigitsTag, 4);
+	long val = GetValueLong(_colorbarNumDigitsTag, 2);
 	if (val < 0) val = 0;
 	if (val > 8) val = 8;
 	return(val);
@@ -170,6 +171,32 @@ void ColorbarPbase::SetNumDigits(long val) {
 	if (val < 0) val = 0;
 	if (val > 8) val = 8;
 	SetValueLong(_colorbarNumDigitsTag, "set num digits", val);
+}
+
+//! Get the text color
+//! as an rgb triple
+//! \retval rgb color
+vector<double> ColorbarPbase::GetTextColor() const {
+	vector <double> defaultv(3,0.0);
+	vector <double> color =  GetValueDoubleVec(_colorbarTextColorTag, defaultv);
+	for (int i=0; i<color.size(); i++) {
+		if (color[i] < 0.0) color[i] = 0.0;
+		if (color[i] > 1.0) color[i] = 1.0;
+	}
+	return(color);
+}
+
+//! Set the text color as an rgb triple
+//! \param[in] color = (r,g,b)
+void ColorbarPbase::SetTextColor(vector<double> color) {
+	assert(color.size() == 3);
+	for (int i=0; i<color.size(); i++) {
+		if (color[i] < 0.0) color[i] = 0.0;
+		if (color[i] > 1.0) color[i] = 1.0;
+	}
+	SetValueDoubleVec(
+		_colorbarTextColorTag, "set colorbar background color", color
+	);
 }
 
 //! Get the background color
