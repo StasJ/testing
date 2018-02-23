@@ -15,3 +15,6 @@ voro2densityv3: $(SRCV3)
 
 voro2densityv2: $(SRCV3)
 	$(CXX) -std=c++11 $(GCCFLAG) -I$(VORO_INSTALL)/include -L$(VORO_INSTALL)/lib -o bin/voro2density $(SRCV2) -lvoro++ -lm
+
+kdtree: kdtree/kdtree.h kdtree/kdtree.c
+	$(CC) -DUSE_LIST_NODE_ALLOCATOR -c -O3 -fpic -tp=haswell -o pgi_bin/kdtree.o kdtree/kdtree.c -lpthread
