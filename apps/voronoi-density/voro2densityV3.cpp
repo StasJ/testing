@@ -5,11 +5,11 @@
 #include <iostream>
 #include <sys/time.h>
 
-#include "voro++/voro++.hh"
+#include "kdtree/kdtree.h"
 
 /* 
-   This version differs from V1 in that this one assumes the volume to start from 0, 
-   and end at (GRIDX, GRIDY, GRIDZ). This assumption helps eliminate a few calculations.
+   This version differs from V1 and V2 in that this one does not actually calculate voronoi cells.
+   Instead, it find the nearest particle for each grid point, using a kdtree.
 */
 
 #define GRIDX 1024
@@ -37,13 +37,6 @@ void ReadParticles2( const char* name,       // input
     fclose( f );
 }
 
-float CalcWeight( const float* p, const float* q )  // two points
-{
-    float dist2 = (p[0]-q[0]) * (p[0]-q[0]) + 
-                  (p[1]-q[1]) * (p[1]-q[1]) + 
-                  (p[2]-q[2]) * (p[2]-q[2]);
-    return 1.0f/std::sqrt( dist2 );
-}
 
 int main(int argc, char** argv )
 {
@@ -52,46 +45,32 @@ int main(int argc, char** argv )
         printf("Usage: ./a.out .lag(input) .float(output)i\n");
         exit(1);
     }
+    struct timeval start, end;
 
     // read in particles
     long int nParticles;
     float*   ptcBuf = NULL;
     ReadParticles2( argv[1], nParticles, &ptcBuf );
-
-
-    // Use a Voro++ container 
-    // A guide to choose the grid size is available at the bottom of this page:
-    //   http://math.lbl.gov/voro++/doc/refman/
-    voro::container con( 0.0,       (double)(GRIDX),
-                         0.0,       (double)(GRIDY),
-                         0.0,       (double)(GRIDZ),
-                         64,        64,     64,
-                         true,      true,   true, 12 );
     long int nPtcToUse = nParticles;           // use a subset of particles for experiments
-    for( long int i = 0; i < nPtcToUse; i++ )
+
+    // each particle has a counter 
+    long int* counter = new long int[ nPtcToUse ];
+    for( long i = 0; i < nPtcToUse; i++ )
+        counter[i] = 0;
+
+    // build a kd-tree for these particles
+    gettimeofday( &start, NULL );
+    struct kdtree* kd = kd_create(3);   
+    for( long i = 0; i < nPtcToUse; i++ )
     {
-        con.put(i, ptcBuf[i*3], ptcBuf[i*3+1], ptcBuf[i*3+2] );
+        int rt = kd_insertf( kd, ptcBuf + i * 3, &counter[i] );
+        assert( rt == 0 );
     }
-
-    std::cerr << "finish putting all particles, start calculating voronoi cells." << std::endl;
-    struct timeval begin, end;
-    gettimeofday( &begin, NULL );
-    con.compute_all_cells();
     gettimeofday( &end, NULL );
-    double sec = GetElapsedSeconds( &begin, &end );
-    std::cerr << "finish calculating voronoi cells in " << sec << " Seconds." << std::endl;
-    return 0;
+    std::cerr << "kdtree construction takes " << GetElapsedSeconds(&start, &end) << " seconds." << std::endl;
     
-    
-
-    // What's the normalization factor for each voronoi cell?
-    float* ptcWeight = new float[nPtcToUse];
-    for( long int i = 0; i < nPtcToUse; i++ )
-        ptcWeight[i] = 0.0;
-
-    float* density = new float[ totalGridPts ];
-
-    // Find the Voronoi cell for each grid point
+    // Find the closest particle for each grid point
+    gettimeofday( &start, NULL );
     for( long int z = 0; z < GRIDZ; z++ )
     {
         long int zOffset = z * GRIDX * GRIDY;
@@ -100,19 +79,27 @@ int main(int argc, char** argv )
             long int yOffset = y * GRIDX + zOffset;
             for( long int x = 0; x < GRIDX; x++ )
             {
-                float  gridPt[3] = {(float)x, (float)y, (float)z};
-                double rx, ry, rz;
-                int    pid;             // particle ID
-                //if( !con.find_voronoi_cell( gridPt[0], gridPt[1], gridPt[2], rx, ry, rz, pid ) )
-                //    std::cerr << "didn't find a voronoi cell!" << std::endl;
-
-                density[ x + yOffset ] = (float)pid;
-                ptcWeight[ pid ] += CalcWeight( gridPt, ptcBuf + pid * 3 );
+                struct kdres* set = kd_nearest3f( kd, (float)x, (float)y, (float)z );
+                assert( kd_res_size( set ) == 1 );
+                long* pt = (long*)kd_res_item_data( set );
+                (*pt)++;
+                kd_res_free( set );
             }
         }
-        //std::cerr << "finish z level " << z << std::endl;
+    }
+    gettimeofday( &end, NULL );
+    std::cerr << "kdtree retrieval takes " << GetElapsedSeconds(&start, &end) << " seconds." << std::endl;
+
+    // Print some random counters
+    for( int i = 0; i < 10; i++ )
+    {
+        int idx = (float)rand() / RAND_MAX * nPtcToUse;
+        std::cout << "A random counter value: " << counter[idx] << std::endl;
     }
 
+    
+
+#if 0
     // Each grid point calculates its own weight
     for( long int z = 0; z < GRIDZ; z++ )
     {
@@ -125,7 +112,6 @@ int main(int argc, char** argv )
                 float  gridPt[3]     = {(float)x, (float)y, (float)z};
                 int pid              = (int)density[ x+yOffset ];
                 float myWeight       = CalcWeight( gridPt, ptcBuf + pid * 3 );
-                density[ x+yOffset ] = myWeight / ptcWeight[pid];
             }
         }
     }
@@ -155,9 +141,10 @@ int main(int argc, char** argv )
     FILE* f = fopen( argv[2], "w" );
     size_t rt = fwrite( density, sizeof(float), totalGridPts, f );
     fclose( f );
+#endif
     
-    delete[] density;
-    delete[] ptcWeight;
+    kd_free( kd );
+    delete[] counter;
     if( ptcBuf )
         delete[] ptcBuf;
 }
