@@ -23,7 +23,7 @@ voro2density: kdtree.o $(SRCV3)
 	$(CXX) -o $(BINDIR)/voro2density $(BINDIR)/voro2density.o $(BINDIR)/kdtree.o -lm $(OMP)
 
 kdtree.o: kdtree/kdtree.h kdtree/kdtree.c
-	$(CC) -DNO_PTHREADS -c $(FLAG) -o $(BINDIR)/kdtree.o kdtree/kdtree.c
+	$(CC) -c $(FLAG) -o $(BINDIR)/kdtree.o kdtree/kdtree.c
 
 voro2densityv2: $(SRCV3)
 	$(CXX) -std=c++11 $(GCCFLAG) -I$(VORO_INSTALL)/include -L$(VORO_INSTALL)/lib -o bin/voro2density $(SRCV2) -lvoro++ -lm
