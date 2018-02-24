@@ -2,8 +2,11 @@ CXX=pgc++
 CC=pgcc
 
 GCCOPTIM=-march=haswell -O3
-PGIOPTIM=-tp=haswell -O3
+PGIOPTIM=-tp=haswell-64 -O3 
+GCCOMP=-fopenmp
+PGIOMP=-mp
 FLAG=$(PGIOPTIM)
+OMP=$(PGIOMP)
 
 BINDIR=pgi_bin
 
@@ -14,8 +17,8 @@ SRCV3=voro2densityV3.cpp
 
 
 voro2density: kdtree.o $(SRCV3)
-	$(CXX) -std=c++11 $(FLAG) -c -o $(BINDIR)/voro2density.o $(SRCV3) -lpthread
-	$(CXX) -o $(BINDIR)/voro2density $(BINDIR)/voro2density.o $(BINDIR)/kdtree.o -lm -lpthread
+	$(CXX) -std=c++11 $(FLAG) -c -o $(BINDIR)/voro2density.o $(SRCV3) -lpthread 
+	$(CXX) -o $(BINDIR)/voro2density $(BINDIR)/voro2density.o $(BINDIR)/kdtree.o -lm -lpthread 
 
 kdtree.o: kdtree/kdtree.h kdtree/kdtree.c
 	$(CC) -DUSE_LIST_NODE_ALLOCATOR -c $(FLAG) -o $(BINDIR)/kdtree.o kdtree/kdtree.c -lpthread

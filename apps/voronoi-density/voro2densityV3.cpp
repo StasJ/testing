@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include <sys/time.h>
+#include <omp.h>
 
 #include "kdtree/kdtree.h"
 
@@ -76,11 +77,14 @@ int main(int argc, char** argv )
     gettimeofday( &end, NULL );
     std::cerr << "kdtree construction takes " << GetElapsedSeconds(&start, &end) << " seconds." << std::endl;
     
-    // Find the closest particle for each grid point
+    // Find the closest particle for each grid point (in parallel)
     gettimeofday( &start, NULL );
     //for( long z = 0; z < GRIDZ; z++ )
-    for( long z = 200; z < 220; z++ )
+    #pragma omp parallel for
+    for( long z = 200; z < 300; z+=20 )
     {
+        struct timeval planeStart, planeEnd;
+        gettimeofday( &planeStart, NULL );
         long zOffset = z * GRIDX * GRIDY;
         for( long y = 0; y < GRIDY; y++ )
         {
@@ -90,14 +94,20 @@ int main(int argc, char** argv )
                 struct kdres* set = kd_nearest3f( kd, (float)x, (float)y, (float)z );
                 assert( kd_res_size( set ) == 1 );
                 int* pt = (int*)kd_res_item_data( set );
-                (*pt)++;
                 pcounter[ x+yOffset ] = pt;
                 kd_res_free( set );
             }
         }
+        gettimeofday( &planeEnd, NULL );
+        std::cerr << "kdtree retrieval on 1 plane takes " << GetElapsedSeconds(&planeStart, &planeEnd) << " seconds." << std::endl;
     }
     gettimeofday( &end, NULL );
-    std::cerr << "kdtree retrieval takes " << GetElapsedSeconds(&start, &end) << " seconds." << std::endl;
+    std::cerr << "total kdtree retrieval takes " << GetElapsedSeconds(&start, &end) << " seconds." << std::endl;
+
+    // Increase counters in serial
+    for( long i = 0; i < totalGridPts; i++ )
+        if(    pcounter[i] != NULL )
+            (*(pcounter[i]))++;
 
 /**** print diagnostic info ****/
     // What's the total count all counters have?
@@ -125,7 +135,7 @@ int main(int argc, char** argv )
     // Each grid point calculates its own density
     float* density = new float[totalGridPts];
     //for( long z = 0; z < GRIDZ; z++ )
-    for( long int z = 200; z < 220; z++ )
+    for( long int z = 200; z < 300; z+=20)
     {
         long int zOffset = z * GRIDX * GRIDY;
         for( long int y = 0; y < GRIDY; y++ )
