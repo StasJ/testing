@@ -79,7 +79,7 @@ int main(int argc, char** argv )
     // Find the closest particle for each grid point
     gettimeofday( &start, NULL );
     //for( long z = 0; z < GRIDZ; z++ )
-    for( long z = 200; z < 201; z++ )
+    for( long z = 200; z < 220; z++ )
     {
         long zOffset = z * GRIDX * GRIDY;
         for( long y = 0; y < GRIDY; y++ )
@@ -125,7 +125,7 @@ int main(int argc, char** argv )
     // Each grid point calculates its own density
     float* density = new float[totalGridPts];
     //for( long z = 0; z < GRIDZ; z++ )
-    for( long int z = 200; z < 201; z++ )
+    for( long int z = 200; z < 220; z++ )
     {
         long int zOffset = z * GRIDX * GRIDY;
         for( long int y = 0; y < GRIDY; y++ )
