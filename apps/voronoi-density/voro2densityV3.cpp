@@ -81,7 +81,7 @@ int main(int argc, char** argv )
     gettimeofday( &start, NULL );
     //for( long z = 0; z < GRIDZ; z++ )
     #pragma omp parallel for
-    for( long z = 200; z < 300; z+=20 )
+    for( long z = 200; z < 400; z+=20 )
     {
         struct timeval planeStart, planeEnd;
         gettimeofday( &planeStart, NULL );
@@ -99,7 +99,7 @@ int main(int argc, char** argv )
             }
         }
         gettimeofday( &planeEnd, NULL );
-        std::cerr << "kdtree retrieval on 1 plane takes " << GetElapsedSeconds(&planeStart, &planeEnd) << " seconds." << std::endl;
+        std::cerr << "kdtree retrieval on one plane takes " << GetElapsedSeconds(&planeStart, &planeEnd) << " seconds." << std::endl;
     }
     gettimeofday( &end, NULL );
     std::cerr << "total kdtree retrieval takes " << GetElapsedSeconds(&start, &end) << " seconds." << std::endl;
@@ -135,7 +135,8 @@ int main(int argc, char** argv )
     // Each grid point calculates its own density
     float* density = new float[totalGridPts];
     //for( long z = 0; z < GRIDZ; z++ )
-    for( long int z = 200; z < 300; z+=20)
+    #pragma omp parallel for
+    for( long int z = 200; z < 400; z+=20)
     {
         long int zOffset = z * GRIDX * GRIDY;
         for( long int y = 0; y < GRIDY; y++ )
@@ -144,43 +145,43 @@ int main(int argc, char** argv )
             for( long int x = 0; x < GRIDX; x++ )
             {
                 long   idx          = x+yOffset;
-                int    count        = *pcounter[ idx ]; 
+                int    count        = *(pcounter[idx]); 
                 density[ idx ]      = 1.0f/(float)count;
             }
         }
     }
 
     // How many Voronoi cells do not contain a grid point?
-    /* long int emptyCellCount = 0;
+    long int emptyCellCount = 0;
     for( long int i = 0; i < nPtcToUse; i++ )
-        if( ptcWeight[i] == 0.0f )
+        if( counter[i] == 0 )
         {
             emptyCellCount++;
 
             float particle[3];
+            long  grid[3];
             for( int j = 0; j < 3; j++ )
+            {
                 particle[j] = ptcBuf[i*3+j];
-            long int grid[3];
-            for( int j = 0; j < 3; j++ )
-                grid[j] = std::lround( particle[j] );
-            density[ grid[2] * GRIDX * GRIDY + grid[1] * GRIDY + grid[0] ] += 1.0;
+                grid[j]     = std::lround( particle[j] );
+            }
+            density[ grid[2] * GRIDX * GRIDY + grid[1] * GRIDY + grid[0] ] += 1.0f;
             
-            std::cerr << "Found a Voronoi cell without a grid point: " << std::endl;
-            for( int j = 0; j < 3; j++ )
-                std::cerr << "Particle coord = " << particle[j] << ";  Grid coord = " << grid[j] << std::endl; 
+            //std::cerr << "Found a Voronoi cell without a grid point: " << std::endl;
+            //for( int j = 0; j < 3; j++ )
+            //    std::cerr << "Particle coord = " << particle[j] << ";  Grid coord = " << grid[j] << std::endl; 
         }
-    */
+    std::cerr << "voronoi cell without a grid point: " << emptyCellCount << std::endl;
     
     // Output the density field
     FILE* f = fopen( argv[2], "w" );
     size_t rt = fwrite( density, sizeof(float), totalGridPts, f );
     fclose( f );
     
+    kd_free( kd );
     delete[] density;
     delete[] pcounter;
     delete[] counter;
-    kd_free( kd );
-    if( ptcBuf )
-        delete[] ptcBuf;
+    delete[] ptcBuf;
 }
 
