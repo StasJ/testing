@@ -3,7 +3,7 @@ CC=icc
 
 GCCOPTIM=-march=haswell -O3
 PGIOPTIM=-tp=haswell-64 -O3 
-INTOPTIM=-march=haswell -O3 
+INTOPTIM=-march=broadwell -O3 
 GCCOMP=-fopenmp
 PGIOMP=-mp
 INTOMP=-qopenmp
