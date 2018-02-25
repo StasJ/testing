@@ -102,9 +102,9 @@ int main(int argc, char** argv )
                 gettimeofday( &lineEnd, NULL );
                 std::cerr << "kdtree retrieval line " << y << " takes " << GetElapsedSeconds(&lineStart, &lineEnd) << " seconds." << std::endl;
             }
-        }
+        }   // end parallel for
         gettimeofday( &planeEnd, NULL );
-        std::cerr << "kdtree retrieval plane " << z << " takes " << GetElapsedSeconds(&planeStart, &planeEnd) << " seconds." << std::endl;
+        std::cerr << std::endl << "kdtree retrieval plane " << z << " takes " << GetElapsedSeconds(&planeStart, &planeEnd) << " seconds." << std::endl << std::endl;
     }
     gettimeofday( &end, NULL );
     std::cerr << "total kdtree retrieval takes " << GetElapsedSeconds(&start, &end) << " seconds." << std::endl;

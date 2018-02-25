@@ -3,7 +3,8 @@ CC=pgcc
 
 GCCOPTIM=-march=haswell -O3 -DNDEBUG
 PGIOPTIM=-tp=haswell-64 -O3 -DNDEBUG
-INTOPTIM=-march=haswell -O3 -DNDEBUG
+INTOPTIM=-march=broadwell -O3 -DNDEBUG
+
 GCCOMP=-fopenmp
 PGIOMP=-mp
 INTOMP=-qopenmp
@@ -11,7 +12,6 @@ INTOMP=-qopenmp
 BINDIR=pgi_bin
 FLAG=$(PGIOPTIM)
 OMP=$(PGIOMP)
-
 
 VORO_INSTALL=/home/shaomeng/Build/voro++-0.4.6/install
 
