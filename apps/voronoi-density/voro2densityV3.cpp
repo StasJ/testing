@@ -1,10 +1,10 @@
 #include <cstdio>
 #include <cstdlib>
-#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <sys/time.h>
 #include <omp.h>
+#include <cassert>
 
 #include "kdtree/kdtree.h"
 
@@ -79,26 +79,32 @@ int main(int argc, char** argv )
     
     // Find the closest particle for each grid point (in parallel)
     gettimeofday( &start, NULL );
-    #pragma omp parallel for
     for( long z = 0; z < GRIDZ; z++ ) //for( long z = 200; z < 400; z+=20 )
     {
         struct timeval planeStart, planeEnd;
         gettimeofday( &planeStart, NULL );
         long zOffset = z * GRIDX * GRIDY;
+        #pragma omp parallel for
         for( long y = 0; y < GRIDY; y++ )
         {
+            struct timeval lineStart, lineEnd;
+            gettimeofday( &lineStart, NULL );
             long yOffset = y * GRIDX + zOffset;
             for( long x = 0; x < GRIDX; x++ )
             {
                 struct kdres* set = kd_nearest3f( kd, (float)x, (float)y, (float)z );
                 assert( kd_res_size( set ) == 1 );
-                int* pt = (int*)kd_res_item_data( set );
-                pcounter[ x+yOffset ] = pt;
+                pcounter[ x+yOffset ] = (int*)kd_res_item_data( set );
                 kd_res_free( set );
+            }
+            if( y % 10 == 0 )
+            {
+                gettimeofday( &lineEnd, NULL );
+                std::cerr << "kdtree retrieval line " << y << " takes " << GetElapsedSeconds(&lineStart, &lineEnd) << " seconds." << std::endl;
             }
         }
         gettimeofday( &planeEnd, NULL );
-        //std::cerr << "kdtree retrieval plane " << z << " takes " << GetElapsedSeconds(&planeStart, &planeEnd) << " seconds." << std::endl;
+        std::cerr << "kdtree retrieval plane " << z << " takes " << GetElapsedSeconds(&planeStart, &planeEnd) << " seconds." << std::endl;
     }
     gettimeofday( &end, NULL );
     std::cerr << "total kdtree retrieval takes " << GetElapsedSeconds(&start, &end) << " seconds." << std::endl;

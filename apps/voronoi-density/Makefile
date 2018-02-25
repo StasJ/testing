@@ -1,16 +1,17 @@
-CXX=icpc
-CC=icc
+CXX=pgc++
+CC=pgcc
 
-GCCOPTIM=-march=haswell -O3
-PGIOPTIM=-tp=haswell-64 -O3 
-INTOPTIM=-march=haswell -O3 
+GCCOPTIM=-march=haswell -O3 -DNDEBUG
+PGIOPTIM=-tp=haswell-64 -O3 -DNDEBUG
+INTOPTIM=-march=haswell -O3 -DNDEBUG
 GCCOMP=-fopenmp
 PGIOMP=-mp
 INTOMP=-qopenmp
-FLAG=$(INTOPTIM)
-OMP=$(INTOMP)
 
-BINDIR=intel_bin
+BINDIR=pgi_bin
+FLAG=$(PGIOPTIM)
+OMP=$(PGIOMP)
+
 
 VORO_INSTALL=/home/shaomeng/Build/voro++-0.4.6/install
 
