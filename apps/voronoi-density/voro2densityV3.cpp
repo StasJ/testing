@@ -16,6 +16,13 @@
 #define GRIDX 1024
 #define GRIDY 1024
 #define GRIDZ 1024
+#define EXTX  (M_PI*2.0)
+#define EXTY  (M_PI*2.0)
+#define EXTZ  (M_PI*2.0)
+
+const float factorX = EXTX / (float)GRIDX;
+const float factorY = EXTY / (float)GRIDY;
+const float factorZ = EXTZ / (float)GRIDZ;
 
 const long int totalGridPts = (GRIDX) * (GRIDY) * (GRIDZ);
 
@@ -92,7 +99,8 @@ int main(int argc, char** argv )
             long yOffset = y * GRIDX + zOffset;
             for( long x = 0; x < GRIDX; x++ )
             {
-                struct kdres* set = kd_nearest3f( kd, (float)x, (float)y, (float)z );
+                //struct kdres* set = kd_nearest3f( kd, (float)x, (float)y, (float)z );
+                struct kdres* set = kd_nearest3f( kd, x * factorX, y * factorY, z * factorZ );
                 assert( kd_res_size( set ) == 1 );
                 pcounter[ x+yOffset ] = (int*)kd_res_item_data( set );
                 kd_res_free( set );
