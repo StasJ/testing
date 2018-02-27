@@ -31,6 +31,15 @@ double GetElapsedSeconds( const struct timeval* begin,
     return (end->tv_sec - begin->tv_sec) + ((end->tv_usec - begin->tv_usec)/1000000.0);
 }
 
+float CalcDist2( const float* p, const INT* q )  // two points
+{
+    return ( (p[0]-(float)q[0]) * (p[0]-(float)q[0]) + 
+             (p[1]-(float)q[1]) * (p[1]-(float)q[1]) + 
+             (p[2]-(float)q[2]) * (p[2]-(float)q[2]) );
+}
+
+
+
 void ReadParticles2( const char* name,       // input
                      INT&        len,        // number of particles
                      float**     buf )
@@ -80,9 +89,9 @@ public:
         for (INT i = 0; i < N; i++)
         {
             INT idx  = i*3;
-            pts[i].x = buf[idx]   / EXTX * GRIDX;
-            pts[i].y = buf[idx+1] / EXTY * GRIDY;
-            pts[i].z = buf[idx+2] / EXTZ * GRIDZ; 
+            pts[i].x = buf[idx]   / EXTX * (GRIDX-1);
+            pts[i].y = buf[idx+1] / EXTY * (GRIDY-1);
+            pts[i].z = buf[idx+2] / EXTZ * (GRIDZ-1); 
         }
     }
 };
@@ -110,7 +119,7 @@ int main(int argc, char** argv )
 	// construct a kd-tree index:
 	typedef nanoflann::KDTreeSingleIndexAdaptor< nanoflann::L2_Simple_Adaptor<float, PointCloud<float> > ,
                                       PointCloud<float>, 3 >     my_kd_tree_t;
-	my_kd_tree_t   kd_index(3, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(4 /* max leaf */) );
+	my_kd_tree_t   kd_index(3, cloud, nanoflann::KDTreeSingleIndexAdaptorParams(8 /* max leaf */) );
     gettimeofday( &start, NULL );
 	kd_index.buildIndex();
     gettimeofday( &end, NULL );
@@ -214,14 +223,44 @@ int main(int argc, char** argv )
         if( counter[i] == 0 )
         {
             emptyCellCount++;
-
+            /*  This block of code distributes the entire weight of a particle to its closest grid point. 
             long  grid[3];
-            grid[0] = std::lround( ptcBuf[i*3  ] / EXTX * GRIDX );
-            grid[1] = std::lround( ptcBuf[i*3+1] / EXTY * GRIDY );
-            grid[2] = std::lround( ptcBuf[i*3+2] / EXTZ * GRIDZ );
+            grid[0] = std::lround( ptcBuf[i*3  ] / EXTX * (GRIDX-1) );
+            grid[1] = std::lround( ptcBuf[i*3+1] / EXTY * (GRIDY-1) );
+            grid[2] = std::lround( ptcBuf[i*3+2] / EXTZ * (GRIDZ-1) );
             density[ grid[2] * GRIDX * GRIDY + grid[1] * GRIDY + grid[0] ] += 1.0f;
+            */
+            float ptc[3] = { ptcBuf[i*3  ] / EXTX * (GRIDX-1),
+                             ptcBuf[i*3+1] / EXTY * (GRIDY-1),
+                             ptcBuf[i*3+2] / EXTZ * (GRIDZ-1) };
+            INT g0[3] = { (INT)ptc[0], (INT)ptc[1], (INT)ptc[2] };  // grid indices
+            if( g0[0] == GRIDX )   g0[0]--;
+            if( g0[1] == GRIDY )   g0[1]--;
+            if( g0[2] == GRIDZ )   g0[2]--;
+            INT g1[3] = { g0[0]+1, g0[1]  , g0[2]   };
+            INT g2[3] = { g0[0]  , g0[1]+1, g0[2]   };
+            INT g3[3] = { g0[0]+1, g0[1]+1, g0[2]   };
+            INT g4[3] = { g0[0]  , g0[1]  , g0[2]+1 };
+            INT g5[3] = { g0[0]+1, g0[1]  , g0[2]+1 };
+            INT g6[3] = { g0[0]  , g0[1]+1, g0[2]+1 };
+            INT g7[3] = { g0[0]+1, g0[1]+1, g0[2]+1 };
+            float dist[8] = { CalcDist2( ptc, g0 ), CalcDist2( ptc, g1 ), 
+                              CalcDist2( ptc, g2 ), CalcDist2( ptc, g3 ), 
+                              CalcDist2( ptc, g4 ), CalcDist2( ptc, g5 ), 
+                              CalcDist2( ptc, g6 ), CalcDist2( ptc, g7 ) };
+            float total = 0.0f;
+            for( int j = 0; j < 8; j++ )
+                total += dist[j];
+
+            density[ g0[2] * GRIDX * GRIDY + g0[1] * GRIDY + g0[0] ] += dist[0] / total;
+            density[ g1[2] * GRIDX * GRIDY + g1[1] * GRIDY + g1[0] ] += dist[1] / total;
+            density[ g2[2] * GRIDX * GRIDY + g2[1] * GRIDY + g2[0] ] += dist[2] / total;
+            density[ g3[2] * GRIDX * GRIDY + g3[1] * GRIDY + g3[0] ] += dist[3] / total;
+            density[ g4[2] * GRIDX * GRIDY + g4[1] * GRIDY + g4[0] ] += dist[4] / total;
+            density[ g5[2] * GRIDX * GRIDY + g5[1] * GRIDY + g5[0] ] += dist[5] / total;
+            density[ g6[2] * GRIDX * GRIDY + g6[1] * GRIDY + g6[0] ] += dist[6] / total;
+            density[ g7[2] * GRIDX * GRIDY + g7[1] * GRIDY + g7[0] ] += dist[7] / total;
         }
-    //std::cerr << "number of voronoi cell without a grid point: " << emptyCellCount << std::endl;
     std::cerr << "percentage of voronoi cell without a grid point: " << 100.0f * emptyCellCount / nPtcToUse << std::endl;
     
     // Output the density field
