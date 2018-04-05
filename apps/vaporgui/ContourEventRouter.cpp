@@ -11,7 +11,6 @@
 #include <vector>
 #include <string>
 #include <vapor/MapperFunction.h>
-#include "VizWin.h"
 #include "vapor/ContourParams.h"
 #include "VariablesWidget.h"
 #include "ContourEventRouter.h"
@@ -20,8 +19,15 @@
 
 using namespace VAPoR;
 
+//
+// Register class with object factory!!!
+//
+static RenderEventRouterRegistrar<ContourEventRouter> registrar(
+    ContourEventRouter::GetClassType()
+); 
+
 ContourEventRouter::ContourEventRouter(
-	QWidget *parent, VizWinMgr *vizMgr, ControlExec *ce
+	QWidget *parent, ControlExec *ce
 ) : QTabWidget(parent),
 	RenderEventRouter(ce, ContourParams::GetClassType())
 {
@@ -114,4 +120,15 @@ void ContourEventRouter::_updateTab(){
 		GetActiveDataMgr(),
 		GetActiveParams()
 	);
+}
+
+string ContourEventRouter::_getDescription() const {
+	return (
+	"Displays "
+    "a series of user defined contours along a two dimensional plane within the "
+    "user's domain.\n\nContours may hae constant coloration, or may be colored "
+    "according to a secondary variable.\n\nContours may be displaced by a height "
+    "variable.\n\n "
+	);
+
 }

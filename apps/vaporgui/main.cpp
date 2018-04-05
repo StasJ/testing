@@ -27,6 +27,7 @@
 #include <QFontDatabase>
 #include "BannerGUI.h"
 #include "vapor/GetAppPath.h"
+//#include "StartupParams.h"
 #ifdef WIN32
 #include "Windows.h"
 #define PYTHONVERSION "2.6"
@@ -82,9 +83,6 @@ FILE *diagfp = NULL;
 FILE *errfp = NULL;
 if (getenv("VAPOR_DEBUG"))
 	MyBase::SetDiagMsgFilePtr(stderr);
-
-cerr << "HARD CODED ERROR OUTPUTS\n";
-MyBase::SetErrMsgFilePtr(stderr);
 
 #ifdef	Darwin
 	if (! getenv("DISPLAY")) setenv("DISPLAY", ":0.0",0);
@@ -158,6 +156,9 @@ MyBase::SetErrMsgFilePtr(stderr);
 		files.push_back(argv[i]);
 	}
 	MainForm* mw = new MainForm(files,app);
+
+
+	//StartupParams* sParams = new StartupParams(0);
 	
     vector<string> fpath;
     fpath.push_back("fonts");
@@ -177,7 +178,7 @@ MyBase::SetErrMsgFilePtr(stderr);
     mw->setWindowTitle( "VAPOR User Interface" );
     mw->show();
     std::string banner_file_name = "vapor_banner.png";
-    BannerGUI* banner = new BannerGUI(banner_file_name, 3000);
+    BannerGUI* banner = new BannerGUI(mw, banner_file_name, 3000);
     a.connect( &a, SIGNAL(lastWindowClosed()), &a, SLOT(quit()) );
 	int estatus = a.exec();
 

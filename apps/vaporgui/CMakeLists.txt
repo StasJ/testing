@@ -4,21 +4,18 @@ set (SRCS
 	RenderHolder.cpp
 	ImageFrame.cpp
 	ControlPointEditor.cpp
-	BoxSliderFrame.cpp
 	DomainWidget.cpp
 	GLWidget.cpp
 	OpacityWidget.cpp
 	ErrorReporter.cpp
 	Histo.cpp
 	ColorbarWidget.cpp
-	StartupEventRouter.cpp
-	AppSettingsEventRouter.cpp
+	SettingsEventRouter.cpp
 	VizSelectCombo.cpp
-	VizFeatureEventRouter.cpp
+	AnnotationEventRouter.cpp
 	AnimationEventRouter.cpp
 	MappingFrame.cpp
 	HelloEventRouter.cpp
-	regioneventrouter.cpp
 	NavigationEventRouter.cpp
 	TwoDDataEventRouter.cpp
 	RangeController.cpp
@@ -33,10 +30,9 @@ set (SRCS
 	BarbEventRouter.cpp
 	BannerGUI.cpp
 	AnimationParams.cpp
-	AppSettingsParams.cpp
 	GUIStateParams.cpp
 	MouseModeParams.cpp
-	StartupParams.cpp
+	SettingsParams.cpp
 	main.cpp
 	MainForm.cpp
 	VizWin.cpp
@@ -48,12 +44,15 @@ set (SRCS
 	ContourEventRouter.cpp
 	PlotParams.cpp
 	StatisticsParams.cpp
-	MiscParams.cpp
 	ContourSubtabs.cpp
 	BarbSubtabs.cpp
 	TransformTable.cpp
 	VaporTable.cpp
 	FidelityWidget.cpp
+	QSliderEdit.cpp
+	QRange.cpp
+	QSinglePoint.cpp
+	Combo.cpp
 
 	# Need to include all files that request .ui files
 	TwoDSubtabs.h
@@ -68,16 +67,19 @@ set (SRCS
 	ContourSubtabs.h
 	VaporTable.h
 	FidelityWidget.h
+	QSliderEdit.h
+	QRange.h
+	QSinglePoint.h
 )
 
 set (UIS 
 	animationTab.ui
 	NavigationTab.ui
-	regionTab.ui
 	boxframe.ui
 	startupTab.ui
+	SettingsGUI.ui
 	appSettingsTab.ui
-	vizFeaturesTab.ui
+	AnnotationGUI.ui
 	ControlPointEditorBase.ui
 	NewRendererDialog.ui
 	LeftPanel.ui
@@ -108,6 +110,9 @@ set (UIS
 	ContourGeometryGUI.ui
 	ContourVariablesGUI.ui
 	FidelityWidgetGUI.ui
+	QSliderEdit.ui
+	QRange.ui
+	QSinglePoint.ui
 )
 
 find_package(Qt4 REQUIRED)

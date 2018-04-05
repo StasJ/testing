@@ -78,6 +78,7 @@
 
 #include <vapor/glutil.h>	// Must be included first!!!
 #include <cmath>
+#include <iostream>
 #include "TrackBall.h"
 using namespace VAPoR;
 void Trackball::TrackballReset()
@@ -87,7 +88,7 @@ void Trackball::TrackballReset()
     qzero(_qrot);
     qzero(_qinc);
     vzero(_trans);
-    vset(_scale, 1.0, 1.0, 1.0);
+    vset(_scale, 1000000.0, 1000000.0, 1000000.0);
 	//Default center of rotation:
     _center[0] = 0.5f;
     _center[1] = 0.5f;
@@ -128,7 +129,6 @@ void Trackball::TrackballSetMatrix()
     if (_perspective) {
 		glTranslated(_center[0], _center[1], _center[2]);
 	    glTranslated(_trans[0],  _trans[1],  _trans[2]);
-		//qWarning("translate %f %f %f", _trans[0], _trans[1], _trans[2]);
 	    qmatrix(_qrot, m);
 	    glMultMatrixd(m);
 		glTranslated(-_center[0], -_center[1], -_center[2]);
@@ -260,6 +260,7 @@ void Trackball::TrackballZoom(double newx, double newy)
 
     _lastx = newx;	/* remember for next time */
     _lasty = newy;
+
 }
 
 
@@ -329,6 +330,34 @@ void Trackball::MouseOnTrackball(int eventNum, int thisButton, int xcrd, int ycr
 		break;
     }
 }
+
+
+bool Trackball::ReconstructCamera( 
+	double position[3], double upVec[3], double viewDir[3]
+) const {
+
+    double m[16];
+    glGetDoublev(GL_MODELVIEW_MATRIX, m);
+
+    double minv[16];
+
+    int rc = minvert(m, minv);
+    if (rc<0) return(false);
+
+    vscale(minv+8, -1.0);
+
+    for (int i = 0; i<3; i++) {
+        position[i] = minv[12+i]; //position vector is minv[12..14]
+        upVec[i] = minv[4+i]; //up vector is minv[4..6]
+        viewDir[i] = minv[8+i]; //view direction is minv[8..10]
+    }
+    vnormal(upVec);
+    vnormal(viewDir);
+
+	return(true);
+
+}
+
 // Set the quaternion and translation from a viewer frame
 // Also happens to construct modelview matrix, but we don't use its translation
 void Trackball::setFromFrame(

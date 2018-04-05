@@ -8,7 +8,6 @@
 #include "vapor/ContourRenderer.h"
 #include "vapor/ContourParams.h"
 #include "RenderEventRouter.h"
-#include "TabManager.h"
 #include "VariablesWidget.h"
 #include "ContourSubtabs.h"
 
@@ -39,7 +38,7 @@ class ContourEventRouter : public QTabWidget,  public RenderEventRouter {
 public: 
 	
     ContourEventRouter(
-        QWidget *parent, VizWinMgr *vizMgr, VAPoR::ControlExec *ce
+        QWidget *parent, VAPoR::ControlExec *ce
     );
 	~ContourEventRouter();
 
@@ -60,6 +59,14 @@ public:
 protected:
 	virtual void _initializeTab();
 	virtual void _updateTab();
+	virtual string _getDescription() const;
+
+	virtual string _getSmallIconImagePath() const {
+		return("Contours_small.png");
+	}
+	virtual string _getIconImagePath() const {
+		return("Contours.png");
+	}
 	
 private:
 

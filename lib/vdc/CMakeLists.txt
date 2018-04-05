@@ -14,11 +14,11 @@ add_library (vdc SHARED
 	UDUnitsClass.cpp
 	Proj4API.cpp
 	DC.cpp
-	VDC.cpp
-	VDCNetCDF.cpp
 	DCWRF.cpp
 	DCCF.cpp
 	DCMPAS.cpp
+	VDC.cpp
+	VDCNetCDF.cpp
 	DataMgr.cpp
 	DataMgrUtils.cpp
 	GeoUtil.cpp
@@ -26,9 +26,17 @@ add_library (vdc SHARED
 	KDTreeRG.cpp
 	kdtree.c
 	VDC_c.cpp
+	DerivedVar.cpp
+	DerivedVarMgr.cpp
+	DCUtils.cpp
+	glutil.cpp
 )
 
-target_link_libraries (vdc PUBLIC common wasp udunits2 proj)
+target_link_libraries (vdc PUBLIC common wasp udunits2 proj ${GLEW} ${OPENGL_LIBRARIES})
+
+if (UNIX AND NOT APPLE)
+	target_link_libraries (vdc PUBLIC GLU)
+endif ()
 
 add_definitions (-DVDF_EXPORTS)
 

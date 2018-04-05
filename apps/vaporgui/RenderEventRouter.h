@@ -22,7 +22,6 @@
 #define RENDEREREVENTROUTER_H
 
 #include "EventRouter.h"
-#include "Histo.h"
 class MappingFrame;
 
 namespace VAPoR {
@@ -38,7 +37,6 @@ namespace VAPoR {
 #pragma warning( disable : 4100)
 #endif
 
-class Histo;
 class ColorbarWidget;
 
 //!
@@ -118,13 +116,11 @@ public:
 	VAPoR::ControlExec *ce, string paramsType
  ) : EventRouter(ce, paramsType) {
 
-	_currentHistogram = NULL;
 	_instName = "";
 	
 }
 
  virtual ~RenderEventRouter(){
-	if (_currentHistogram) delete _currentHistogram;
  }
 
  void SetActive(string instName) {
@@ -180,32 +176,10 @@ public:
 #endif
 
  
- //! Obtain the current valid histogram.  Optionally will construct a new 
- //! one if needed.
- //!
- //! \param[in] mustGet : Boolean argument indicating that a new histogram 
- //! is required.
- //! \param[in] isIsoWin : Boolean argument indicating this is associated 
- //! with an IsoSelection panel
- //! \retval Histo* is resulting Histo instance.
- //
- //virtual Histo* GetHistogram(
-//	bool mustGet, bool isIsoWin = false
-// );
- 
- 
  //! Virtual method to fit the color map editor interval to the current map 
  //! bounds.
  //! By default does nothing
  virtual void fitToView() {}
- 
- 
- //! Helper method, calculate a histogram of a slice of 3d variables, 
- //! such as Probe or IsoLines
- //!
- //! \param[in] ts time step for the histogram
- //! \param[out] histo resulting Histo instance.
- void CalcSliceHistogram(int ts, Histo* histo);
  
  //! Virtual method identifies the MappingFrame associated with an EventRouter.
  //! Must be implemented in every EventRouter with a MappingFrame
@@ -242,6 +216,17 @@ public:
  //!
  VAPoR::DataMgr *GetActiveDataMgr() const ;
  
+ //! Return a brief (3 or 4 sentence description of the renderer
+ //!
+ virtual string GetDescription() const {
+	return(_getDescription());
+ }
+
+ //! Return the path name of a raster file containing an icon for 
+ //! the renderer
+ //!
+ virtual string GetSmallIconImagePath() const;
+ virtual string GetIconImagePath() const;
 
 
 protected:
@@ -270,13 +255,88 @@ protected:
  //!
  //! \param[in] p Params instance associated with the current active tab.
  virtual void _confirmText() {};
- 
 
- Histo* _currentHistogram;
- 
+ virtual string _getDescription() const = 0;
+
+ virtual string _getSmallIconImagePath() const = 0;
+
+ virtual string _getIconImagePath() const = 0;
+
 private:
  string _instName;
 
 };
+
+//////////////////////////////////////////////////////////////////////////
+//
+// RenderEventRouterFactory Class
+//
+/////////////////////////////////////////////////////////////////////////
+
+
+class PARAMS_API RenderEventRouterFactory {
+public:
+ static RenderEventRouterFactory *Instance() {
+	static RenderEventRouterFactory instance;
+	return &instance;
+ }
+
+ void RegisterFactoryFunction(
+	string name,
+	function<RenderEventRouter*(QWidget*, VAPoR::ControlExec *)> classFactoryFunction) 
+ {
+
+	// register the class factory function
+	_factoryFunctionRegistry[name] = classFactoryFunction;
+ }
+
+ RenderEventRouter *(
+	CreateInstance(string classType, QWidget *,VAPoR::ControlExec *)
+ );
+
+ vector <string> GetFactoryNames() const;
+
+private:
+ map<string, function<RenderEventRouter * (QWidget*, VAPoR::ControlExec *)>> 
+	_factoryFunctionRegistry;
+
+ RenderEventRouterFactory() {}
+ RenderEventRouterFactory(const RenderEventRouterFactory &) { }
+ RenderEventRouterFactory &operator=(const RenderEventRouterFactory &) {
+	return *this; 
+ }
+
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// RenderEventRouterRegistrar Class
+//
+// Register RenderEventRouter derived class with:
+//
+//	static RenderEventRouterRegistrar<RERClass> registrar("myclassname");
+//
+// where 'RERClass' is a class derived from 'RenderEventRouter', and 
+// "myclassname" is the name of the class
+//
+/////////////////////////////////////////////////////////////////////////
+
+template<class T>
+class RenderEventRouterRegistrar {
+public:
+ RenderEventRouterRegistrar(string classType) {
+
+	// register the class factory function 
+	//
+	RenderEventRouterFactory::Instance()->RegisterFactoryFunction(
+		classType, [](QWidget *parent, VAPoR::ControlExec *ce) -> RenderEventRouter * {
+			return new T(parent, ce);
+		}
+	);
+ }
+};
+
+
 #endif // RENDEREREVENTROUTER_H
 

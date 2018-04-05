@@ -468,7 +468,7 @@ void AnimationEventRouter::setPlay(int direction) {
 		// interval based on the frame rate. The timer slot will advance
 		// the frame, etc.
 		//
-		emit AnimationOnOffChanged(true);
+		emit AnimationOnOffSignal(true);
 
 		AnimationParams* aParams =  (AnimationParams*)GetActiveParams();
 
@@ -488,7 +488,7 @@ void AnimationEventRouter::setPlay(int direction) {
 		//
 		disconnect(_myTimer,0,0,0);
 
-		emit AnimationOnOffChanged(false);
+		emit AnimationOnOffSignal(false);
 	}
 }
 	
@@ -498,7 +498,7 @@ void AnimationEventRouter::playNextFrame() {
 
 	// Draw the frame, and then advance the frame count
 	//
-	emit AnimationDraw();
+	emit AnimationDrawSignal();
 
 	AnimationParams* aParams =  (AnimationParams*)GetActiveParams();
 
@@ -565,13 +565,3 @@ void AnimationEventRouter::enableWidgets(bool on) {
 	_widgetsEnabled = on;
 
 }
-
-#ifdef	DEAD
-//Set change bits when global/local change occurs, so that the animation
-//controller will change the local/global status at the end of the next rendering.
-void AnimationEventRouter::SetLocal(ParamsBase* p, bool lg){
-	EventRouter::SetLocal(p,lg);
-	VizWin* viz = VizWinMgr::getInstance()->getActiveVizWin();
-	viz->updateGL();
-}
-#endif

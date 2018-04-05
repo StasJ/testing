@@ -23,7 +23,11 @@
 #pragma warning( disable : 4100 )
 #endif
 #include <vapor/glutil.h>	// Must be included first!!!
-#include <cstdio>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <qdesktopwidget.h>
 #include <qrect.h>
 #include <qlineedit.h>
@@ -38,25 +42,18 @@
 #include "vapor/ViewpointParams.h"
 #include "vapor/ControlExecutive.h"
 #include "ui_NavigationTab.h"
-#include "VizWinMgr.h"
-#include <vector>
-#include <string>
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include "ErrorReporter.h"
 
 using namespace VAPoR;
 
 NavigationEventRouter::NavigationEventRouter(
-	QWidget *parent, VizWinMgr *vizMgr, ControlExec *ce
+	QWidget *parent, ControlExec *ce
 ) : QWidget(parent),
 	Ui_NavigationTab(),
 	EventRouter(ce, ViewpointParams::GetClassType())
 {
 	setupUi(this);
 
-	_vizMgr = vizMgr;
-	
 	// Not implemented
 	//
 	camPosLat->setEnabled(false);
@@ -259,6 +256,66 @@ void NavigationEventRouter::GetWebHelp(
 	));
 }
 
+
+void NavigationEventRouter::_performAutoStretching(string dataSetName) {
+	GUIStateParams *p = GetStateParams();
+	DataStatus* ds = _controlExec->GetDataStatus();
+
+	ParamsMgr *paramsMgr = _controlExec->GetParamsMgr();
+	vector <string> winNames = paramsMgr->GetVisualizerNames();
+
+	vector<double> minExt, maxExt;
+	
+	for (int i=0; i<winNames.size(); i++) {
+		double xRange, yRange, zRange;
+
+		DataMgr* dm = ds->GetDataMgr(dataSetName);
+		std::vector<string> varNames = dm->GetDataVarNames(3);
+
+		if (varNames.empty()) {
+			std::vector<string> varNames = dm->GetDataVarNames(2);
+		}
+		if (varNames.empty()) return;
+
+		DataMgrUtils::GetExtents(dm, 0, varNames[0], minExt, maxExt);
+		
+		vector <float> range;
+		float maxRange = 0.0;
+		for (int i=0; i<minExt.size(); i++) {
+			float r = fabs(maxExt[i] - minExt[i]);
+			if (maxRange < r) {
+				maxRange = r;
+			}
+			range.push_back(r);
+		}
+
+		vector <double> scale(range.size(), 1.0);
+		for (int i=0; i<range.size(); i++) {
+			if (range[i] < (maxRange / 10.0)) {
+				scale[i] = maxRange / (10.0 * range[i]);
+			}
+		}
+
+		ViewpointParams *vpParams = paramsMgr->GetViewpointParams(winNames[i]);
+		Transform* transform = vpParams->GetTransform(dataSetName);
+		transform->SetScales(scale);
+	}
+}
+
+void NavigationEventRouter::LoadDataNotify(string dataSetName) {
+
+	ParamsMgr *paramsMgr = _controlExec->GetParamsMgr();
+
+    SettingsParams *sP = (SettingsParams *) paramsMgr->GetParams(
+		SettingsParams::GetClassType()
+	);
+
+    bool autoStretchingEnabled = sP->GetAutoStretchEnabled();
+    if (autoStretchingEnabled) {
+        _performAutoStretching(dataSetName);
+    }
+}
+
 /*********************************************************************************
  * Slots associated with ViewpointTab:
  *********************************************************************************/
@@ -284,7 +341,7 @@ void NavigationEventRouter::setCameraChanged() {
 	upvec[1] = upVec1->text().toFloat();
 	upvec[2] = upVec2->text().toFloat();
 
-	_vizMgr->SetTrackBall(posvec, dirvec, upvec, center, true);
+	_setViewpointParams(center, posvec, dirvec, upvec);
 }
 
 void NavigationEventRouter::setCameraLatLonChanged() {
@@ -297,13 +354,10 @@ void NavigationEventRouter::notImplemented() {
 
 void NavigationEventRouter::updateCameraChanged() {
 
-	ViewpointParams* vpParams = (ViewpointParams*) GetActiveParams();
-
 	double posvec[3], dirvec[3], upvec[3], center[3]; 
-	vpParams->GetCameraPos(posvec);
-	vpParams->GetCameraViewDir(dirvec);
-	vpParams->GetCameraUpVec(upvec);
-	vpParams->GetRotationCenter(center);
+
+	bool status = _getViewpointParams(center, posvec, dirvec, upvec);
+	if (! status)  return; 
 
 	camPos0->setText(QString::number(posvec[0]));
 	camPos1->setText(QString::number(posvec[1]));
@@ -324,7 +378,7 @@ void NavigationEventRouter::updateCameraChanged() {
 
 void NavigationEventRouter::setLightChanged() {
 	
-	ViewpointParams* vpParams = (ViewpointParams*) GetActiveParams();
+	ViewpointParams* vpParams = _getActiveParams();
 	
 	ParamsMgr *paramsMgr = _controlExec->GetParamsMgr();
 
@@ -362,7 +416,7 @@ void NavigationEventRouter::setLightChanged() {
 
 void NavigationEventRouter::updateLightChanged() {
 
-	ViewpointParams* vpParams = (ViewpointParams*) GetActiveParams();
+	ViewpointParams* vpParams = _getActiveParams();
 
 	lightPos00->setText(QString::number(vpParams->getLightDirection(0,0)));
 	lightPos01->setText(QString::number(vpParams->getLightDirection(0,1)));
@@ -583,13 +637,12 @@ void NavigationEventRouter::projCheckboxChanged() {
 	string proj = label->text().toStdString();
 
 	GUIStateParams *params = GetStateParams();
-	if (checkBox->checkState() > 0) {
-		params->SetProjectionString(proj);
+	if (checkBox->checkState() == 0) {
+		proj = "";
 	}
-	else {
-		params->SetProjectionString("");
-	}
-	emit Proj4StringChanged();
+
+	params->SetProjectionString(proj);
+	emit Proj4StringChanged(proj);
 }
 
 void NavigationEventRouter::customCheckboxChanged() {
@@ -601,13 +654,11 @@ void NavigationEventRouter::customCheckboxChanged() {
 	string proj = textEdit->toPlainText().toStdString();
 
 	GUIStateParams *params = GetStateParams();
-	if (checkBox->checkState() > 0) {
-		params->SetProjectionString(proj);
+	if (checkBox->checkState() == 0) {
+		proj = "";
 	}
-	else {
-		params->SetProjectionString("");
-	}
-	emit Proj4StringChanged();
+	params->SetProjectionString(proj);
+	emit Proj4StringChanged(proj);
 }
 
 // If the custom proj string gets changed, we do not want to keep updating
@@ -619,36 +670,20 @@ void NavigationEventRouter::customProjStringChanged() {
 	string currentProj = params->GetProjectionString();
 	if (currentProj != "") {
 		params->SetProjectionString("");
-		emit Proj4StringChanged();
+		emit Proj4StringChanged("");
 	}
 }
 
 //Insert values from params into tab panel
 //
 void NavigationEventRouter::_updateTab(){
+
+	if (! _getActiveParams()) return;
+
 	updateCameraChanged();
 	updateLightChanged();
 	updateTransforms();
 	updateProjections();
-
-return;
-	
-	ViewpointParams* vpParams = (ViewpointParams*) GetActiveParams();
-	
-	QString strng;
-	
-	
-	GUIStateParams *p = GetStateParams();
-	string vizName = p->GetActiveVizName();
-
-	ParamsMgr *paramsMgr = _controlExec->GetParamsMgr();
-	size_t ts = GetCurrentTimeStep();
-
-	latLonFrame->hide();
-	//Always display the current values of the campos and rotcenter
-
-	
-	
 	
 }
 
@@ -658,7 +693,8 @@ cout << "NavigationEventRouter::CenterSubRegion not implemented" << endl;
 
 #ifdef	DEAD
 	
-	ViewpointParams* vpParams = (ViewpointParams*)GetActiveParams();
+	ViewpointParams* vpParams = _getActiveParams();
+	if (! vpParams) return;
 
 	//Find the largest of the dimensions of the current region, projected orthogonal to view
 	//direction:
@@ -710,7 +746,7 @@ cout << "NavigationEventRouter::CenterSubRegion not implemented" << endl;
 		posvec[i] = center[i] - (1.5*maxProj*dirvec[i]/stretch[i]);
 	}
 
-	_vizMgr->SetTrackBall(posvec, dirvec, upvec, center, true);
+	_setViewpointParams(center, posvec, dirvec, upvec);
 
 #endif
 }
@@ -725,7 +761,15 @@ void NavigationEventRouter::AlignView(int axis) {
 	double dirvec[3] = {0.0, 0.0, 0.0};
 	double upvec[3] = {0.0, 0.0, 0.0};
 	upvec[1]=1.;
-	ViewpointParams* vpParams = (ViewpointParams*)GetActiveParams();
+	ViewpointParams* vpParams = _getActiveParams();
+	if (! vpParams) return;
+
+	double curPosVec[3], curViewDir[3], curUpVec[3], curCenter[3]; 
+	bool status = _getViewpointParams(
+		curCenter, curPosVec, curViewDir, curUpVec
+	);
+	if (! status)  return; 
+
 	if (axis == 1) {  //Special case to align to closest axis.
 		//determine the closest view direction and up vector to the current viewpoint.
 		//Check the dot product with all axes
@@ -733,9 +777,6 @@ void NavigationEventRouter::AlignView(int axis) {
 		int bestVDir = 0;
 		float maxUDot = -1.f;
 		int bestUDir = 0;
-		double curViewDir[3], curUpVec[3];
-		vpParams->GetCameraViewDir(curViewDir);
-		vpParams->GetCameraUpVec(curUpVec);
 		for (int i = 0; i< 3; i++){
 			double dotVProd = 0.;
 			double dotUProd = 0.;
@@ -777,22 +818,17 @@ void NavigationEventRouter::AlignView(int axis) {
 	vector<double> stretch = vpParams->GetStretchFactors();
 	
 	//Determine distance from center to camera, in stretched coordinates
-	double posvec[3], center[3];
-
-	vpParams->GetCameraPos(posvec);
-	vpParams->GetRotationCenter(center);
 
 	//determine the relative position in stretched coords:
-	vsub(posvec,center,posvec);
-	float viewDist = vlength(posvec);
+	vsub(curPosVec,curCenter,curPosVec);
+	float viewDist = vlength(curPosVec);
 	//Position the camera the same distance from the center but down the -axis direction
 	for (int i = 0; i<3; i++){
 		dirvec[i] = dirvec[i]*viewDist;
-		posvec[i] = (center[i] - dirvec[i]);
+		curPosVec[i] = (curCenter[i] - dirvec[i]);
 	}
 	
-	_vizMgr->SetTrackBall(posvec, dirvec, upvec, center, true);
-
+	_setViewpointParams(curCenter, curPosVec, dirvec, upvec);
 }
 
 //Reset the center of view.  Leave the camera where it is
@@ -801,7 +837,8 @@ SetCenter(const double* coords){
 #ifdef	DEAD
 	double vdir[3];
 	vector<double> nvdir;
-	ViewpointParams* vpParams = (ViewpointParams*)GetActiveParams();
+	ViewpointParams* vpParams = _getActiveParams();
+	if (! vpParams) return;
 	vector<double> stretch = _dataStatus->getStretchFactors();
 
 
@@ -835,23 +872,22 @@ SetCenter(const double* coords){
 }
 
 void NavigationEventRouter::SetHomeViewpoint() {
-	ViewpointParams* vpParams = (ViewpointParams*)GetActiveParams();
-	vpParams->SetCurrentVPToHome();
+    ParamsMgr *paramsMgr = _controlExec->GetParamsMgr();
+    GUIStateParams *guiP = (GUIStateParams *) paramsMgr->GetParams(
+        GUIStateParams::GetClassType()
+    );
+    MouseModeParams *p = guiP->GetMouseModeParams();
+	p->SetHomeToCamera();
 }
 
 void NavigationEventRouter::UseHomeViewpoint() {
-	ViewpointParams* vpParams = (ViewpointParams *) GetActiveParams();
+    ParamsMgr *paramsMgr = _controlExec->GetParamsMgr();
+    GUIStateParams *guiP = (GUIStateParams *) paramsMgr->GetParams(
+        GUIStateParams::GetClassType()
+    );
+    MouseModeParams *p = guiP->GetMouseModeParams();
 
-	Viewpoint *homeVP = vpParams->GetHomeViewpoint();
-	vpParams->SetCurrentViewpoint(homeVP);
-	
-	double posvec[3], dirvec[3], upvec[3], center[3];
-	vpParams->GetCameraPos(posvec);
-	vpParams->GetCameraViewDir(dirvec);
-	vpParams->GetCameraUpVec(upvec);
-	vpParams->GetRotationCenter(center);
-
-	_vizMgr->SetTrackBall(posvec, dirvec, upvec, center, true);
+	p->SetCameraToHome();
 }
 
 void NavigationEventRouter::ViewAll() {
@@ -888,17 +924,68 @@ void NavigationEventRouter::ViewAll() {
 		posvec[i] = center[i] - 1.5*maxSide*dirvec[i];
 	}
 
-	_vizMgr->SetTrackBall(posvec, dirvec, upvec, center, true);
-	
+	_setViewpointParams(center, posvec, dirvec, upvec);
 }
 
 
-VAPoR::ParamsBase *NavigationEventRouter::GetActiveParams() const {
+VAPoR::ViewpointParams *NavigationEventRouter::_getActiveParams() const {
 
 	GUIStateParams *p = GetStateParams();
 	string vizName = p->GetActiveVizName();
+	if (vizName.empty()) return (NULL);
 
 	ParamsMgr *paramsMgr = _controlExec->GetParamsMgr();
 
 	return(paramsMgr->GetViewpointParams(vizName));
+}
+
+void NavigationEventRouter::_setViewpointParams(
+	const double center[3], const double posvec[3],
+	const double dirvec[3], const double upvec[3]
+) const {
+
+    ParamsMgr *paramsMgr = _controlExec->GetParamsMgr();
+    GUIStateParams *guiP = (GUIStateParams *) paramsMgr->GetParams(
+        GUIStateParams::GetClassType()
+    );
+    MouseModeParams *p = guiP->GetMouseModeParams();
+
+	paramsMgr->BeginSaveStateGroup("Move camera");
+
+	p->SetRotationCenter(center);
+	p->SetCameraPos(posvec);
+	p->SetCameraViewDir(dirvec);
+	p->SetCameraUpVec(upvec);
+
+	paramsMgr->EndSaveStateGroup();
+}
+
+bool NavigationEventRouter::_getViewpointParams(
+	double center[3], double posvec[3],
+	double dirvec[3], double upvec[3]
+) const {
+
+
+	// Get camera parameters from ViewpointParams
+	//
+	ViewpointParams* vpParams = _getActiveParams();
+	double m[16];
+	vpParams->GetModelViewMatrix(m);
+
+	bool status = vpParams->ReconstructCamera(m, posvec, upvec, dirvec);
+	if (! status) {
+		MSG_ERR("Failed to get camera parameters");
+		return(false);
+	}
+
+	// Get center of rotation from MouseModeParams
+	//
+    ParamsMgr *paramsMgr = _controlExec->GetParamsMgr();
+    GUIStateParams *guiP = (GUIStateParams *) paramsMgr->GetParams(
+        GUIStateParams::GetClassType()
+    );
+    MouseModeParams *p = guiP->GetMouseModeParams();
+	p->GetRotationCenter(center);
+
+	return(true);
 }

@@ -23,226 +23,182 @@
 #include <qwidget.h>
 #include <QScrollArea>
 #include <QSizePolicy>
-#include "TabManager.h"
-#include "ui_NavigationTab.h"
+#include "AnimationEventRouter.h"
+#include "AnnotationEventRouter.h"
+#include "NavigationEventRouter.h"
+#include "SettingsEventRouter.h"
 #include "RenderEventRouter.h"
 #include "RenderHolder.h"
-
-TabManager *TabManager::_tabManager = NULL;
+#include "TabManager.h"
 
 using namespace VAPoR;
+
+const string TabManager::_renderersTabName = "Renderers";
+const string TabManager::_navigationTabName = "Navigation";
+const string TabManager::_settingsTabName = "Settings";
+
 TabManager::TabManager(QWidget *parent, ControlExec *ce)
 	: QTabWidget(parent)
 {
 	_controlExec = ce;
-	_renderHolder = new RenderHolder(this, _controlExec);
+
+
+	// order of vector is order of display
+	//
+	_tabNames = {_renderersTabName, 
+		_navigationTabName, 
+		_settingsTabName};
+
 
 	//Initialize arrays of widgets and types
 	//
-	for (int i = 0; i<3; i++){
-		_widgets[i].clear();
-		_widgetTags[i].clear();
-		_currentFrontPage[i] = -1;
-		_prevFrontPage[i] = -1;
-		_topWidgets[i] = 0;
+	for (int i = 0; i<_tabNames.size(); i++){
+		_tabWidgets[_tabNames[i]] = NULL;
+		_subTabWidgets[_tabNames[i]] = vector <QWidget *> ();
+		_subTabNames[_tabNames[i]] = vector <string> ();
 	}
 	
-	_currentTopTab = -1;
-	_prevTopTab = -1;
+	_currentFrontTab = "";
+	_prevFrontTab = "";
 	
+	_initialized = false;
+	_animationEventRouter = NULL;
+	_navigationEventRouter = NULL;
+
 	setElideMode(Qt::ElideNone);
 	
-	_topName[0]= "Renderers";
-	_topName[1]= "Navigation";
-	_topName[2]= "Settings";
+	_createAllDefaultTabs();
 
-	connect(
-		_renderHolder, SIGNAL(activeChanged(string, string, string)),
-		this, SLOT(setActive(string, string, string))
-	);
-	connect(
-		_renderHolder, SIGNAL(newRendererSignal(string, string, string)),
-		this, SLOT(newRenderer(string, string, string))
-	);
 
 	show();
+
+	_initialized = true;
 }
 
-//Add a tabWidget to appropriate saved list of widgets:
-//
-void TabManager::AddWidget(QWidget* wid, string tag, int tagType){
-	_widgets[tagType].push_back(wid);
-	_widgetTags[tagType].push_back(tag);
-}
 
-void TabManager::ShowRenderWidget(string tag){
+void TabManager::ShowRenderWidget(string subTabName){
 	
-	MoveToFront(tag);
-	for (int i = 0; i<_widgets[0].size(); i++){
-		if (_widgetTags[0][i] != tag) {
-			_widgets[0][i]->hide();
+	MoveToFront(subTabName);
+	for (int i = 0; i<_subTabWidgets[_renderersTabName].size(); i++){
+		if (_subTabNames[_renderersTabName][i] != subTabName) {
+			_subTabWidgets[_renderersTabName][i]->hide();
 		}
 		else {
-			_widgets[0][i]->show();
+			_subTabWidgets[_renderersTabName][i]->show();
 		}
 	}
 }
 void TabManager::HideRenderWidgets(){
-	for (int i = 0; i<_widgets[0].size(); i++){
-		_widgets[0][i]->hide();
+	for (int i = 0; i<_subTabWidgets[_renderersTabName].size(); i++){
+		_subTabWidgets[_renderersTabName][i]->hide();
 	}
 }
 
-/*
- * Make the specified named panel move to front tab, using
- * a specific visualizer number.  
- */
-		
-int TabManager::MoveToFront(string widgetTag){
+//
+// Make the specified named panel move to front tab, using
+// a specific visualizer number.  
+//
+void TabManager::MoveToFront(string subTabName) {
 
-	int posn = findWidget(widgetTag);
-	if (posn < 0) return -1;
-	
-	int tabType = getTabType(widgetTag);
-	assert(tabType >= 0 && tabType <= 2);
+	string tabName = _getTabForSubTab(subTabName);
+	if (tabName.empty()) return;
 
-	_currentFrontPage[tabType] = posn;
+	int tabIndex = _getTabIndex(tabName);
+	assert(tabIndex >= 0);
+
+	int subTabIndex = _getSubTabIndex(tabName, subTabName);
+	if (subTabIndex < 0) return;
+
+	_currentFrontSubTab[tabName] = subTabName;
 	
-	setCurrentIndex(tabType);
-	if(tabType>0){
-		QTabWidget* qtw = (QTabWidget*)_topWidgets[tabType];
-		qtw->setCurrentIndex(posn);
+	setCurrentIndex(tabIndex);
+	if(tabName != _renderersTabName) {
+		QTabWidget* qtw = (QTabWidget*) _getTabWidget(tabName);
+		qtw->setCurrentIndex(subTabIndex);
 	} else {
-		_renderHolder->SetCurrentIndex(posn);
+		_renderHolder->SetCurrentWidget(subTabName);
 	}
-	return posn;
-	
 }
 
-/*
- *  Find the index of the widget in its subTabWidget that has the specified type
- */
-int TabManager::findWidget(string widgetTag){
-	int tabType = getTabType(widgetTag);
-	assert(tabType >= 0 && tabType <= 2);
+void TabManager::GetWebHelp(
+    string tabName,
+    std::vector <std::pair <string, string>> &help
+) const {
+	help.clear();
 
-	for (int i = 0; i< _widgets[tabType].size(); i++){
-		if (_widgetTags[tabType][i] == widgetTag) return i;
+	EventRouter *er = _getEventRouter(tabName);
+	if (! er) return;
+
+	return(er->GetWebHelp(help));
+
+}
+
+//
+//  Find the index of the widget in its subTabWidget that has the specified type
+//
+int TabManager::_getSubTabIndex(string tabName, string subTabName) const {
+
+	map <string, vector<string> >::const_iterator itr;
+	
+	itr = _subTabNames.find(tabName);
+	if (itr == _subTabNames.end()) return(-1);
+
+	const vector <string> &vref = itr->second;
+	for (int i=0; i<vref.size(); i++) {
+		if (vref[i]== subTabName) return(i);
 	}
 	return -1;
 }
 
+int TabManager::_getSubTabIndex(string subTabName) const {
+	string tabName = _getTabForSubTab(subTabName);
 
+	return(_getSubTabIndex(tabName, subTabName));
+}
+
+int TabManager::_getTabIndex(string tabName) const {
+	for (int i=0; i<_tabNames.size(); i++) {
+		if (_tabNames[i] == tabName) return(i);
+	}
+	return(-1);
+}
 
 void TabManager::SetActiveViz(const QString &vizNameQ) {
 
+	this->show();
 	// Make the renderHolder show either the active renderer or none.
 	//
 	_renderHolder->Update();
 }
 
+string TabManager::_getTabForSubTab(string subTabName) const {
 
-void TabManager::InstallWidgets() {
-	
-	clear();
+	map <string, vector<string> >::const_iterator itr;
+	for (
+		itr = _subTabNames.begin();
+		itr != _subTabNames.end();
+		++itr
+	) { 
 
-	// Create top widgets.  Tab widgets exist but need to be 
-	// inserted as tabs, based on their type
-	// Type 0 is for renderers, 1 for nav and 2 for settings. 
-	// Create top Tab Widgets to hold the nav and settings
-	for (int i = 1; i<3; i++) _topWidgets[i] = new QTabWidget(this);
-
-	// The renderer tabs are put into a stackedWidget, managed by RenderHolder.
-	// Insert the renderer 'tabs' but don't show them yet.
-	//
-	for (int i = 0; i< _widgets[0].size(); i++){
-		string tag = _widgetTags[0][i];
-		_renderHolder->AddWidget(_widgets[0][i],tag.c_str(), tag);
-		_widgets[0][i]->hide();
-	}
-	
-	//Add the renderer tab to the top level TabWidget.
-	addTab(_renderHolder, _topName[0]);
-	_topWidgets[0] = _renderHolder;
-	//Add the bottom widgets (eventrouter-based) to the nav and setting tabs:
-	for (int topTab = 1; topTab<3; topTab++){
-		//for (int j = 0; j< _widgets[topTab].size(); j++){
-			
-			// I'm eliminating the for loop and setting the tabs
-			// explicitly, in order to have the 'VizFeatures' tab appear
-			// as the default.
-			// -Scott
-			QScrollArea* myScrollArea = new QScrollArea(_topWidgets[topTab]);
-			string tag = _widgetTags[topTab][1];
-			QTabWidget* qtw = (QTabWidget*)_topWidgets[topTab];
-			qtw->addTab(myScrollArea, QString::fromStdString(tag));
-			myScrollArea->setWidget(_widgets[topTab][1]);
-			
-			myScrollArea = new QScrollArea(_topWidgets[topTab]);
-			tag = _widgetTags[topTab][0];
-			qtw = (QTabWidget*)_topWidgets[topTab];
-			qtw->addTab(myScrollArea, QString::fromStdString(tag));
-			myScrollArea->setWidget(_widgets[topTab][0]);
-
-			myScrollArea = new QScrollArea(_topWidgets[topTab]);
-			tag = _widgetTags[topTab][2];
-			qtw = (QTabWidget*)_topWidgets[topTab];
-			qtw->addTab(myScrollArea, QString::fromStdString(tag));
-			myScrollArea->setWidget(_widgets[topTab][2]);
-		//}
-	}
-	//Add all 3 top tabs to this
-	for (int widType = 1; widType<3; widType++){ 
-		addTab(_topWidgets[widType],_topName[widType]);
-		QTabWidget* qtw = (QTabWidget*)_topWidgets[widType];
-		qtw->setCurrentIndex(0);
-	}
-	
-	//Start them with the renderer tab showing.
-	
-	_currentTopTab = 0;
-	setCurrentIndex(0);
-	
-	for (int i = 0; i<3; i++) _currentFrontPage[i] = 0;
-	for (int toptab = 0; toptab<3; toptab++){
-		for (int subtab = 0; subtab< _widgets[toptab].size(); subtab++){
-			EventRouter* ev =dynamic_cast<EventRouter*> ( _widgets[toptab][subtab]);
-#ifdef	DEAD
-			if(ev) ev->setTabIndices(toptab,subtab);
-#endif
+		string tabName = itr->first;
+		const vector <string> &vref = itr->second;
+		for (int i=0; i<vref.size(); i++) {
+			if (vref[i]== subTabName) return(tabName);
 		}
 	}
-
-	//Hook up signals
-	for (int topTab = 1; topTab<3; topTab++){
-		connect(_topWidgets[topTab], SIGNAL(currentChanged(int)), this, SLOT(NewSubTab(int)));
-	}
-	connect(this, SIGNAL(currentChanged(int)), this, SLOT(NewTopTab(int)));
-
-	return;
-	
+	return("");
 }
 
-bool TabManager::IsFrontTab(QWidget* wid){
-	int topTab = _currentTopTab;
-	
-	return (wid == _widgets[topTab][_currentFrontPage[topTab]]);
-}
-
-int TabManager::getTabType(string t){
-
-	for (int tabType=0; tabType<3; tabType++) {
-		for (int i=0; i<_widgetTags[tabType].size(); i++) {
-			if (_widgetTags[tabType][i] == t) return(tabType);
-		}
-	}
-	return(-1);
-}
 
 
 void TabManager::Update() {
 	_renderHolder->Update();
+
+	_updateRouters();
 }
+
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -250,58 +206,61 @@ void TabManager::Update() {
 //
 //////////////////////////////////////////////////////////////////////////////
 
-void TabManager::newFrontTab(int topTab, int newSubPosn) {
-	_prevTopTab = _currentTopTab;
-	if (_prevTopTab >= 0) _prevFrontPage[_prevTopTab] = _currentFrontPage[_prevTopTab];
-	_currentTopTab = topTab;
-	_currentFrontPage[topTab] = newSubPosn;
-	if (_prevTopTab != _currentTopTab ||
-		(_prevTopTab >= 0 && _prevFrontPage[_prevTopTab] != _currentFrontPage[_prevTopTab])){
-			emit tabLeft(_prevTopTab, _prevFrontPage[_prevTopTab]);
+void TabManager::_setSubTab(int posn){
+	int tabIndex = currentIndex();
+
+	if (posn < 0) return;
+
+	_prevFrontTab = _currentFrontTab;
+
+	if (! _prevFrontTab.empty()) {
+		_prevFrontSubTab[_prevFrontTab] = _currentFrontSubTab[_prevFrontTab];
 	}
-	EventRouter* eRouter = VizWinMgr::getInstance()->GetEventRouter(_widgetTags[topTab][newSubPosn]);
+
+	_currentFrontTab = _tabNames[tabIndex];
+	_currentFrontSubTab[_currentFrontTab] = _subTabNames[_currentFrontTab][posn];
+
+	EventRouter* eRouter = _getEventRouter(_subTabNames[_currentFrontTab][posn]);
 	eRouter->updateTab();
 
 	emit ActiveEventRouterChanged(eRouter->GetType());
-} 
 
-void TabManager::NewSubTab(int posn){
-	int topTab = currentIndex();
-	if (topTab < 0) return;
-	newFrontTab(topTab,posn);
 }
 
 // Catch any change in the top tab, update the eventRouter of the sub tab.
 // Also provide signal indicating tab changed 
 //
-void TabManager::NewTopTab(int newFrontPosn) {
+void TabManager::_setFrontTab(int newFrontPosn) {
+
 	
-	if (newFrontPosn < 0) return;
-	if (_prevTopTab >= 0) _prevFrontPage[_prevTopTab] = _currentFrontPage[_prevTopTab];
-	int subTabIndex = _currentFrontPage[newFrontPosn];
-	if (subTabIndex < 0) return;
-	_prevTopTab = _currentTopTab;
-	_currentTopTab = newFrontPosn;
-	
-	string tag = _widgetTags[newFrontPosn][subTabIndex];
-	if (_prevTopTab != _currentTopTab ||
-		(_prevTopTab >= 0 && _prevFrontPage[_prevTopTab] != _currentFrontPage[_prevTopTab])){
-			emit tabLeft(_prevTopTab, _prevFrontPage[_prevTopTab]);
+	if (newFrontPosn < 0 || newFrontPosn > _tabNames.size()) return;
+
+	if (! _prevFrontTab.empty()) {
+		_prevFrontSubTab[_prevFrontTab] = _currentFrontSubTab[_prevFrontTab];
 	}
-	EventRouter* eRouter = VizWinMgr::getInstance()->GetEventRouter(tag);
+
+	_prevFrontTab = _currentFrontTab;
+	_currentFrontTab = _tabNames[newFrontPosn];
+
+	string subTab = _currentFrontSubTab[_tabNames[newFrontPosn]];
+	if (subTab.empty()) {
+		subTab = _subTabNames[_tabNames[newFrontPosn]][0];
+	}
+	
+	EventRouter* eRouter = _getEventRouter(subTab);
 
 	QWidget *wid = dynamic_cast<QWidget*>(eRouter);
 	if (wid && wid->isVisible()) {
 		eRouter->updateTab();
 		emit ActiveEventRouterChanged(eRouter->GetType());
 	}
-	
-} 
+}
 
 
-void TabManager::setActive(
+void TabManager::_setActive(
 	string activeViz, string renderClass, string renderInst
 ) {
+
 
 	if (renderClass.empty() || renderInst.empty()) {
 		HideRenderWidgets();
@@ -310,7 +269,7 @@ void TabManager::setActive(
 
 	ShowRenderWidget(renderClass);
 
-	RenderEventRouter* eRouter = VizWinMgr::getInstance()->GetRenderEventRouter(
+	RenderEventRouter* eRouter = _getRenderEventRouter(
 		activeViz, renderClass, renderInst
 	);
 
@@ -321,9 +280,10 @@ void TabManager::setActive(
 	emit ActiveEventRouterChanged(eRouter->GetType());
 }
 
-void TabManager::newRenderer(
+void TabManager::_newRenderer(
 	string activeViz, string renderClass, string renderInst
 ) {
+
 	if (renderClass.empty() || renderInst.empty()) {
 		HideRenderWidgets();
 		return;
@@ -331,7 +291,7 @@ void TabManager::newRenderer(
 
 	ShowRenderWidget(renderClass);
 
-	RenderEventRouter* er = VizWinMgr::getInstance()->GetRenderEventRouter(
+	RenderEventRouter* er = _getRenderEventRouter(
 		activeViz, renderClass, renderInst
 	);
 
@@ -359,4 +319,371 @@ void TabManager::newRenderer(
 	w->setEnabled(true);
 
 	er->updateTab();
+}
+
+vector <string> TabManager::GetInstalledTabNames(bool renderOnly) const {
+    vector <string> keys;
+    map <string, EventRouter *>::const_iterator itr;
+    for (itr = _eventRouterMap.begin(); itr != _eventRouterMap.end(); ++itr) {
+        RenderEventRouter *er = dynamic_cast<RenderEventRouter*> (itr->second);
+
+        if (renderOnly && ! er) continue;
+
+        keys.push_back(itr->first);
+    }
+    return(keys);
+}
+
+void TabManager::EnableRouters(bool onOff) {
+
+	map <string, EventRouter*>::iterator itr;
+	for (itr = _eventRouterMap.begin(); itr != _eventRouterMap.end(); ++itr) {
+
+		// Ugh! EventRouter base class does not inheret from QWidget, but
+		// derived classes *should*. No way to enforce this.
+		//
+
+		QWidget* w = dynamic_cast<QWidget*> (itr->second);
+		assert(w);
+		w->setEnabled(onOff);
+	}
+}
+
+void TabManager::Shutdown() {
+
+	EnableRouters(false);
+
+	_initialized = false;
+}
+
+void TabManager::Restart() {
+
+	// Must be shutdown before restarting
+	//
+	if (_initialized) return;
+
+	Reinit();
+
+	_initialized = true;
+
+	Update();
+}
+
+
+void TabManager::Reinit() {
+
+	EnableRouters(true);
+
+}
+
+void TabManager::LoadDataNotify(string dataSetName) {
+	map <string, EventRouter*> ::iterator itr;
+	for (itr = _eventRouterMap.begin(); itr != _eventRouterMap.end(); ++itr) {
+		itr->second->LoadDataNotify(dataSetName);
+	}
+}
+
+
+EventRouter* TabManager::_getEventRouter(string erType) const {
+	map <string, EventRouter*> :: const_iterator itr;
+    itr = _eventRouterMap.find(erType);
+	if (itr == _eventRouterMap.end()) {
+		assert(0);
+		return 0;
+	}
+	return itr->second;
+}
+
+RenderEventRouter* TabManager::_getRenderEventRouter(
+	string winName,  string renderType, string instName
+)  const {
+
+
+	map <string, EventRouter*> :: const_iterator itr;
+    itr = _eventRouterMap.find(renderType);
+	if (itr == _eventRouterMap.end()) {
+		assert(0);
+		return 0;
+	}
+	RenderEventRouter *er = dynamic_cast<RenderEventRouter*> (itr->second);
+	assert(er);
+
+	er->SetActive(instName);
+
+	return er;
+}
+
+
+QWidget* TabManager::_getSubTabWidget(string subTabName) const {
+
+	int subTabIndex = _getSubTabIndex(subTabName);
+	string tabName = _getTabForSubTab(subTabName);
+
+	std::map<string, vector<QWidget*> >::const_iterator itr;
+    itr = _subTabWidgets.find(tabName);
+    if (itr == _subTabWidgets.end()) return(NULL);
+
+	return(itr->second[subTabIndex]);
+}
+
+QWidget* TabManager::_getTabWidget(string tabName) const {
+
+	std::map<string, QWidget* >::const_iterator itr;
+    itr = _tabWidgets.find(tabName);
+    if (itr == _tabWidgets.end()) return(NULL);
+
+	return(itr->second);
+}
+
+
+//Create the global params and the default renderer params:
+void TabManager::_createAllDefaultTabs() {
+
+	QWidget *parent;
+	EventRouter* er;
+
+	// Install built-in tabs
+	//
+	parent = _getTabWidget(_navigationTabName);
+	
+	er = new AnnotationEventRouter(parent, _controlExec);
+	_installTab(_navigationTabName, er->GetType(), er);
+	
+	_animationEventRouter = new AnimationEventRouter(
+		parent, _controlExec
+	);
+
+	connect(
+		_animationEventRouter, SIGNAL(AnimationOnOffSignal(bool)),
+		this, SLOT(_setAnimationOnOff(bool))
+	);
+	connect(
+		_animationEventRouter, SIGNAL(AnimationDrawSignal()),
+		this, SLOT(_setAnimationDraw())
+	);
+
+	er = _animationEventRouter;
+	_installTab(_navigationTabName, er->GetType(), er);
+	
+	_navigationEventRouter = new NavigationEventRouter(parent, _controlExec);
+	er = _navigationEventRouter;
+	_installTab(_navigationTabName, er->GetType(), er);
+
+	connect(
+		(NavigationEventRouter *) er, SIGNAL(Proj4StringChanged(string)),
+		this, SLOT(_setProj4String(string))
+	);
+
+	parent = _getSubTabWidget(_settingsTabName);
+	er = new SettingsEventRouter(parent, _controlExec);
+	_installTab(_settingsTabName, er->GetType(), er);
+
+	// Create renderers from render factory
+	//
+	vector <string> renderNames = RenderEventRouterFactory::Instance()->
+		GetFactoryNames();
+
+	parent = _getTabWidget(_renderersTabName);
+	for (int i=0; i<renderNames.size(); i++) {
+		RenderEventRouter *er = RenderEventRouterFactory::Instance()->
+			CreateInstance(renderNames[i], parent, _controlExec);
+
+		assert(er);
+
+		_installTab(_renderersTabName, er->GetType(), er);
+	}
+
+	//set up widgets in tabs:
+	_installWidgets();
+}
+
+void TabManager::_installTab(
+	string tabName, string subTabName, EventRouter *eRouter
+) {
+	_registerEventRouter(subTabName, eRouter);
+	eRouter->hookUpTab();
+	QWidget* tabWidget = dynamic_cast<QWidget*> (eRouter);
+	assert(tabWidget);
+	if (subTabName != SettingsParams::GetClassType()) {
+		tabWidget->setEnabled(false);
+	}
+	_addSubTabWidget(tabWidget, subTabName, tabName);
+}
+
+void TabManager::_registerEventRouter(
+	const std::string subTabName, EventRouter* router 
+) {
+    _eventRouterMap[subTabName] = router;
+}
+
+void TabManager::_installWidgets() {
+	
+	clear();
+
+	_currentFrontTab = _tabNames[0];
+	for (int i=0; i<_tabNames.size(); i++) {
+		string tabName = _tabNames[i];
+		_currentFrontSubTab[tabName] = _subTabNames[tabName][0];
+	}
+
+	// Create top widgets.  Tab widgets exist but need to be 
+	// inserted as tabs, based on their type
+	// Type RENDERERS is for renderers, NAVIGATION for nav and SETTINGS for settings. 
+	// Create top Tab Widgets to hold the nav and settings
+	for (int i = 1; i<_tabNames.size(); i++) {
+		_tabWidgets[_tabNames[i]] = new QTabWidget(this);
+	}
+
+	for (int i = 0; i<_subTabWidgets[_renderersTabName].size(); i++){
+		string tag = _subTabNames[_renderersTabName][i];
+		RenderEventRouter *re = dynamic_cast<RenderEventRouter*> (
+			_subTabWidgets[_renderersTabName][i]
+		);
+
+		_subTabWidgets[_renderersTabName][i]->hide();
+	}
+
+	_initRenderHolder();
+	
+	// Add the renderer tab to the top level TabWidget.
+	//
+	addTab(_renderHolder, QString::fromStdString(_renderersTabName));
+	_tabWidgets[_renderersTabName] = _renderHolder;
+
+
+	// Add the bottom widgets (eventrouter-based) to the nav and setting tabs:
+	//
+	for (int i = 1; i<_tabNames.size(); i++){
+	for (int j = 0; j< _subTabWidgets[_tabNames[i]].size(); j++){
+		string tab = _tabNames[i];
+			
+		QScrollArea* myScrollArea = new QScrollArea(_tabWidgets[tab]);
+
+		string subTabName = _subTabNames[tab][j];
+		QTabWidget* qtw = (QTabWidget*) _tabWidgets[tab];
+		qtw->addTab(myScrollArea, QString::fromStdString(subTabName));
+		myScrollArea->setWidget(_subTabWidgets[tab][j]);
+			
+	}
+	}
+
+	// Add the remaning top tabs to this
+	//
+	for (int i = 1; i<_tabNames.size(); i++){
+		string tab = _tabNames[i];
+
+		addTab(_tabWidgets[tab], QString::fromStdString(_tabNames[i]));
+
+		QTabWidget* qtw = (QTabWidget*) _tabWidgets[_tabNames[i]];
+		qtw->setCurrentIndex(0);
+	}
+	
+	//Start them with the renderer tab showing.
+	
+	setCurrentIndex(0);
+	
+	for (int j = 0; j<_tabNames.size(); j++){
+		string tab = _tabNames[j];
+
+		for (int subidx = 0; subidx< _subTabWidgets[tab].size(); subidx++){
+			EventRouter* ev =dynamic_cast<EventRouter*> (
+				_subTabWidgets[tab][subidx]
+			);
+		}
+	}
+
+	//Hook up signals
+	for (int i = 1; i<_tabNames.size(); i++){
+		string tab = _tabNames[i];
+		connect(
+			_tabWidgets[tab], SIGNAL(currentChanged(int)),
+			this, SLOT(_setSubTab(int))
+		);
+	}
+	connect(this, SIGNAL(currentChanged(int)), this, SLOT(_setFrontTab(int)));
+
+	return;
+	
+}
+
+//Add a tabWidget to appropriate saved list of widgets:
+//
+void TabManager::_addSubTabWidget(QWidget* wid, string tag, string tagType){
+	_subTabWidgets[tagType].push_back(wid);
+	_subTabNames[tagType].push_back(tag);
+}
+
+void TabManager::_updateRouters() {
+	if (! _initialized) return;
+
+	// First handle non-render event routers
+	//
+	vector <string> tabNames = GetInstalledTabNames(false);
+
+	for (int i=0; i<tabNames.size(); i++) {
+		string tab = tabNames[i];
+
+		EventRouter* eRouter = _getEventRouter(tab);
+		RenderEventRouter *reRouter = dynamic_cast<RenderEventRouter*>(eRouter);
+
+		if (reRouter) continue;	// Skip render event routers
+
+		eRouter->updateTab();
+	}
+
+	// Now handle the active render event router. 
+	//
+	GUIStateParams *p = _getStateParams();
+	string activeViz = p->GetActiveVizName();
+
+	string renderClass, instName;
+    p->GetActiveRenderer(activeViz, renderClass, instName);
+
+	if (activeViz.size() && renderClass.size() && instName.size()) {
+
+		EventRouter* eRouter = _getRenderEventRouter(
+			activeViz, renderClass, instName
+		);
+
+		eRouter->updateTab();
+	}
+}
+
+void TabManager::_initRenderHolder() {
+
+	vector <QWidget *> widgets;
+	vector <string> widgetNames;
+	vector <string> descriptions;
+	vector <string> iconPaths;
+	vector <string> smallIconPaths;
+
+	for (int i = 0; i<_subTabWidgets[_renderersTabName].size(); i++){
+		string tag = _subTabNames[_renderersTabName][i];
+
+		widgets.push_back(_subTabWidgets[_renderersTabName][i]);
+		widgetNames.push_back(tag);
+
+		RenderEventRouter *re = dynamic_cast<RenderEventRouter*> (
+			_subTabWidgets[_renderersTabName][i]
+		);
+
+		descriptions.push_back(re->GetDescription());
+		iconPaths.push_back(re->GetIconImagePath());
+		smallIconPaths.push_back(re->GetSmallIconImagePath());
+
+	}
+
+	_renderHolder = new RenderHolder(
+		this, _controlExec,
+		widgets, widgetNames, descriptions, iconPaths, smallIconPaths	
+	);
+
+	connect(
+		_renderHolder, SIGNAL(activeChanged(string, string, string)),
+		this, SLOT(_setActive(string, string, string))
+	);
+	connect(
+		_renderHolder, SIGNAL(newRendererSignal(string, string, string)),
+		this, SLOT(_newRenderer(string, string, string))
+	);
 }
