@@ -88,7 +88,6 @@ endif ()
 add_subdirectory (apps)
 add_subdirectory (lib)
 add_subdirectory (include)
-add_subdirectory (share)
 add_subdirectory (test_apps)
 
 ###############################################################################
@@ -118,20 +117,6 @@ if (WIN32)
 	set (PRE_UNINSTALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/${PRE_UNINSTALL_LOCAL_PATH}")
 	configure_file ("${PRE_UNINSTALL_LOCAL_PATH}.in" "${PRE_UNINSTALL_PATH}" @ONLY)
 
-	if (${GENERATE_FULL_INSTALLER})
-		set (DLL_DIR "C:/vaporwin64deps2015/vapordlls")
-		file (GLOB WIN_INSTALL_DLLS ${DLL_DIR}/*.dll ${QTDIR}/bin/*.dll)
-		install (
-			FILES ${WIN_INSTALL_DLLS}
-			DESTINATION ${INSTALL_BIN_DIR}
-			COMPONENT Dependencies
-			)
-		install (
-			DIRECTORY ${PYTHONPATH}
-			DESTINATION ${INSTALL_LIB_DIR}
-			COMPONENT Dependencies
-			)
-	endif (${GENERATE_FULL_INSTALLER})
 
 	# set (CPACK_NSIS_MODIFY_PATH ON)
 	set (CPACK_NSIS_URL_INFO_ABOUT "https://www.vapor.ucar.edu")
