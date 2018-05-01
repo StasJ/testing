@@ -117,6 +117,8 @@ int DataMgrUtils::ConvertLonLatToPCS(
 	return 0;
 }
 
+#include "vapor/debug.h"
+
 int DataMgrUtils::GetGrids(
 	DataMgr *dataMgr,
 	size_t ts, const vector<string>& varnames, 
@@ -124,6 +126,17 @@ int DataMgrUtils::GetGrids(
 	bool useLowerAccuracy,
 	int* refLevel, int* lod, vector <Grid*> &grids
 ) {
+    string s = "[";
+    for (int i = 0; i < varnames.size(); i++) {
+        s += varnames[i];
+        if (i != varnames.size() - 1)
+            s += ", ";
+    }
+    s += "]";
+    PRINT_BACKTRACE("(%s)", s.c_str());
+    if (varnames[0] == "V10")
+        asm("nop");
+    
 	grids.clear();
 	assert(minExtsReq.size() == maxExtsReq.size());
 

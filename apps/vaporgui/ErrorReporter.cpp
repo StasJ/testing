@@ -146,6 +146,7 @@ void ErrorReporter::Report(string msg, Type severity, string details)
 		case       Info: box.setIcon(QMessageBox::Information); break;
 		case    Warning: box.setIcon(QMessageBox::Warning);     break;
 		case	  Error: box.setIcon(QMessageBox::Critical);    break;
+        default: Q_ASSERT(0);
 	}
 
 	int ret = box.exec();

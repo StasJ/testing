@@ -800,10 +800,13 @@ Grid *DataMgr::GetVariable (
 	return(rg);
 }
 
+#include "vapor/debug.h"
+
 Grid *DataMgr::GetVariable (
 	size_t ts, string varname, int level, int lod,
     vector <double> min, vector <double> max, bool lock
 ) {
+    PRINT_BACKTRACE("(%s)", varname.c_str());
 	assert(min.size() == max.size());
 
 	SetDiagMsg(

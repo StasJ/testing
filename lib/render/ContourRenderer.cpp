@@ -111,7 +111,7 @@ bool ContourRenderer::_isCacheDirty() const
     return false;
 }
 
-void ContourRenderer::_buildCache()
+int ContourRenderer::_buildCache()
 {
     ContourParams* cParams = (ContourParams*)GetActiveParams();
     _saveCacheParams();
@@ -121,7 +121,7 @@ void ContourRenderer::_buildCache()
     if (cParams->GetVariableName().empty())
     {
         glEndList();
-        return;
+        return 0;
     }
     MapperFunction *tf = cParams->GetMapperFunc(_cacheParams.varName);
     vector<double> contours = cParams->GetContourValues(_cacheParams.varName);
@@ -139,11 +139,17 @@ void ContourRenderer::_buildCache()
                                        _cacheParams.level, _cacheParams.lod,
                                        _cacheParams.boxMin, _cacheParams.boxMax);
     Grid *heightGrid = NULL;
-    if (!_cacheParams.heightVarName.empty())
+    if (!_cacheParams.heightVarName.empty()) {
         heightGrid = _dataMgr->GetVariable(_cacheParams.ts, _cacheParams.heightVarName,
                                            _cacheParams.level, _cacheParams.lod,
                                            _cacheParams.boxMin, _cacheParams.boxMax);
+    }
     //StructuredGrid *sGrid = dynamic_cast<StructuredGrid *>(grid);
+    
+    if (grid == NULL || (heightGrid == NULL && !_cacheParams.heightVarName.empty())) {
+        glEndList();
+        return -1;
+    }
 
     Grid::ConstCellIterator it = grid->ConstCellBegin(_cacheParams.boxMin, _cacheParams.boxMax);
 	Grid::ConstCellIterator end = grid->ConstCellEnd();
@@ -199,16 +205,19 @@ void ContourRenderer::_buildCache()
     
     glEndList();
     delete [] contourColors;
+    return 0;
 }
 
 int ContourRenderer::_paintGL()
 {
+    int rc = 0;
     if (_isCacheDirty())
-        _buildCache();
+        rc = _buildCache();
     
     glCallList(_drawList);
 
-    return 0;
+    printf("ContourRenderer::_paintGL: return %i\n", rc);
+    return rc;
 }
 
 int ContourRenderer::_initializeGL()
