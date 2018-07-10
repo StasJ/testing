@@ -85,40 +85,6 @@
         <number>10</number>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_10">
-         <item>
-          <widget class="QLabel" name="label_7">
-           <property name="text">
-            <string>Automatically stretch domain</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_7">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="_autoStretchCheckbox">
-           <property name="toolTip">
-            <string>When loading data, the shortest dimension is shorter than 1/10 of the longest then stretch it to 1/2 the longest</string>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
         <layout class="QVBoxLayout" name="verticalLayout_4">
          <property name="spacing">
           <number>0</number>
@@ -471,7 +437,8 @@
          <item>
           <widget class="QLabel" name="label_9">
            <property name="text">
-            <string>Number of threads (0 for available num. of CPU cores)</string>
+            <string>Number of threads
+(0 for available num. of CPU cores)</string>
            </property>
           </widget>
          </item>
@@ -736,6 +703,40 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
           </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Automatically stretch domain at startup</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="_autoStretchCheckbox">
+           <property name="toolTip">
+            <string>When loading data, the shortest dimension is shorter than 1/10 of the longest then stretch it to 1/2 the longest</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
