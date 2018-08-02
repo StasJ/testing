@@ -27,9 +27,7 @@ public:
     setupUi(this);
 		_variablesWidget->Reinit( 
 			VariablesWidget::HGT, 
-			VariablesWidget::TWOD,
-			(VariablesWidget::ColorFlags)(0)
-		);
+			VariablesWidget::TWOD);
 	}
 
 	void Update(  VAPoR::DataMgr *dataMgr,
@@ -141,7 +139,6 @@ public:
   {
 		setupUi(this);
 		_geometryWidget->Reinit( 
-			GeometryWidget::TWOD,
 			GeometryWidget::MINMAX,
 			GeometryWidget::SCALAR);
 	}

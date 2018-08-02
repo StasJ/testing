@@ -22,8 +22,8 @@ public:
 		_variablesWidget->Reinit((VariablesWidget::DisplayFlags)
 			(VariablesWidget::SCALAR | VariablesWidget::HGT),
 			(VariablesWidget::DimFlags)
-			(VariablesWidget::THREED | VariablesWidget::TWOD),
-			(VariablesWidget::ColorFlags)(0));
+			(VariablesWidget::THREED | VariablesWidget::TWOD)
+		);
 	}
 
 	void Update(
@@ -64,7 +64,6 @@ public:
 	WireFrameGeometrySubtab(QWidget* parent) {
 		setupUi(this);
 		_geometryWidget->Reinit(
-			GeometryWidget::THREED,
 			GeometryWidget::MINMAX,
 			GeometryWidget::SCALAR);
 	}

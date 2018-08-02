@@ -18,28 +18,15 @@ class BarbVariablesSubtab : public QWidget, public Ui_BarbVariablesGUI {
 	Q_OBJECT
 
 public:
-	BarbVariablesSubtab(QWidget* parent) {
-		setupUi(this);
-		_variablesWidget->Reinit((VariablesWidget::DisplayFlags)
-			(VariablesWidget::VECTOR | VariablesWidget::HGT |
-			VariablesWidget::COLOR),
-			(VariablesWidget::DimFlags)(VariablesWidget::TWOD),
-			(VariablesWidget::ColorFlags)
-			(VariablesWidget::COLORVAR));
-			//(VariablesWidget::DimFlags)(VariablesWidget::THREED));
-	}
+	BarbVariablesSubtab(QWidget* parent);
 
 	void Initialize(VAPoR::BarbParams* bParams, VAPoR::DataMgr* dataMgr);
-	void pushVarStartingWithLetter(vector<string> searchVars, 
-		vector<string> &returnVars, char letter);
 
 	void Update(
 		VAPoR::DataMgr *dataMgr,
 		VAPoR::ParamsMgr *paramsMgr,
 		VAPoR::RenderParams *rParams
-	) {
-		_variablesWidget->Update(dataMgr, paramsMgr, rParams);
-	}
+	);
 };
 
 class BarbAppearanceSubtab : public QWidget, public Ui_BarbAppearanceGUI {
@@ -59,12 +46,14 @@ private slots:
 	void xDimChanged(int i);
 	void yDimChanged(int i);
 	void zDimChanged(int i);
-	void lengthChanged(double d);
-	void thicknessChanged(double d);
-	double CalculateDomainLength(int ts);
+	void lengthChanged(int d);
+	void thicknessChanged(int d);
+	void recalculateScales();
 
 private:
-	void hideZDimWidgets();
+	void _hideZDimWidgets();
+	void _showZDimWidgets();
+	bool _isVariable2D() const;
 
 	VAPoR::BarbParams* _bParams;
 	VAPoR::DataMgr* _dataMgr;
@@ -87,12 +76,7 @@ public:
 		VAPoR::ParamsMgr *paramsMgr,
 		VAPoR::DataMgr *dataMgr,
 		VAPoR::RenderParams *rParams
-	) {
-		_bParams = (VAPoR::BarbParams*)rParams;
-		_geometryWidget->Update(paramsMgr, dataMgr, rParams);
-		_copyRegionWidget->Update(paramsMgr, rParams);
-		_transformTable->Update(rParams->GetTransform());
-	}
+	);
 
 private:
 	VAPoR::BarbParams* _bParams;

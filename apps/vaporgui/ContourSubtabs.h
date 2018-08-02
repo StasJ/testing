@@ -25,9 +25,7 @@ public:
 		setupUi(this);
 		_variablesWidget->Reinit((VariablesWidget::DisplayFlags)
 			(VariablesWidget::SCALAR | VariablesWidget::HGT),
-			(VariablesWidget::DimFlags)
-			(VariablesWidget::TWOD),
-			(VariablesWidget::ColorFlags)(0));
+			(VariablesWidget::DimFlags)(VariablesWidget::TWOD));
 	}
 
 	void Update(
@@ -84,7 +82,6 @@ public:
 	ContourGeometrySubtab(QWidget* parent) {
 		setupUi(this);
 		_geometryWidget->Reinit(
-			GeometryWidget::TWOD,
 			GeometryWidget::MINMAX,
 			GeometryWidget::SCALAR);
 

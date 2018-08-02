@@ -2,17 +2,21 @@
 #include <string>
 #include <vapor/RenderParams.h>
 #include <vapor/BarbParams.h>
-
+#include <vapor/DataMgrUtils.h>
 
 using namespace Wasp;
 using namespace VAPoR;
 
+#define X 0
+#define Y 1 
+#define Z 2
 
 //
 // Register class with object factory!!!
 //
 static RenParamsRegistrar<BarbParams> registrar(BarbParams::GetClassType());
 
+const string BarbParams::_needToRecalculateScalesTag = "NeedToRecalc";
 const string BarbParams::_thicknessScaleTag = "LineThickness";
 const string BarbParams::_lengthScaleTag = "VectorScale";
 const string BarbParams::_gridTag = "GridDimensions";
@@ -49,6 +53,13 @@ BarbParams::~BarbParams() {
 
 }
 
+void BarbParams::SetNeedToRecalculateScales(bool val) {
+	double dval = val ? 1.0 : 0.0;
+	SetValueDouble(_needToRecalculateScalesTag,
+	"Whether or not scales need to be recalculated",
+	dval);
+}
+
 bool BarbParams::IsOpaque() const {
 	return true;
 }
@@ -65,39 +76,38 @@ bool BarbParams::usingVariable(const std::string& varname) {
 //Set everything to default values
 void BarbParams::_init() {
 	SetDiagMsg("BarbParams::_init()");
-
-	// Only 2D variables supported. Override base class
-	//
-    vector <string> varnames = _dataMgr->GetDataVarNames(2);
-	string varname;
-
-	if (! varnames.empty()) varname = varnames[0];
-    SetVariableName(varname);
-	SetColorMapVariableName(varname);
-
-	// Initialize 2D box
-	//
-	if (varname.empty()) return;
-
-    if (! _dataMgr->VariableExists(0,varname, 0, 0)) return;
-
-    vector <double> minExt, maxExt;
-    int rc = _dataMgr->GetVariableExtents(0, varname, 0, minExt, maxExt);
-
+	
 	SetUseSingleColor(true);
 	float rgb[] = {1.f,1.f,1.f};
 	SetConstantColor(rgb);
 
-	int grid[] = {4,4,1};
-	SetGrid(grid);
+	int defaultTS = GetCurrentTimestep();
+	int defaultLOD = GetRefinementLevel();
+	
+	std::vector<string> varnames = GetFieldVariableNames();
+	if (varnames.empty()) {
+		cout << "foo" << endl;
+		return;
+	}
+	if (varnames[X]=="" &&
+		varnames[Y]=="" &&
+		varnames[Z]==""
+	) {
+		cout << "bar" << endl;
+		return;
+	}
 
-	// Crap. No error handling from constructor. Need Initialization()
-	// method.
-	//
+	vector <double> minExt, maxExt;
+	int rc = DataMgrUtils::GetExtents(
+		_dataMgr,
+		defaultTS, 
+		defaultLOD, 
+		varnames,
+		minExt, 
+		maxExt
+	);
 	assert (rc >=0);
-	assert(minExt.size()==maxExt.size() && minExt.size()==2);
+	assert(minExt.size()==maxExt.size() && minExt.size()>=2);
 
 	GetBox()->SetExtents(minExt, maxExt);
-	//GetBox()->SetPlanar(true);	
-	//GetBox()->SetOrientation(2);	
 }
