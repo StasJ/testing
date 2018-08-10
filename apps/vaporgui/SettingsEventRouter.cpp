@@ -36,6 +36,8 @@
 
 #include <qlabel.h>
 #include <QFileDialog>
+#include <QFontDialog>
+#include <QDebug>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -142,6 +144,9 @@ void SettingsEventRouter::hookUpTab() {
 		this, SLOT(_chooseFlowPath()));
 	connect(_pythonPathButton, SIGNAL(clicked()),
 		this, SLOT(_choosePythonPath()));
+
+	connect(_fontButton, SIGNAL(clicked()),
+		this, SLOT(_chooseFont()));
 }
 
 void SettingsEventRouter::_numThreadsChanged() {
@@ -537,6 +542,35 @@ void SettingsEventRouter::_choosePythonPath(){
 		sParams->SetPythonDir(dir);
 		_saveSettings();
 	}
+}
+
+void SettingsEventRouter::_chooseFont() {
+	bool ok;
+	QFont font = QFontDialog::getFont(&ok, 0);
+	qDebug() << "set " << font << " " << font.pointSize();
+	//_fontButton->setFont(font);
+//	setFont(font);
+
+//    QString setStyle;
+//    setStyle =  "font-family: " + font.family();
+//    setStyle += ";font-style: " + font.styleName();
+//    setStyle += ";font-size: "  + QString::number(font.pointSize());
+//    setStyle += "pt";
+//    qDebug() << "style        " << setStyle;
+//	setStyleSheet("");
+//    setStyleSheet(setStyle);
+
+	ParamsMgr *paramsMgr = _controlExec->GetParamsMgr();
+	SettingsParams* settingsParams;
+	settingsParams = (SettingsParams*)paramsMgr->GetParams("SettingsParams");
+	
+	QString fromQ = font.toString();
+	qDebug() << "fromQ " << fromQ;
+	string myStr = fromQ.toStdString();
+	cout << "myStr " << myStr << endl;
+	settingsParams->SetFont(myStr);
+	_saveSettings();
+//	cout << "set " << font.toString().toStdString() << endl;
 }
 
 void SettingsEventRouter::_winLockChanged(bool val){

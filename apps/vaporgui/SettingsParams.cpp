@@ -70,6 +70,7 @@ const string SettingsParams::_defaultAutoSaveFileTag = "DefaultAutoSaveFile";
 const string SettingsParams::_sessionAutoSaveEnabledTag = "AutoSaveEnabled";
 const string SettingsParams::_fontFileTag = "FontFile";
 const string SettingsParams::_fontSizeTag = "FontSize";
+const string SettingsParams::_fontTag = "Font";
 
 //
 // Register class with object factory!!!
@@ -418,6 +419,16 @@ int SettingsParams::GetNumThreads() const {
 
 void SettingsParams::SetNumThreads(int val) {
 	SetValueLong(_numThreadsTag, "Number of execution threads", val);
+}
+
+string SettingsParams::GetFont() const {
+	string font;
+	font = GetValueString(_fontTag, "");
+	return font;
+}
+
+void SettingsParams::SetFont(string font) {
+	SetValueString(_fontTag, "Applicaiton font", font);
 }
 
 int SettingsParams::GetFontSize() const {

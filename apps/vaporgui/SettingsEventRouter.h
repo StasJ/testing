@@ -95,6 +95,7 @@ private slots:
 	void _chooseTFPath();
 	void _chooseFlowPath();
 	void _choosePythonPath();
+	void _chooseFont();
 	void _winLockChanged(bool val); 
 	void _restoreDefaults();
 

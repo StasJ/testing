@@ -48,6 +48,7 @@
 #include <QMdiArea>
 #include <QWhatsThis>
 #include <QStatusBar>
+#include <QDebug>
 
 #include <vapor/Version.h>
 #include <vapor/DataMgr.h>
@@ -254,6 +255,8 @@ void MainForm::_initMembers() {
 MainForm::MainForm(
 	vector<QString> files, QApplication* app, QWidget* parent
 ) : QMainWindow( parent) {
+
+	setAttribute(Qt::WA_WindowPropagation);
 
 	_initMembers();
 
@@ -2119,6 +2122,40 @@ void MainForm::update() {
 
 	_performSessionAutoSave();
 
+	SettingsParams* sParams = GetSettingsParams();
+	if (sParams==NULL) return;
+	string fontString = sParams->GetFont();
+	cout << "fromPara " << fontString << endl;
+	QString qSettingsFont = QString::fromStdString(fontString);
+	qDebug() << "qString " << qSettingsFont;
+	QFont settingsFont;
+	settingsFont.fromString(qSettingsFont);
+	qDebug() << "qFont " << settingsFont;
+	//cout << "myFont       " << myFont.toString().toStdString() << endl;
+	//cout << "settingsFont " << settingsFont.toString().toStdString() << endl;
+	//cout << "settingsFont " << sParams->GetFont() << endl;
+	//qDebug() << styleSheet();
+	//qDebug() << settingsFont;
+//	qDebug() << "mf family       " << fontInfo().family();
+//	qDebug() << "mf styleName    " << fontInfo().styleName();
+//	qDebug() << "mf pointSize    " << fontInfo().pointSize();
+//	cout << endl;
+
+	qDebug() << "ptSize " << settingsFont.pointSize();
+
+	QString setStyle;
+	QFontInfo info(settingsFont);
+	setStyle =  "font-family: " + info.family();
+	setStyle += ";font-style: " + info.styleName();	
+	setStyle += ";font-size: "  + QString::number(settingsFont.pointSize());
+	//setStyle += ";font-size: 36";
+	setStyle += "pt";
+	qDebug() << "style        " << setStyle;
+	setStyleSheet(setStyle);
+//	style()->unpolish(this);
+//	style()->polish(this);
+//	QWidget::update();
+	//setStyleSheet("font-family: Arial;font-style: normal;font-size: 36pt");
 }
 
 void MainForm::enableWidgets(bool onOff) {

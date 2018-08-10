@@ -121,6 +121,9 @@ public:
  string GetCurrentPrefsPath() const;
  void SetCurrentPrefsPath(string pth);
 
+ string GetFont() const;
+ void SetFont(string font);
+
  void Reinit();
  const std::string getShortName() {return _shortName;}
  
@@ -167,6 +170,7 @@ private:
  static const string _sessionAutoSaveEnabledTag;
  static const string _fontFileTag;
  static const string _fontSizeTag;
+ static const string _fontTag;
 
  void _init();
  bool _loadFromSettingsFile();

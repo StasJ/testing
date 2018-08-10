@@ -36,8 +36,10 @@ string VariablesWidget::_nDimsTag = "ActiveDimension";
 VariablesWidget::VariablesWidget(QWidget* parent) 
 	: QWidget(parent), Ui_VariablesWidgetGUI() 
 {
-
 	setupUi(this);
+    QFont settingsFont = QFont( "Helvetica,36,-1,5,50,1,0,0,0,0" );
+    label->setFont(settingsFont);
+
 
 	connect (
 		varnameCombo,SIGNAL(activated(const QString&)), this,

@@ -114,6 +114,8 @@ void TabManager::MoveToFront(string subTabName) {
 	setCurrentIndex(tabIndex);
 	if(tabName != _renderersTabName) {
 		QTabWidget* qtw = (QTabWidget*) _getTabWidget(tabName);
+	QFont f = QFont( "Helvetica,36,-1,5,50,1,0,0,0,0" );
+		qtw->setFont(f);
 		qtw->setCurrentIndex(subTabIndex);
 	} else {
 		_renderHolder->SetCurrentWidget(subTabName);
