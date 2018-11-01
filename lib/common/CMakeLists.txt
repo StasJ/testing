@@ -11,6 +11,7 @@ set (SRC
 	GetAppPath.cpp
 	utils.cpp
 	FileUtils.cpp
+	DebugConsole.cpp
 	${CMAKE_CURRENT_BINARY_DIR}/CMakeConfig.cpp
 )
 
@@ -27,6 +28,7 @@ set (HEADERS
 	${PROJECT_SOURCE_DIR}/include/vapor/CMakeConfig.h
     ${PROJECT_SOURCE_DIR}/include/vapor/debug.h
     ${PROJECT_SOURCE_DIR}/include/vapor/FileUtils.h
+    ${PROJECT_SOURCE_DIR}/include/vapor/DebugConsole.h
 )
 
 add_library (common SHARED ${SRC} ${HEADERS})
@@ -40,6 +42,10 @@ if (NOT WIN32)
 	target_link_libraries (common pthread)
 	add_definitions (-DENABLE_THREADS)
 endif()
+
+find_library (MICROHTTPD microhttpd)
+target_link_libraries (common ${MICROHTTPD})
+target_include_directories (common PRIVATE /usr/local/include)
 
 add_definitions (-DCOMMON_EXPORTS)
 
