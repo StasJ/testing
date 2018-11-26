@@ -1484,6 +1484,14 @@ Grid *DataMgr::_getVariable(
 	}
 	assert(rg);
 
+	//
+	// Inform the grid of the offsets from the larger mesh to the
+	// mesh subset contained in g. In general, gmin<=min
+	//
+	vector <size_t> gmin, gmax;
+	map_blk_to_vox(bsvec[0], roi_dims, bminvec[0], bmaxvec[0], gmin, gmax);
+	rg->SetMinAbs(gmin);
+
 
 	// 
 	// Safe to remove locks now that were not explicitly requested
@@ -1776,7 +1784,7 @@ bool DataMgr::VariableExists(
 		if (_varInfoCache.Get(ts, native_vars[i], level, lod, key, exists_vec)) {
 			continue;
 		}
-		bool exists = _dc->VariableExists(ts, varname, level, lod);
+		bool exists = _dc->VariableExists(ts, native_vars[i], level, lod);
 		if (exists) {
 			_varInfoCache.Set(ts, native_vars[i], level, lod, key, exists_vec);
 		}
@@ -1837,6 +1845,8 @@ void DataMgr::RemoveDerivedVar(string varname) {
 	if (! _dvm.HasVar(varname)) return;
 
 	_dvm.RemoveVar(_dvm.GetVar(varname));
+
+	_free_var(varname);
 }
 
 void	DataMgr::Clear() {
@@ -2012,13 +2022,13 @@ int DataMgr::_get_unblocked_region_from_fs(
 			buf, Dims(file_min, file_max), region, Dims(grid_min, grid_max)
 		);
 
-		delete [] buf;
+		if (buf) delete [] buf;
 	}
 	else {
 		
 		int rc = _readRegion(fd, grid_min, grid_max, region);
 		if (rc<0) {
-			delete [] region;
+			if (region) delete [] region;
 			return(-1);
 		}
 	}
@@ -2123,10 +2133,10 @@ T *DataMgr::_get_region_from_fs(
 			grid_max, blks
 		);
 				
-		if (rc < 0) {
-			_free_region(ts,varname ,level,lod,grid_bmin,grid_bmax);
-			return(NULL);
-		}
+	}
+	if (rc < 0) {
+		_free_region(ts,varname ,level,lod,grid_bmin,grid_bmax, true);
+		return(NULL);
 	}
 
 	SetDiagMsg("DataMgr::GetGrid() - data read from fs\n");
@@ -2260,7 +2270,7 @@ void	*DataMgr::_alloc_region(
 
 	// Free region already exists
 	//
-	_free_region(ts,varname,level,lod,bmin,bmax);
+	_free_region(ts,varname,level,lod,bmin,bmax, true);
 
 
 	size_t size = element_sz;
@@ -2300,7 +2310,8 @@ void	DataMgr::_free_region(
 	int level,
 	int lod,
 	vector <size_t> bmin,
-	vector <size_t> bmax
+	vector <size_t> bmax,
+	bool forceFlag
 ) {
 
 	list <region_t>::iterator itr;
@@ -2314,7 +2325,7 @@ void	DataMgr::_free_region(
 			region.bmin == bmin &&
 			region.bmax == bmax)  {
 
-			if (region.lock_counter == 0) {
+			if (region.lock_counter == 0 || forceFlag) {
 				if (region.blks) _blk_mem_mgr->FreeMem(region.blks);
 				
 				_regionsList.erase(itr);

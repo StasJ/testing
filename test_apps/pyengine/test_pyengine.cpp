@@ -7,9 +7,11 @@
 #include <cassert>
 
 #include <vapor/CFuncs.h>
+#include <vapor/FileUtils.h>
 #include <vapor/OptionParser.h>
 #include <vapor/MyPython.h>
 #include <vapor/PyEngine.h>
+#include <vapor/ControlExecutive.h>
 
 using namespace std;
 
@@ -69,7 +71,8 @@ void test_calculate()
 	int rc = PyEngine::Initialize();
 	if (rc<0) return;
 
-	vector <size_t> dims = {2,4,6};
+	vector <size_t> dims = {1000,1000,10};
+//	string script = "C = sqrt(A) + B";
 	string script = "C = A + B";
 	vector <string> inputVarNames = {"A", "B"};
 	vector < vector <size_t> > inputVarDims = {dims, dims};
@@ -92,7 +95,12 @@ void test_calculate()
 		script, inputVarNames, inputVarDims, inputVarArrays,
 		outputVarNames, outputVarDims, outputVarArrays
 	);
-	if (rc<0) return;
+	if (rc<0) {
+		delete [] A;
+		delete [] B;
+		delete [] C;
+		return;
+	}
 
 	string status = "SUCCESS";
 	for (int i=0; i<vproduct(dims); i++) {
@@ -184,6 +192,240 @@ void test_datamgr(vector <string> files) {
 	
 }
 
+void test_controlexec_copy(vector <string> files) {
+
+	if (files.empty()) return;
+
+	ControlExec ce;
+
+	const string dataSetName = "test_data";
+	int rc = ce.OpenData(files, vector <string> (), dataSetName, opt.ftype);
+
+	DataStatus *dataStatus = ce.GetDataStatus();
+
+	DataMgr *dataMgr = dataStatus->GetDataMgr(dataSetName);
+
+	vector <string> varNames = dataMgr->GetDataVarNames();
+	if (varNames.empty()) return;
+
+	string inputVarName = varNames[0];
+	string outputVarName = varNames[0] + "Copy";
+	string script = outputVarName + " = " + inputVarName + "\n";
+
+	DC::DataVar datavar;
+	rc = dataMgr->GetDataVarInfo(inputVarName, datavar);
+	assert(rc >= 0);
+
+	vector <string> inputVarNames = {inputVarName};
+	vector <string> outputVarNames = {outputVarName};
+	vector <string> outputMeshNames = {datavar.GetMeshName()};
+
+	
+	rc = ce.AddFunction(
+		"Python", dataSetName,
+		"myscript_ce", script, inputVarNames, outputVarNames, outputMeshNames
+	);
+	if (rc<0) exit(1);
+
+	if (! opt.quiet) {
+		cout << "Derived variable :\n";
+		dataMgr->GetDataVarInfo(outputVarName, datavar);
+		cout << datavar;
+	}
+
+	Grid *g1 = dataMgr->GetVariable(0, inputVarName, opt.level, opt.lod, true);
+	if (! g1) exit(1);
+
+	Grid *g2 = dataMgr->GetVariable(0, outputVarName, opt.level, opt.lod, true);
+	if (! g2) exit(1);
+
+	Grid::ConstIterator itr1 = g1->cbegin();
+	Grid::ConstIterator enditr1 = g1->cend();
+
+	Grid::ConstIterator itr2 = g2->cbegin();
+	Grid::ConstIterator enditr2 = g2->cend();
+
+	string status = "SUCCESS";
+	for (; itr1!=enditr1; ++itr1, ++itr2) {
+		if (itr2 == enditr2) {
+			status = "FAILED";
+			break;
+		}
+		if (*itr1 != *itr2) {
+			status = "FAILED";
+			break;
+		}
+	}
+
+	ce.CloseData(dataSetName);
+
+	cout << "test_controlexec_copy : " << status << endl;
+	
+}
+
+void test_controlexec_coord(vector <string> files) {
+
+	if (files.empty()) return;
+
+	ControlExec ce;
+
+	const string dataSetName = "test_data";
+	int rc = ce.OpenData(files, vector <string> (), dataSetName, opt.ftype);
+
+	DataStatus *dataStatus = ce.GetDataStatus();
+
+	DataMgr *dataMgr = dataStatus->GetDataMgr(dataSetName);
+
+	vector <string> varNames = dataMgr->GetDataVarNames();
+	if (varNames.empty()) return;
+
+	string inputVarName = varNames[0];
+	string outputVarName = varNames[0] + "Copy";
+	string script = outputVarName + " = " + inputVarName + "\n";
+//	string script = outputVarName + " = sqrt(" + inputVarName +")";
+	script += 
+	"import numpy as np\n"
+	"for f in dir():\n"
+	"	if type(eval(f)) is np.ndarray:\n"
+	"		print f, eval(f).shape, 'min,max,mean: ', eval(f).min(), eval(f).max(), eval(f).mean()\n"
+	"\n"
+	"\n";
+
+	DC::DataVar datavar;
+	rc = dataMgr->GetDataVarInfo(inputVarName, datavar);
+	assert(rc >= 0);
+
+	vector <string> inputVarNames = {inputVarName};
+	vector <string> outputVarNames = {outputVarName};
+	vector <string> outputMeshNames = {datavar.GetMeshName()};
+
+	bool coordFlag = true;
+	string scriptName = "test_controlexec_coord";
+	rc = ce.AddFunction(
+		"Python", dataSetName,
+		scriptName, script, inputVarNames, outputVarNames, outputMeshNames,
+		coordFlag
+	);
+	if (rc<0) exit(1);
+
+	if (! opt.quiet) {
+		cout << "Derived variable :\n";
+		dataMgr->GetDataVarInfo(outputVarName, datavar);
+		cout << datavar;
+	}
+
+	Grid *g1 = dataMgr->GetVariable(0, inputVarName, opt.level, opt.lod, true);
+	if (! g1) exit(1);
+
+	Grid *g2 = dataMgr->GetVariable(0, outputVarName, opt.level, opt.lod, true);
+	if (! g2) exit(1);
+
+	Grid::ConstIterator itr1 = g1->cbegin();
+	Grid::ConstIterator enditr1 = g1->cend();
+
+	Grid::ConstIterator itr2 = g2->cbegin();
+	Grid::ConstIterator enditr2 = g2->cend();
+
+	string status = "SUCCESS";
+	for (; itr1!=enditr1; ++itr1, ++itr2) {
+		if (itr2 == enditr2) {
+			status = "FAILED";
+			break;
+		}
+		if (*itr1 != *itr2) {
+			status = "FAILED";
+			break;
+		}
+	}
+
+	cout << "Script output : \n";
+	cout << ce.GetFunctionStdout("Python", dataSetName, scriptName) << endl;
+
+	ce.CloseData(dataSetName);
+
+	cout << "test_controlexec_coord : " << status << endl;
+	
+}
+
+
+void test_controlexec_add(vector <string> files) {
+
+	if (files.empty()) return;
+
+	ControlExec ce;
+
+	const string dataSetName = "test_data";
+	int rc = ce.OpenData(files, vector <string> (), dataSetName, opt.ftype);
+
+	DataStatus *dataStatus = ce.GetDataStatus();
+
+	DataMgr *dataMgr = dataStatus->GetDataMgr(dataSetName);
+
+	vector <string> varNames = dataMgr->GetDataVarNames();
+	if (varNames.empty()) return;
+
+	vector <string> inputVarNames = {"U10", "V10"};
+	vector <string> outputVarNames = {"U10plusV10"};
+	string script = "U10plusV10 = U10 + V10\n";
+	script += "print 'UV10plusV10 shape : ', U10plusV10.shape";
+
+	DC::DataVar datavar;
+	rc = dataMgr->GetDataVarInfo(inputVarNames[0], datavar);
+	assert(rc >= 0);
+
+	vector <string> outputMeshNames = {datavar.GetMeshName()};
+
+	rc = ce.AddFunction(
+		"Python", dataSetName,
+		"myscript_ce", script, inputVarNames, outputVarNames, outputMeshNames
+	);
+	if (rc<0) exit(1);
+
+	if (! opt.quiet) {
+		cout << "Derived variable :\n";
+		dataMgr->GetDataVarInfo(outputVarNames[0], datavar);
+		cout << datavar;
+	}
+
+
+	Grid *g1 = dataMgr->GetVariable(0, inputVarNames[0], opt.level, opt.lod, true);
+	if (! g1) exit(1);
+
+	Grid *g2 = dataMgr->GetVariable(0, inputVarNames[1], opt.level, opt.lod, true);
+	if (! g2) exit(1);
+
+	Grid *g3 = dataMgr->GetVariable(0, outputVarNames[0], opt.level, opt.lod, true);
+	if (! g3) exit(1);
+
+	Grid::ConstIterator itr1 = g1->cbegin();
+	Grid::ConstIterator enditr1 = g1->cend();
+
+	Grid::ConstIterator itr2 = g2->cbegin();
+	Grid::ConstIterator enditr2 = g2->cend();
+
+	Grid::ConstIterator itr3 = g3->cbegin();
+	Grid::ConstIterator enditr3 = g3->cend();
+
+	string status = "SUCCESS";
+	for (; itr1!=enditr1; ++itr1, ++itr2, ++itr3) {
+		if (itr2 == enditr2 || itr3 == enditr3) {
+			status = "FAILED";
+			break;
+		}
+		if ((*itr1 + *itr2) != *itr3) {
+			status = "FAILED";
+			break;
+		}
+	}
+
+
+	ce.CloseData(dataSetName);
+
+	cout << "test_controlexec_add : " << status << endl;
+	
+}
+
+
 
 
 int main(int argc, char **argv) {
@@ -191,7 +433,7 @@ int main(int argc, char **argv) {
 	OptionParser op;
 	string	s;
 
-	ProgName = Basename(argv[0]);
+	ProgName = FileUtils::LegacyBasename(argv[0]);
 
 	MyBase::SetErrMsgFilePtr(stderr);
 
@@ -220,10 +462,17 @@ int main(int argc, char **argv) {
 		files.push_back(argv[i]);
 	}
 
+
 	test_calculate();
 
 	test_datamgr(files);
 
+	test_controlexec_copy(files);
+
+	test_controlexec_coord(files);
+
+	test_controlexec_add(files);
+
+
 	return 0;
 }
-
