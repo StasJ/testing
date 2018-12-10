@@ -681,7 +681,8 @@ void MainForm::hookupSignals() {
 	//
 	connect (
 		_windowSelector, SIGNAL(winActivated(const QString &)),
-		_vizWinMgr, SLOT(SetWinActive(const QString &))
+		//_vizWinMgr, SLOT(SetWinActive(const QString &))
+		this, SLOT(setWinActive(const QString &))
 	);
 	connect (
 		_vizWinMgr, SIGNAL(newViz(const QString &)),
@@ -709,6 +710,54 @@ void MainForm::hookupSignals() {
 		_tabMgr, SIGNAL(Proj4StringChanged(string)), 
 		this, SLOT( _setProj4String(string))
 	);
+}
+
+void MainForm::setWinActive(const QString& visualizerName) {
+    string stdVisualizerName = visualizerName.toStdString();
+    std::vector<string> rendererNames = _controlExec->GetRenderClassNames(
+        stdVisualizerName
+    );
+    if (rendererNames.size() < 1)
+        return;
+
+    string rendererName = rendererNames[0];    
+
+    string dataSetName, rendererType;
+    bool found = _controlExec->RenderLookup(
+        rendererName, 
+        stdVisualizerName,
+        dataSetName,
+        rendererType
+    );
+
+    if (!found)
+        return;
+
+    cout << "1   visName, dsName, renType, renName " << stdVisualizerName << " " << dataSetName << " " << rendererType << " " << rendererName << endl;
+    RenderParams* rParams = _controlExec->GetRenderParams(
+        stdVisualizerName,
+        dataSetName,
+        rendererType,
+        rendererName
+    );
+    cout << "visName, dsName, renType, renName " << stdVisualizerName << " " << dataSetName << " " << rendererType << " " << rendererName << endl;
+    if (!rParams) {
+        cout << "returning..." << endl;
+        return;
+    }
+    bool onOff = rParams->IsEnabled();
+
+//    string dataSetName = _controlExec->GetDataNames()[0];
+//    string rendererName = 
+	_controlExec->ActivateRender(
+        stdVisualizerName,
+        dataSetName,
+        rendererType,
+        rendererName,
+        onOff
+    );
+    //_tabMgr->ShowRenderWidget(rendererName);
+    _vizWinMgr->SetWinActive(visualizerName);
 }
 
 void MainForm::_createFileMenu() {
