@@ -724,8 +724,7 @@ bool ControlExec::RenderLookup(
 		GetParamsClassFromRenderClass(renderType);
     bool success = _paramsMgr->RenderParamsLookup(
 		instName, winName, dataSetName, paramsType);
-	
-    cout << "ControlExec::RenderLookup " << instName << ":" << winName << ":" << dataSetName << ":" << paramsType << endl;
+
     return success;
 }
 

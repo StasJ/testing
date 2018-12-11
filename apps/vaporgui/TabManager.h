@@ -178,7 +178,10 @@ public slots:
 	_animationEventRouter->SetTimeStep(ts);
  }
 
-protected slots:
+public slots:
+ void SetActive(
+	string activeViz, string renderClass, string renderInst
+ ); 
 
 private slots:
  void _setProj4String(string proj4String) {
@@ -207,9 +210,9 @@ private slots:
 
  void SetActiveViz(const QString &vizNameQ);
 
- void _setActive(
-	string activeViz, string renderClass, string renderInst
- ); 
+// void SetActive(
+//	string activeViz, string renderClass, string renderInst
+// ); 
 
  void _newRenderer(
 	string activeViz, string renderClass, string renderInst

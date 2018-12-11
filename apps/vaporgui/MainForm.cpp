@@ -729,35 +729,21 @@ void MainForm::setWinActive(const QString& visualizerName) {
         dataSetName,
         rendererType
     );
+    cout << endl;
+    cout << "ControlExec::RenderLookup()" << endl;
+    cout << "   rendererName   " << rendererName << endl;
+    cout << "   visualizerName " << stdVisualizerName << endl;
+    cout << "   datasetName    " << dataSetName << endl;
+    cout << "   rendererType   " << rendererType << endl;
 
-    if (!found)
-        return;
+    rendererType = rendererName;
 
-    cout << "1   visName, dsName, renType, renName " << stdVisualizerName << " " << dataSetName << " " << rendererType << " " << rendererName << endl;
-    RenderParams* rParams = _controlExec->GetRenderParams(
-        stdVisualizerName,
-        dataSetName,
-        rendererType,
-        rendererName
-    );
-    cout << "visName, dsName, renType, renName " << stdVisualizerName << " " << dataSetName << " " << rendererType << " " << rendererName << endl;
-    if (!rParams) {
-        cout << "returning..." << endl;
+    if (!found) {
         return;
     }
-    bool onOff = rParams->IsEnabled();
 
-//    string dataSetName = _controlExec->GetDataNames()[0];
-//    string rendererName = 
-	_controlExec->ActivateRender(
-        stdVisualizerName,
-        dataSetName,
-        rendererType,
-        rendererName,
-        onOff
-    );
-    //_tabMgr->ShowRenderWidget(rendererName);
     _vizWinMgr->SetWinActive(visualizerName);
+    _tabMgr->SetActive(stdVisualizerName, rendererType, rendererName);
 }
 
 void MainForm::_createFileMenu() {

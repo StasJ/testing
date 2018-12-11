@@ -257,11 +257,9 @@ void TabManager::_setFrontTab(int newFrontPosn) {
 }
 
 
-void TabManager::_setActive(
+void TabManager::SetActive(
 	string activeViz, string renderClass, string renderInst
 ) {
-
-cout << "_setActive " << activeViz << " " << renderClass << " " << renderInst << endl;
 
 	if (renderClass.empty() || renderInst.empty()) {
 		HideRenderWidgets();
@@ -635,14 +633,12 @@ void TabManager::_updateRouters() {
 
 	string renderClass, instName;
     p->GetActiveRenderer(activeViz, renderClass, instName);
-    cout << activeViz << " " << renderClass << " " << instName << endl;
 
 	if (activeViz.size() && renderClass.size() && instName.size()) {
 
 		EventRouter* eRouter = _getRenderEventRouter(
 			activeViz, renderClass, instName
 		);
-        cout << eRouter << endl;
 		eRouter->updateTab();
 	}
 }
@@ -678,7 +674,7 @@ void TabManager::_initRenderHolder() {
 
 	connect(
 		_renderHolder, SIGNAL(activeChanged(string, string, string)),
-		this, SLOT(_setActive(string, string, string))
+		this, SLOT(SetActive(string, string, string))
 	);
 	connect(
 		_renderHolder, SIGNAL(newRendererSignal(string, string, string)),
