@@ -51,8 +51,6 @@ const float Manip::_unselectedFaceColor[4] = {0.8f,0.2f,0.0f,0.5f};
 #define MAXY 4
 #define MAXZ 5
 
-#define DEBUG true
-
 TranslateStretchManip::TranslateStretchManip(GLManager *glManager) : Manip(glManager) {
 
 	_buttonNum = 0;	
