@@ -67,8 +67,7 @@ void SliceParams::_init() {
     maxExt[Z] = average;
     box->SetExtents(minExt, maxExt);
 
-    int sampleRate = GetDefaultSampleRate();
-    SetSampleRate(sampleRate);
+    SetSampleRate(MIN_DEFAULT_SAMPLERATE);
 }
 
 int SliceParams::GetDefaultSampleRate() const {
@@ -102,7 +101,6 @@ int SliceParams::GetSampleRate() const {
 }
 
 void SliceParams::SetSampleRate(int rate) {
-    cout << "setting sample rate to " << rate << endl;
     SetValueDouble(_sampleRateTag, "Set sample rate",  (double)rate);
 }
 
