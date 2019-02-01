@@ -89,7 +89,7 @@ void FillCellVertCoordinates( const in ivec3 cellIdx, out vec3 coord[8] )
 
     for( int i = 0; i < 8; i++ )
     {
-        coord[i]   = (texelFetch( vertCoordsTexture,  cubeVertIdx[i], 0 )).xyz;
+         coord[i]   = (texture( vertCoordsTexture, (cubeVertIdx[i] + 0.5)/vec3(volumeDims))).xyz;
     }
 }
 
