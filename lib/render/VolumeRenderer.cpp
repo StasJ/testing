@@ -5,6 +5,7 @@
 #include <vapor/GLManager.h>
 #include <vapor/glutil.h>
 #include <glm/glm.hpp>
+#include <unistd.h>
 
 using glm::vec2;
 using glm::vec3;
@@ -49,6 +50,7 @@ VolumeRenderer::~VolumeRenderer()
 
 int VolumeRenderer::_initializeGL()
 {
+    /*
     float BL = -1;
     float data[] = {
         BL, BL,    0, 0,
@@ -59,12 +61,28 @@ int VolumeRenderer::_initializeGL()
         1, BL,    1, 0,
         1,  1,    1, 1
     };
+    */
+    
+#define MV(x, y) vec4(2*(x)/10.f - 1, 2*(y)/10.f - 1, (x)/10.f, (y)/10.f)
+    vec4 *data = new vec4[6*10*10];
+    for (int y = 0; y < 10; y++) {
+        for (int x = 0; x < 10; x++) {
+            data[y*10*6 + x*6 + 0] = MV(x, y);
+            data[y*10*6 + x*6 + 1] = MV(x+1, y);
+            data[y*10*6 + x*6 + 2] = MV(x, y+1);
+            
+            data[y*10*6 + x*6 + 3] = MV(x, y+1);
+            data[y*10*6 + x*6 + 4] = MV(x+1, y);
+            data[y*10*6 + x*6 + 5] = MV(x+1, y+1);
+        }
+    }
+    
     
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vec4)*6*10*10, data, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), NULL);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));
     glEnableVertexAttribArray(0);
@@ -72,8 +90,8 @@ int VolumeRenderer::_initializeGL()
     
     glGenTextures(1, &dataTexture);
     glBindTexture(GL_TEXTURE_3D, dataTexture);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -153,7 +171,13 @@ int VolumeRenderer::_paintGL(bool fast)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    static int c = 0;
+    for (int i = 0; i < 100; i++) {
+        glDrawArrays(GL_TRIANGLES, i*6, 6);
+        glFlush();
+        usleep(1000*3);
+        printf("[%i]DONE %i---\n", c++, i);
+    }
     glDisable(GL_BLEND);
     GL_ERR_BREAK();
     
