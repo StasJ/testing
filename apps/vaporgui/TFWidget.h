@@ -97,6 +97,7 @@ private slots:
 	void setRange();
 	void setRange(double min, double max);
 	void setSecondaryRange();
+    void setSecondaryRange(double min, double max);
     void setSecondaryMinRange(double min);
     void setSecondaryMaxRange(double max);
 

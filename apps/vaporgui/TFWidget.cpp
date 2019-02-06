@@ -655,8 +655,6 @@ void TFWidget::checkForSecondaryMapperRangeChanges() {
 		_secondaryHistoRangeChanged = true;
 	if (max != newMax)
 		_secondaryHistoRangeChanged = true;
-	if (_secondaryHistoRangeChanged)
-		_secondaryHistoRangeChanged = true;
 }
 
 void TFWidget::checkForTimestepChanges() {
@@ -867,16 +865,42 @@ void TFWidget::setRange(double min, double max) {
 }
 
 void TFWidget::setSecondaryRange() {
+	float min = _secondaryMappingFrame->getMinEditBound();
+	float max = _secondaryMappingFrame->getMaxEditBound();
+	setSecondaryRange(min, max);
+	emit emitChange();
+}
+
+void TFWidget::setSecondaryRange(double min, double max) {
+	float values[2];
+	float range[2];
+    bool secondaryVariable = true;
+	getVariableRange(range, values, secondaryVariable);
+	if (min < range[0])
+		min = range[0];
+	if (min > range[1])
+		min = range[1];
+	if (max > range[1])
+		max = range[1];
+	if (max < range[0])
+		max = range[0];
+
+    if (min != values[0] || 
+        max != values[1] ) {
+        _secondaryHistoRangeChanged = true;
+    }
+    else
+        return;
+
+	MapperFunction* mf = getSecondaryMapperFunction();
+
 	_paramsMgr->BeginSaveStateGroup("Setting secondary TFWidget range");
-
-	double min = _secondaryMappingFrame->getMinEditBound();
-	setSecondaryMinRange(min);
-
-	double max = _secondaryMappingFrame->getMaxEditBound();
-	setSecondaryMaxRange(max);
+	
+	mf->setMinMapValue(min);
+	mf->setMaxMapValue(max);
 
 	_paramsMgr->EndSaveStateGroup();
-	
+
 	emit emitChange();
 }
 
