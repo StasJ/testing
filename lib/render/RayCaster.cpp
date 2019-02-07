@@ -63,18 +63,16 @@ RayCaster::RayCaster( const ParamsMgr*    pm,
                       classType,
                       instName,
                       dataMgr ),
-            _backFaceTexOffset     ( 1 ),
-            _frontFaceTexOffset    ( 2 ),
-            _volumeTexOffset       ( 3 ),
-            _colorMapTexOffset     ( 4 ),
-            _missingValueTexOffset ( 5 ),
-            _vertCoordsTexOffset   ( 6 ),
-            _depthTexOffset        ( 7 ),
-            _2ndVarDataTexOffset   ( 8 ),
-            _2ndVarMaskTexOffset   ( 9 )
+            _frontBackFaceTexTexOffset (0),
+            _volumeTexOffset       ( 1 ),
+            _colorMapTexOffset     ( 2 ),
+            _missingValueTexOffset ( 3 ),
+            _vertCoordsTexOffset   ( 4 ),
+            _depthTexOffset        ( 5 ),
+            _2ndVarDataTexOffset   ( 6 ),
+            _2ndVarMaskTexOffset   ( 7 )
 {
-    _backFaceTextureId           = 0;
-    _frontFaceTextureId          = 0;
+    _frontBackFaceTextureId      = 0;
     _volumeTextureId             = 0;
     _missingValueTextureId       = 0;
     _colorMapTextureId           = 0;
@@ -115,15 +113,8 @@ RayCaster::~RayCaster()
     }
 
     // Delete textures
-    if( _backFaceTextureId   )
-    {
-        glDeleteTextures( 1, &_backFaceTextureId   );
-        _backFaceTextureId = 0;
-    }
-    if( _frontFaceTextureId   )
-    {
-        glDeleteTextures( 1, &_frontFaceTextureId   );
-        _frontFaceTextureId = 0;
+    if (_frontBackFaceTextureId) {
+        glDeleteTextures(1, &_frontBackFaceTextureId);
     }
     if( _volumeTextureId   )
     {
@@ -898,22 +889,12 @@ int RayCaster::_initializeFramebufferTextures()
     glGenBuffers(      1, &_vertexBufferId );
     glGenBuffers(      1, &_indexBufferId );
     glGenBuffers(      1, &_vertexAttribId );
-
-    /* Generate and configure 2D back-facing texture */
-    glGenTextures(1, &_backFaceTextureId);
-    glActiveTexture( GL_TEXTURE0 + _backFaceTexOffset );
-    glBindTexture(GL_TEXTURE_2D,   _backFaceTextureId); 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, _currentViewport[2], _currentViewport[3], 
-                 0, GL_RGBA, GL_FLOAT, nullptr);
-    this->_configure2DTextureLinearInterpolation();
-
-    /* Generate and configure 2D front-facing texture */
-    glGenTextures(1, &_frontFaceTextureId);
-    glActiveTexture( GL_TEXTURE0 + _frontFaceTexOffset );
-    glBindTexture(GL_TEXTURE_2D,   _frontFaceTextureId); 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, _currentViewport[2], _currentViewport[3], 
-                 0, GL_RGBA, GL_FLOAT, nullptr);
-    this->_configure2DTextureLinearInterpolation();
+    
+    glGenTextures(1, &_frontBackFaceTextureId);
+    glActiveTexture( GL_TEXTURE0 + _frontBackFaceTexTexOffset );
+    glBindTexture(GL_TEXTURE_3D,   _frontBackFaceTextureId);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, _currentViewport[2], _currentViewport[3], 2, 0, GL_RGBA, GL_FLOAT, nullptr);
+    this->_configure3DTextureLinearInterpolation();
 
     /* Create an Frame Buffer Object for the front and back side of the volume. */
     glGenFramebuffers(1, &_frameBufferId);
@@ -921,8 +902,12 @@ int RayCaster::_initializeFramebufferTextures()
     
     /* Set "_backFaceTextureId"  as color attachement #0, 
        and "_frontFaceTextureId" as color attachement #1.  */
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _backFaceTextureId,  0);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, _frontFaceTextureId, 0);
+    // glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _backFaceTextureId,  0);
+    // glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, _frontFaceTextureId, 0);
+    
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _frontBackFaceTextureId, 0, 0);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, _frontBackFaceTextureId, 0, 1);
+    
     GLenum drawBuffers[2]  =  { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
     glDrawBuffers(2, drawBuffers );
 
@@ -1213,15 +1198,10 @@ void RayCaster::_load3rdPassUniforms( int                castingMode,
     if( fast && castingMode == FixedStep )
         stepSize1D *= 8.0f;     //  Increase step size, when fast rendering
     shader->SetUniform("stepSize1D", stepSize1D);
-
-    // Pass in textures
-    glActiveTexture( GL_TEXTURE0 + _backFaceTexOffset );
-    glBindTexture( GL_TEXTURE_2D,  _backFaceTextureId );
-    shader->SetUniform("backFaceTexture", _backFaceTexOffset);
-
-    glActiveTexture( GL_TEXTURE0 + _frontFaceTexOffset );
-    glBindTexture( GL_TEXTURE_2D,  _frontFaceTextureId );
-    shader->SetUniform("frontFaceTexture", _frontFaceTexOffset);
+    
+    glActiveTexture( GL_TEXTURE0 + _frontBackFaceTexTexOffset );
+    glBindTexture( GL_TEXTURE_3D,  _frontBackFaceTextureId );
+    shader->SetUniform("frontBackFaceTexture", _frontBackFaceTexTexOffset);
 
     glActiveTexture( GL_TEXTURE0 + _volumeTexOffset );
     glBindTexture( GL_TEXTURE_3D,  _volumeTextureId );
@@ -1595,14 +1575,10 @@ void RayCaster::_updateViewportWhenNecessary( const GLint* viewport )
         std::memcpy( _currentViewport, viewport, 4 * sizeof(GLint) );
 
         // Re-size 1st and 2nd pass rendering 2D textures
-        glActiveTexture( GL_TEXTURE0 + _backFaceTexOffset );
-        glBindTexture(GL_TEXTURE_2D,   _backFaceTextureId); 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, _currentViewport[2], _currentViewport[3], 
-                     0, GL_RGBA, GL_FLOAT, nullptr);
-
-        glActiveTexture( GL_TEXTURE0 + _frontFaceTexOffset );
-        glBindTexture(GL_TEXTURE_2D,   _frontFaceTextureId); 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, _currentViewport[2], _currentViewport[3], 
+        
+        glActiveTexture( GL_TEXTURE0 + _frontBackFaceTexTexOffset );
+        glBindTexture(GL_TEXTURE_3D,   _frontBackFaceTextureId);
+        glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA32F, _currentViewport[2], _currentViewport[3], 2,
                      0, GL_RGBA, GL_FLOAT, nullptr);
     }
 }

@@ -3,8 +3,7 @@
 in vec4 gl_FragCoord;
 layout(location = 0) out vec4 color;
 
-uniform sampler2D  backFaceTexture;
-uniform sampler2D  frontFaceTexture;
+uniform sampler3D  frontBackFaceTexture;
 uniform sampler3D  volumeTexture;
 uniform usampler3D missingValueMaskTexture; // !!unsigned integer!!
 uniform sampler1D  colorMapTexture;
@@ -47,6 +46,10 @@ float specularExp      = lightingCoeffs[3];
 vec3  volumeDims1o     = 1.0 / vec3( volumeDims - 1 );
 vec3  boxSpan          = boxMax - boxMin;
 mat4  transposedInverseMV = transpose( inversedMV );
+
+
+vec3 GetFrontFace(vec2 tex) { return texture( frontBackFaceTexture,  vec3(tex, 0.75) ).xyz; }
+vec3 GetBackFace (vec2 tex) { return texture( frontBackFaceTexture,  vec3(tex, 0.25) ).xyz; }
 
 //
 // Input:  Location to be evaluated in texture coordinates.
@@ -138,10 +141,10 @@ void main(void)
     // Get texture coordinates of this fragment
     vec2 fragTexture    = gl_FragCoord.xy / vec2( viewportDims );
 
-    vec3 stopEye        = texture( backFaceTexture,  fragTexture ).xyz;
+    vec3 stopEye        = GetBackFace(fragTexture);
     vec3 startEye       = vec3( 0.0 );
     if( !eyeInsideVolume )
-         startEye       = texture( frontFaceTexture, fragTexture ).xyz;
+         startEye       = GetFrontFace(fragTexture);
     vec3 rayDirEye      = stopEye - startEye;
     float rayDirLength  = length( rayDirEye );
     if( rayDirLength    < ULP10 )

@@ -142,8 +142,7 @@ protected:
 
     // OpenGL stuff
     // textures
-    GLuint              _backFaceTextureId;
-    GLuint              _frontFaceTextureId;
+    GLuint              _frontBackFaceTextureId;
     GLuint              _volumeTextureId;
     GLuint              _missingValueTextureId;
     GLuint              _colorMapTextureId;
@@ -151,8 +150,7 @@ protected:
     GLuint              _depthTextureId;
     GLuint              _2ndVarDataTexId;
     GLuint              _2ndVarMaskTexId;
-    const  GLint        _backFaceTexOffset;
-    const  GLint        _frontFaceTexOffset;
+    const  GLint        _frontBackFaceTexTexOffset;
     const  GLint        _volumeTexOffset;
     const  GLint        _colorMapTexOffset;
     const  GLint        _missingValueTexOffset;

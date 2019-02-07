@@ -4,8 +4,7 @@ in vec4 gl_FragCoord;
 flat in ivec4 provokingVertexIdx;
 layout(location = 0) out vec4 color;
 
-uniform sampler2D       backFaceTexture;
-uniform sampler2D       frontFaceTexture;
+uniform sampler3D       frontBackFaceTexture;
 uniform sampler3D       volumeTexture;
 uniform usampler3D      missingValueMaskTexture; // !!unsigned integer!!
 uniform sampler1D       colorMapTexture;
@@ -43,6 +42,9 @@ float specularExp      = lightingCoeffs[3];
 vec3  volumeDims1o     = 1.0 / vec3( volumeDims - 1 );
 ivec3 volumeDimsm2     = volumeDims - 2;
 mat4  transposedInverseMV = transpose( inversedMV );
+
+vec3 GetFrontFace(vec2 tex) { return texture( frontBackFaceTexture,  vec3(tex, 0.75) ).xyz; }
+vec3 GetBackFace (vec2 tex) { return texture( frontBackFaceTexture,  vec3(tex, 0.25) ).xyz; }
 
 // 
 // Code for triangles:
@@ -333,10 +335,10 @@ void main(void)
     // Get texture coordinates of this frament
     vec2 fragTex        = gl_FragCoord.xy / vec2( viewportDims );
 
-    vec3 stopEye        = texture( backFaceTexture,  fragTex ).xyz;
+    vec3 stopEye        = GetBackFace(fragTex);
     vec3 startEye       = vec3( 0.0 );
     if( !eyeInsideVolume )
-         startEye       = texture( frontFaceTexture, fragTex ).xyz;
+         startEye       = GetFrontFace(fragTex);
     vec3 rayDirEye      = stopEye - startEye;
     float rayDirLength  = length( rayDirEye );
     if(   rayDirLength  < ULP10 )

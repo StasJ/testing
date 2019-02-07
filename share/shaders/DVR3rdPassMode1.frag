@@ -3,8 +3,7 @@
 in vec4 gl_FragCoord;
 layout(location = 0) out vec4 color;
 
-uniform sampler2D  backFaceTexture;
-uniform sampler2D  frontFaceTexture;
+uniform sampler3D  frontBackFaceTexture;
 uniform sampler3D  volumeTexture;
 uniform usampler3D missingValueMaskTexture; // !!unsigned integer!!
 uniform sampler1D  colorMapTexture;
@@ -122,6 +121,8 @@ float CalculateDepth( const in vec3 pEye )
     return  0.5 * fma( gl_DepthRange.diff, pNdc.z, (gl_DepthRange.near + gl_DepthRange.far) );
 }
 
+vec3 GetFrontFace(vec2 tex) { return texture( frontBackFaceTexture,  vec3(tex, 0.75) ).xyz; }
+vec3 GetBackFace (vec2 tex) { return texture( frontBackFaceTexture,  vec3(tex, 0.25) ).xyz; }
 
 void main(void)
 {
@@ -131,10 +132,13 @@ void main(void)
     // Calculate texture coordinates of this fragment
     vec2 fragTex        = gl_FragCoord.xy / vec2( viewportDims );
 
-    vec3 stopEye        = texture( backFaceTexture,  fragTex ).xyz;
+    // vec3 stopEye        = texture( backFaceTexture,  fragTex ).xyz;
+    vec3 stopEye        = GetBackFace(fragTex);
     vec3 startEye       = vec3( 0.0 );
-    if( !eyeInsideVolume )
-         startEye       = texture( frontFaceTexture, fragTex ).xyz;
+    if( !eyeInsideVolume ) {
+         // startEye       = texture( frontFaceTexture, fragTex ).xyz;
+         startEye        = GetFrontFace(fragTex);
+    }
     vec3 rayDirEye      = stopEye - startEye ;
     float rayDirLength  = length( rayDirEye );
     if( rayDirLength    < ULP10 )
