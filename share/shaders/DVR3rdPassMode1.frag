@@ -5,9 +5,9 @@ layout(location = 0) out vec4 color;
 
 uniform sampler3D  frontBackFaceTexture;
 uniform sampler3D  volumeTexture;
-uniform usampler3D missingValueMaskTexture; // !!unsigned integer!!
+// uniform usampler3D missingValueMaskTexture; // !!unsigned integer!!
 uniform sampler1D  colorMapTexture;
-uniform sampler2D  depthTexture;
+// uniform sampler2D  depthTexture;
 
 uniform ivec3 volumeDims;        // number of vertices of this volumeTexture
 uniform ivec2 viewportDims;      // width and height of this viewport
@@ -50,8 +50,8 @@ mat4  transposedInverseMV = transpose( inversedMV );
 //
 bool ShouldSkip( const in vec3 tc, const in vec3 mc )
 {
-    if( hasMissingValue && (texture(missingValueMaskTexture, tc).r != 0u) )
-        return true;
+    // if( hasMissingValue && (texture(missingValueMaskTexture, tc).r != 0u) )
+    //     return true;
 
     vec4 positionModel = vec4( mc, 1.0 );
     for( int i = 0; i < 6; i++ )
@@ -159,9 +159,9 @@ void main(void)
     // If something else on the scene resulting in a shallower depth, we need to 
     //    compare depth at every step.
     bool  shallow    = false;
-    float otherDepth = texture( depthTexture, fragTex ).x;
-    if(   otherDepth < gl_FragDepth )
-          shallow    = true;
+    // float otherDepth = texture( depthTexture, fragTex ).x;
+    // if(   otherDepth < gl_FragDepth )
+    //       shallow    = true;
 
     // Now we need to query the color at the starting point.
     //   However, to prevent unpleasant boundary artifacts, we shift the starting point
@@ -190,11 +190,11 @@ void main(void)
 
         vec3 step2Eye      = startEye  + stepSize3D * float( stepi );
 
-        if( shallow && ( CalculateDepth(step2Eye) > otherDepth ) )
-        { 
-            earlyTerm      = true;
-            break;
-        }
+//        if( shallow && ( CalculateDepth(step2Eye) > otherDepth ) )
+//        {
+//            earlyTerm      = true;
+//            break;
+//        }
 
         vec3 step2Model    = (inversedMV * vec4(step2Eye, 1.0)).xyz;
         vec3 step2Texture  = (step2Model - boxMin) * boxSpan1o;

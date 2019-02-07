@@ -66,18 +66,18 @@ RayCaster::RayCaster( const ParamsMgr*    pm,
             _frontBackFaceTexTexOffset (0),
             _volumeTexOffset       ( 1 ),
             _colorMapTexOffset     ( 2 ),
-            _missingValueTexOffset ( 3 ),
+//            _missingValueTexOffset ( 3 ),
             _vertCoordsTexOffset   ( 4 ),
-            _depthTexOffset        ( 5 ),
+//            _depthTexOffset        ( 5 ),
             _2ndVarDataTexOffset   ( 6 ),
             _2ndVarMaskTexOffset   ( 7 )
 {
     _frontBackFaceTextureId      = 0;
     _volumeTextureId             = 0;
-    _missingValueTextureId       = 0;
+//    _missingValueTextureId       = 0;
     _colorMapTextureId           = 0;
     _vertCoordsTextureId         = 0;
-    _depthTextureId              = 0;
+//    _depthTextureId              = 0;
     _frameBufferId               = 0;
     _2ndVarDataTexId             = 0;
     _2ndVarMaskTexId             = 0;
@@ -121,11 +121,11 @@ RayCaster::~RayCaster()
         glDeleteTextures( 1, &_volumeTextureId   );
         _volumeTextureId = 0;
     }
-    if( _missingValueTextureId   )
-    {
-        glDeleteTextures( 1, &_missingValueTextureId   );
-        _missingValueTextureId = 0;
-    }
+//    if( _missingValueTextureId   )
+//    {
+//        glDeleteTextures( 1, &_missingValueTextureId   );
+//        _missingValueTextureId = 0;
+//    }
     if( _colorMapTextureId )
     {
         glDeleteTextures( 1, &_colorMapTextureId );
@@ -136,11 +136,11 @@ RayCaster::~RayCaster()
         glDeleteTextures( 1, &_vertCoordsTextureId );
         _vertCoordsTextureId = 0;
     }
-    if( _depthTextureId )
-    {
-        glDeleteTextures( 1, &_depthTextureId );
-        _depthTextureId = 0;
-    }
+//    if( _depthTextureId )
+//    {
+//        glDeleteTextures( 1, &_depthTextureId );
+//        _depthTextureId = 0;
+//    }
     if( _2ndVarDataTexId )
     {
         glDeleteTextures(  1, &_2ndVarDataTexId );
@@ -943,10 +943,10 @@ int RayCaster::_initializeFramebufferTextures()
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 
     /* Generate and configure 3D texture: _missingValueTextureId */
-    glGenTextures( 1, &_missingValueTextureId );
-    glActiveTexture( GL_TEXTURE0 + _missingValueTexOffset );
-    glBindTexture( GL_TEXTURE_3D,  _missingValueTextureId );
-    this->_configure3DTextureNearestInterpolation();
+//    glGenTextures( 1, &_missingValueTextureId );
+//    glActiveTexture( GL_TEXTURE0 + _missingValueTexOffset );
+//    glBindTexture( GL_TEXTURE_3D,  _missingValueTextureId );
+//    this->_configure3DTextureNearestInterpolation();
 
     /* Generate and configure 3D texture: _2ndVarMaskTexId */
     glGenTextures( 1, &_2ndVarMaskTexId );
@@ -961,10 +961,10 @@ int RayCaster::_initializeFramebufferTextures()
     this->_configure3DTextureNearestInterpolation();
 
     /* Generate and configure 2D depth texture */
-    glGenTextures(1, &_depthTextureId);
-    glActiveTexture( GL_TEXTURE0 + _depthTexOffset );
-    glBindTexture(GL_TEXTURE_2D, _depthTextureId);
-    this->_configure2DTextureLinearInterpolation();
+//    glGenTextures(1, &_depthTextureId);
+//    glActiveTexture( GL_TEXTURE0 + _depthTexOffset );
+//    glBindTexture(GL_TEXTURE_2D, _depthTextureId);
+//    this->_configure2DTextureLinearInterpolation();
 
     return 0;
 }
@@ -1211,9 +1211,9 @@ void RayCaster::_load3rdPassUniforms( int                castingMode,
     glBindTexture( GL_TEXTURE_1D,  _colorMapTextureId );
     shader->SetUniform("colorMapTexture", _colorMapTexOffset);
 
-    glActiveTexture(  GL_TEXTURE0 +     _missingValueTexOffset );
-    glBindTexture(    GL_TEXTURE_3D,    _missingValueTextureId );
-    shader->SetUniform("missingValueMaskTexture", _missingValueTexOffset);
+//    glActiveTexture(  GL_TEXTURE0 +     _missingValueTexOffset );
+//    glBindTexture(    GL_TEXTURE_3D,    _missingValueTextureId );
+//    shader->SetUniform("missingValueMaskTexture", _missingValueTexOffset);
 
     if( castingMode == CellTraversal )
     {
@@ -1642,21 +1642,21 @@ void RayCaster::_updateDataTextures( )
 
     // Now we HAVE TO attach a missing value mask texture, because
     //   Intel driver on Mac doesn't like leaving the texture empty...
-    glActiveTexture( GL_TEXTURE0 + _missingValueTexOffset );
-    glBindTexture( GL_TEXTURE_3D,  _missingValueTextureId );
-    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );  // Alignment adjustment. Stupid OpenGL thing.
-    if( _userCoordinates.missingValueMask )
-    {
-        glTexImage3D(  GL_TEXTURE_3D, 0, GL_R8UI, dims[0], dims[1], dims[2], 0,
-                       GL_RED_INTEGER, GL_UNSIGNED_BYTE, _userCoordinates.missingValueMask );
-    }
-    else
-    {
-        unsigned char dummyMask[8] = { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u };
-        glTexImage3D( GL_TEXTURE_3D, 0, GL_R8UI, 2, 2, 2, 0, 
-                      GL_RED_INTEGER, GL_UNSIGNED_BYTE, dummyMask );
-    }
-    glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );    // Restore default alignment.
+//    glActiveTexture( GL_TEXTURE0 + _missingValueTexOffset );
+//    glBindTexture( GL_TEXTURE_3D,  _missingValueTextureId );
+//    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );  // Alignment adjustment. Stupid OpenGL thing.
+//    if( _userCoordinates.missingValueMask )
+//    {
+//        glTexImage3D(  GL_TEXTURE_3D, 0, GL_R8UI, dims[0], dims[1], dims[2], 0,
+//                       GL_RED_INTEGER, GL_UNSIGNED_BYTE, _userCoordinates.missingValueMask );
+//    }
+//    else
+//    {
+//        unsigned char dummyMask[8] = { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u };
+//        glTexImage3D( GL_TEXTURE_3D, 0, GL_R8UI, 2, 2, 2, 0,
+//                      GL_RED_INTEGER, GL_UNSIGNED_BYTE, dummyMask );
+//    }
+//    glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );    // Restore default alignment.
 }
 
 int RayCaster::_updateVertCoordsTexture( const glm::mat4& MV )
@@ -1780,3 +1780,4 @@ void RayCaster::_sleepAWhile() const
     nanosleep( &req, &rem );
 #endif
 }
+
