@@ -3,6 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. .. image:: vaporNCARLogoWhite2.png    
+..    :scale: 10%
+..    :align: right
+
+.. |
+.. |
+
+
 Vapor 3
 =================================
 
@@ -21,10 +29,12 @@ VAPOR is a product of the National Center for Atmospheric Research’s Computati
    :caption: Contents:
 
    ./installation
-   ./usage
-   ./support
+   Usage Guide <./usage>
    ./tutorials
    ./gallery
+   ./support
+   ./citation
+   ./license
 ..   usage/renderers
 ..   usage/thegui
 ..   usage/dataconversion
