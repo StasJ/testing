@@ -59,7 +59,8 @@ GeometryWidget::GeometryWidget(QWidget* parent) :
 	_paramsMgr = NULL;
 	_dataMgr = NULL;
 	_rParams = NULL;
-    _initialized = false;
+//    _initialized = false;
+    _functionPtr = &VAPoR::RenderParams::GetBox;
 
 	_minXCombo = new Combo(_minXEdit, _minXSlider);
 	_maxXCombo = new Combo(_maxXEdit, _maxXSlider);
@@ -433,12 +434,13 @@ void GeometryWidget::Update(ParamsMgr *paramsMgr,
 	_dataMgr = dataMgr;
 	_rParams = rParams;
 
-    if (!_initialized) {
-        _boxCallback = std::bind( &VAPoR::RenderParams::GetBox, _rParams);
-        _initialized = true;
-    }
-    else
-        _boxCallback = std::bind( _functionPtr, _rParams);
+    _boxCallback = std::bind( _functionPtr, _rParams);
+//    if (!_initialized) {
+//        _boxCallback = std::bind( &VAPoR::RenderParams::GetBox, _rParams);
+//        _initialized = true;
+//    }
+//    else
+//        _boxCallback = std::bind( _functionPtr, _rParams);
 
     _boxCallback();
 
