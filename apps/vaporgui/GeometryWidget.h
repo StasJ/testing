@@ -9,13 +9,16 @@ namespace VAPoR {
 	class RenderParams;
 	class ParamsMgr;
 	class DataMgr;
+    class Box;
 }
+
 
 class GeometryWidget : public QWidget, public Ui_GeometryWidgetGUI {
 	
 	Q_OBJECT
 
 public:
+
 	GeometryWidget(QWidget *parent=0);
 
 	void Reinit(
@@ -34,9 +37,15 @@ public:
 										"necessary for making changes to a "
 										"user-defined region.");}
 	bool isContainer() const {return true;}
-	void Update(VAPoR::ParamsMgr* paramsMgr,
+	
+    void Update(VAPoR::ParamsMgr* paramsMgr,
 				VAPoR::DataMgr* dataMgr,
 				VAPoR::RenderParams* rParams);
+
+    //void SetBoxCallback( std::function< VAPoR::Box* () > callback );
+    //void SetBoxCallback( std::function< VAPoR::Box*(void) > callback );
+    //void SetBoxCallback( VAPoR::Box *(callback)() );
+    void SetBoxCallback( VAPoR::Box* (VAPoR::RenderParams::*callback)() );
 
 signals:
     void valueChanged();
@@ -107,8 +116,12 @@ private:
 	DimFlags _dimFlags;
 	VariableFlags _varFlags;
 	GeometryFlags _geometryFlags;
-
+    
     bool  _useAuxVariables;     // for Statistics utility
+   
+    VAPoR::Box* (VAPoR::RenderParams::*_functionPtr)(); 
+    std::function< VAPoR::Box* () > _boxCallback;
+    bool _initialized;
 };
 
 #endif //GEOMETRYWIDGET_H

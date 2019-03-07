@@ -59,6 +59,7 @@ GeometryWidget::GeometryWidget(QWidget* parent) :
 	_paramsMgr = NULL;
 	_dataMgr = NULL;
 	_rParams = NULL;
+    _initialized = false;
 
 	_minXCombo = new Combo(_minXEdit, _minXSlider);
 	_maxXCombo = new Combo(_maxXEdit, _maxXSlider);
@@ -177,7 +178,7 @@ void GeometryWidget::reinitBoxToPlanarAxis(
     
     minExt[planarAxis] = average;
     maxExt[planarAxis] = average;
-    Box* box = _rParams->GetBox();
+    Box* box = _boxCallback();
     box->SetExtents(minExt, maxExt);
 }
 
@@ -390,7 +391,7 @@ void GeometryWidget::updateBoxCombos(
 
 	// Get current user selected extents
 	//
-	Box* box = _rParams->GetBox();
+	Box* box = _boxCallback();
 	std::vector<double> minExt, maxExt;
 	box->GetExtents(minExt, maxExt);
 	
@@ -432,6 +433,15 @@ void GeometryWidget::Update(ParamsMgr *paramsMgr,
 	_dataMgr = dataMgr;
 	_rParams = rParams;
 
+    if (!_initialized) {
+        _boxCallback = std::bind( &VAPoR::RenderParams::GetBox, _rParams);
+        _initialized = true;
+    }
+    else
+        _boxCallback = std::bind( _functionPtr, _rParams);
+
+    _boxCallback();
+
 	// Get current domain extents
 	//
 	std::vector<double> minFullExt, maxFullExt;
@@ -443,7 +453,7 @@ void GeometryWidget::Update(ParamsMgr *paramsMgr,
     if (_geometryFlags & PLANAR) {
         _planeComboBox->blockSignals(true);
 
-        int rParamsOrientation = _rParams->GetBox()->GetOrientation();
+        int rParamsOrientation = _boxCallback()->GetOrientation();
         _planeComboBox->setCurrentIndex(rParamsOrientation);
 
         bool reinit=false;
@@ -451,6 +461,17 @@ void GeometryWidget::Update(ParamsMgr *paramsMgr,
 
         _planeComboBox->blockSignals(false);
     }
+}
+
+//void GeometryWidget::SetBoxCallback( std::function<VAPoR::Box*(void)> callback )
+void GeometryWidget::SetBoxCallback( VAPoR::Box* (VAPoR::RenderParams::*callback)() )
+//void GeometryWidget::SetBoxCallback( std::function<VAPoR::Box* ()> callback )
+{
+    if (_rParams == nullptr)
+        return;
+
+    _functionPtr = callback;
+    //_boxCallback = std::bind( callback, _rParams);
 }
 
 void GeometryWidget::getFullExtents(
@@ -496,7 +517,7 @@ void GeometryWidget::setRange(double min, double max, int dimension) {
 	}
 
 	std::vector<double> minExt, maxExt;
-	Box* box = _rParams->GetBox();
+	Box* box = _boxCallback();
 
 	box->GetExtents(minExt, maxExt);
 	minExt[dimension] = min;
