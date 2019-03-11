@@ -366,7 +366,7 @@ bool IntersectRaySideCellBBoxDirect(vec3 origin, vec3 dir, float rt0, int x, int
     vec3 bmin, bmax;
     float t0, t1;
     GetSideCellBBoxDirect(x, y, sideID, level, bmin, bmax);
-    if (IntersectRayBoundingBox(origin, dir, rt0, bmin, bmax, t0, t1)) {
+    if (IntersectRayBoundingBox2(origin, dir, rt0, bmin, bmax, t0, t1)) {
         return true;
     }
     return false;
