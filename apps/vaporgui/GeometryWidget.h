@@ -45,7 +45,7 @@ public:
     //void SetBoxCallback( std::function< VAPoR::Box* () > callback );
     //void SetBoxCallback( std::function< VAPoR::Box*(void) > callback );
     //void SetBoxCallback( VAPoR::Box *(callback)() );
-    void SetBoxCallback( VAPoR::Box* (VAPoR::RenderParams::*callback)() );
+    void SetBoxCallback( VAPoR::Box* (VAPoR::RenderParams::*callback)() const );
 
 signals:
     void valueChanged();
@@ -119,7 +119,8 @@ private:
     
     bool  _useAuxVariables;     // for Statistics utility
    
-    VAPoR::Box* (VAPoR::RenderParams::*_functionPtr)(); 
+    //VAPoR::Box* (VAPoR::RenderParams::*_functionPtr)() const; 
+    VAPoR::Box* (VAPoR::RenderParams::*_functionPtr)() const; 
     std::function< VAPoR::Box* () > _boxCallback;
     bool _initialized;
 };

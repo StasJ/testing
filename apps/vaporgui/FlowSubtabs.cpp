@@ -55,11 +55,12 @@ void FlowAppearanceSubtab::Update(  VAPoR::DataMgr *dataMgr,
 FlowGeometrySubtab::FlowGeometrySubtab(QWidget* parent) : QVaporSubtab(parent)
 {
     _geometryWidget   = new GeometryWidget(this);
+    _geometryWidget->SetBoxCallback( &VAPoR::RenderParams::GetBox1 );
     _copyRegionWidget = new CopyRegionWidget(this);
     _transformTable   = new TransformTable(this);
     _geometryWidget->Reinit( (DimFlags)THREED,
-                             (VariableFlags)SCALAR,
-                             (GeometryFlags)PLANAR );
+                             (VariableFlags)SCALAR
+                           );
 
     _layout->addWidget( _geometryWidget, 0 ,0 );
     _layout->addWidget( _copyRegionWidget, 0 ,0 );
