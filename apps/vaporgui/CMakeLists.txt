@@ -64,6 +64,7 @@ set (SRCS
 	Combo.cpp
 	windowsUtils.cpp
 	Manip.cpp
+    VaporWidgets.cpp
 
 	# Need to include all files that request .ui files
 	TwoDSubtabs.h
@@ -103,7 +104,6 @@ set (SRCS
 	AnnotationEventRouter.h
 	BannerGUI.h
 	BarbEventRouter.h
-	BarbEventRouter.h
 	Combo.h
 	ContourEventRouter.h
 	ControlPointEditor.h
@@ -135,6 +135,7 @@ set (SRCS
 	VariablesWidget.h
 	VizSelectCombo.h
 	WireFrameEventRouter.h
+    VaporWidgets.h
 )
 
 set (UIS 
@@ -198,6 +199,10 @@ set (UIS
 	QSliderEdit.ui
 	QRange.ui
 	QSinglePoint.ui
+    VComboBox.ui
+    VCheckBox.ui
+    VPathSelector.ui
+    VPushButton.ui
 )
 
 source_group (UIs FILES ${UIS})
