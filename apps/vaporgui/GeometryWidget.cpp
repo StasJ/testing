@@ -36,6 +36,8 @@
 
 using namespace VAPoR;
 
+typedef VAPoR::Box* (boxCallback)();
+
 template<typename Out>
 void split(const std::string &s, char delim, Out result) {
 	std::stringstream ss;
@@ -61,6 +63,7 @@ GeometryWidget::GeometryWidget(QWidget* parent) :
 	_rParams = NULL;
     
     _functionPtr = &VAPoR::RenderParams::GetBox;
+    //_functionPtr = std::function< VAPoR::Box* () > ( &VAPoR::RenderParams::GetBox );
 
 	_minXCombo = new Combo(_minXEdit, _minXSlider);
 	_maxXCombo = new Combo(_maxXEdit, _maxXSlider);
@@ -434,7 +437,19 @@ void GeometryWidget::Update(ParamsMgr *paramsMgr,
 	_dataMgr = dataMgr;
 	_rParams = rParams;
 
-    _boxCallback = std::bind( _functionPtr, _rParams);
+    //_boxCallback = std::bind( _functionPtr, _rParams);
+
+//typedef VAPoR::Box* (boxCallback)();
+
+    const std::function< boxCallback > tmpFunction = _functionPtr;
+    //const std::function< VAPoR::Box* () > tmpFunction = _functionPtr;
+        // const std::__1::function<VAPoR::Box *()> & to const std::__1::function<VAPoR::Box *()
+    //const std::function< VAPoR::Box* () > *tmpFunction = new std::function< VAPoR::Box* () > (_functionPtr);
+        //const std::__1::function<VAPoR::Box *()> *& to const std::__1::function<VAPoR::Box *()
+
+    _boxCallback = std::bind( tmpFunction , _rParams);
+    //_boxCallback = std::bind( tmpFunction.target< boxCallback* >() , _rParams);
+    //_boxCallback = std::bind( _functionPtr.target< boxCallback* >() , _rParams);
 
 	// Get current domain extents
 	//
@@ -458,7 +473,8 @@ void GeometryWidget::Update(ParamsMgr *paramsMgr,
 }
 
 void GeometryWidget::SetBoxCallback( 
-    VAPoR::Box* (VAPoR::RenderParams::*callback)() const 
+    //VAPoR::Box* (VAPoR::RenderParams::*callback)() const 
+    std::function< VAPoR::Box* () > callback
 ) {
     _functionPtr = callback;
 }
