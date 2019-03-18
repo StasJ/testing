@@ -3,7 +3,6 @@ Renderers
 =================
 
 .. toctree::
-    :maxdepth: 2
     :caption: Renderers:
 
     renderers/barb
