@@ -189,6 +189,8 @@ void VFileSelector::SetPath( const std::string& path ) {
     }
     _filePath = path;
     _lineEdit->setText( QString::fromStdString(path) );
+
+    std::cout << "GetPath " << GetPath() << std::endl;
 }
 
 void VFileSelector::_openFileDialog() {
