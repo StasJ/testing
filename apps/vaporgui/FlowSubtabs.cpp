@@ -87,10 +87,13 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
     _pathTest2 = new VPathSelector( this, "directory", "~/", QFileDialog::Directory );
     _layout->addWidget( _pathTest2 );*/
     
-    _pathTest = new VFileReader( this, "readPath", "~/" );
+    _pathTest = new VFileReader( this, "readFile", "~/" );
     _layout->addWidget( _pathTest );
     
-    _pathTest2 = new VFileWriter( this, "writePath", "~/" );
+    _pathTest1 = new VFileReader( this, "readPath", "~/", QFileDialog::Directory );
+    _layout->addWidget( _pathTest1 );
+
+    _pathTest2 = new VFileWriter( this, "writeFile", "~/" );
     _layout->addWidget( _pathTest2 );
 }
 
