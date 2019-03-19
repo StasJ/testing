@@ -5,7 +5,7 @@
 #include "CopyRegionWidget.h"
 #include "TransformTable.h"
 #include "ColorbarWidget.h"
-//#include "VaporWidgets.h"
+#include "VaporWidgets.h"
 
 QVaporSubtab::QVaporSubtab(QWidget* parent) : QWidget(parent)
 {
@@ -86,6 +86,12 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
     
     _pathTest2 = new VPathSelector( this, "directory", "~/", QFileDialog::Directory );
     _layout->addWidget( _pathTest2 );*/
+    
+    _pathTest = new VFileReader( this, "readPath", "~/" );
+    _layout->addWidget( _pathTest );
+    
+    _pathTest2 = new VFileWriter( this, "writePath", "~/" );
+    _layout->addWidget( _pathTest2 );
 }
 
 void FlowSeedingSubtab::Update(

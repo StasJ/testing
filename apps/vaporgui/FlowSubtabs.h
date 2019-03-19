@@ -23,7 +23,8 @@ class ColorbarWidget;
 class VPushButton;
 class VComboBox;
 class VCheckBox;
-class VPathSelector;
+class VFileReader;
+class VFileWriter;
 
 class QVaporSubtab : public QWidget {
     Q_OBJECT
@@ -93,8 +94,8 @@ private:
     VAPoR::FlowParams*      _params;
     GeometryWidget*         _geometryWidget;
     VPushButton*            _pushTest;
-    VPathSelector*          _pathTest;
-    VPathSelector*          _pathTest2;
+    VFileReader*            _pathTest;
+    VFileWriter*            _pathTest2;
     VComboBox*              _comboTest;
     VCheckBox*              _checkboxTest;
 };
