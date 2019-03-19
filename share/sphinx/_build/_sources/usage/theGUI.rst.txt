@@ -1,0 +1,11 @@
+================================
+The User Interface
+================================
+
+.. toctree::
+    :caption: The GUI:
+
+    theGUI/variablesTab.rst
+    theGUI/appearanceTab.rst
+    theGUI/geometryTab.rst
+    theGUI/annotationTab.rst
