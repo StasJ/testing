@@ -2,10 +2,23 @@
 The User Interface
 ================================
 
-.. toctree::
-    :caption: The GUI:
+Variables Tab
+-------------
+    - foo
+    - bar
 
-    theGUI/variablesTab.rst
-    theGUI/appearanceTab.rst
-    theGUI/geometryTab.rst
-    theGUI/annotationTab.rst
+Appearance Tab
+--------------
+    - foo
+    - bar
+
+Geometry Tab
+------------
+    - foo
+    - bar
+
+Annotation Tab
+--------------
+    - foo
+    - bar
+
