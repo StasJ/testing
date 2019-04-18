@@ -37,12 +37,12 @@ FlowEventRouter::FlowEventRouter( QWidget *parent, ControlExec *ce)
 	qsvar->setWidgetResizable(true);
 	addTab(qsvar, "Variables");
 
-	_appearance = new FlowAppearanceSubtab(this);
-	QScrollArea* qsapp = new QScrollArea(this);
-	qsapp->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	qsapp->setWidget(_appearance);
-	qsapp->setWidgetResizable(true);
-	addTab(qsapp,"Appearance");
+    _integration = new FlowIntegrationSubtab(this);
+    QScrollArea* qsinteg = new QScrollArea(this);
+	qsinteg->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	qsinteg->setWidget(_integration);
+	qsinteg->setWidgetResizable(true);
+	addTab(qsinteg,"Integration");
 
 	_seeding = new FlowSeedingSubtab(this);
 	QScrollArea* qsseed = new QScrollArea(this);
@@ -50,6 +50,13 @@ FlowEventRouter::FlowEventRouter( QWidget *parent, ControlExec *ce)
 	qsseed->setWidget(_seeding);
 	qsseed->setWidgetResizable(true);
 	addTab(qsseed,"Seeding");
+
+	_appearance = new FlowAppearanceSubtab(this);
+	QScrollArea* qsapp = new QScrollArea(this);
+	qsapp->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	qsapp->setWidget(_appearance);
+	qsapp->setWidgetResizable(true);
+	addTab(qsapp,"Appearance");
 
 	_geometry = new FlowGeometrySubtab(this);
 	QScrollArea *qsgeo = new QScrollArea(this);
@@ -117,6 +124,11 @@ void FlowEventRouter::_updateTab(){
 		_controlExec->GetParamsMgr(),
 		GetActiveParams()
 	);
+	_integration->Update(
+		GetActiveDataMgr(),
+		_controlExec->GetParamsMgr(),
+		GetActiveParams()
+    );
 	_seeding->Update(
 		GetActiveDataMgr(),
 		_controlExec->GetParamsMgr(),
