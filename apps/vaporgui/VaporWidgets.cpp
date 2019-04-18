@@ -10,7 +10,7 @@
 #include <QCheckBox>
 #include <QPushButton>
 #include <QLineEdit>
-#include <QDoubleValidator>
+#include <QValidator>
 #include <QSpacerItem>
 #include <QHBoxLayout>
 #include <QSpinBox>
@@ -93,6 +93,52 @@ void VSpinBox::SetValue( int value ) {
     _spinBox->setValue( value );
 }
 
+int VSpinBox::GetValue() const {
+    return _spinBox->value();
+}
+
+VDoubleSpinBox::VDoubleSpinBox(
+        QWidget *parent,
+        const std::string& labelText,
+        double defaultValue
+    ) :
+    VaporWidget(parent, labelText)
+{
+    _spinBox = new QDoubleSpinBox( this );
+    _spinBox->setFocusPolicy(Qt::NoFocus);
+    _layout->addWidget( _spinBox );
+
+    SetLabelText( QString::fromStdString( labelText ) );
+    SetValue( defaultValue );
+
+    connect( _spinBox, SIGNAL( valueChanged(double) ),
+        this, SLOT( _changed(double) ) );
+}
+
+void VDoubleSpinBox::_changed( double value ) {
+    emit _valueChanged( value );
+}
+
+void VDoubleSpinBox::SetMaximum( double maximum ) {
+    _spinBox->setMaximum( maximum );
+}
+
+void VDoubleSpinBox::SetMinimum( double minimum ) {
+    _spinBox->setMinimum( minimum );
+}
+
+void VDoubleSpinBox::SetValue( double value ) {
+    _spinBox->setValue( value );
+}
+
+void VDoubleSpinBox::SetDecimals( int decimals ) {
+    _spinBox->setDecimals( decimals );
+}
+
+double VDoubleSpinBox::GetValue() const {
+    return _spinBox->value();
+}
+
 VLineEdit::VLineEdit(
         QWidget *parent,
         const std::string& labelText,
@@ -111,6 +157,10 @@ VLineEdit::VLineEdit(
         this, SLOT( _returnPressed() ) );
 }
 
+void VLineEdit::SetValidator( const QValidator* v ) {
+    _edit->setValidator( v );
+}
+
 void VLineEdit::SetEditText( const std::string& text )
 {
     SetEditText(QString::fromStdString( text ) );
@@ -119,6 +169,11 @@ void VLineEdit::SetEditText( const std::string& text )
 void VLineEdit::SetEditText( const QString& text )
 {
     _edit->setText( text );
+}
+
+std::string VLineEdit::GetEditText() const {
+    std::string text = _edit->text().toStdString();
+    return text;
 }
 
 void VLineEdit::_returnPressed() {
