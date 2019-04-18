@@ -90,10 +90,37 @@ FlowVariablesSubtab::_steadyNumOfStepsChanged()
 //
 FlowAppearanceSubtab::FlowAppearanceSubtab(QWidget* parent) : QVaporSubtab(parent)
 {
+    _streamlineAppearanceTab = new VTabWidget( this, "Streamline Appearance Settings" );
+
+    _shapeCombo = new VComboBox( this, "Integration type" );
+    _shapeCombo->AddOption( "Tube", 0 );
+    _shapeCombo->AddOption( "Points", 1 );
+    _shapeCombo->AddOption( "Arrows", 2 );
+    _streamlineAppearanceTab->AddWidget( _shapeCombo );
+
+    _colorCombo = new VComboBox( this, "Color" );
+    _colorCombo->AddOption( "Constant" );
+    _colorCombo->AddOption( "Color mapped variable" );
+    _colorCombo->AddOption( "Distance from start" );
+    _colorCombo->AddOption( "Seed index" );
+    _streamlineAppearanceTab->AddWidget( _colorCombo );
+
+    _lengthSpinBox = new VSpinBox( this, "Length" );
+    _streamlineAppearanceTab->AddWidget( _lengthSpinBox );
+
+    _sizeSpinBox = new VSpinBox( this, "Size" );
+    _streamlineAppearanceTab->AddWidget( _sizeSpinBox );
+
+    _smoothnessSliderEdit = new QSliderEdit( this );
+    _smoothnessSliderEdit->SetLabel( "Smoothness" );
+    _streamlineAppearanceTab->AddWidget( _smoothnessSliderEdit );
+    _layout->addWidget( _streamlineAppearanceTab );
+
     _TFWidget = new TFWidget(this);
     _TFWidget->Reinit((TFFlags)(SAMPLING | CONSTANT_COLOR));
 
-    _layout->addWidget( _TFWidget, 0, 0 );
+    //_layout->addWidget( _TFWidget, 0, 0 );
+    _layout->addWidget( _TFWidget );
 
     _params = NULL;
 }
@@ -115,6 +142,9 @@ FlowIntegrationSubtab::FlowIntegrationSubtab(QWidget* parent) : QVaporSubtab(par
 {
     _integrationSettingsTab = new VTabWidget( this, "Flow Integration Settings" );
 
+    _integrateButton = new VPushButton( this, "Perform integration" );
+    _integrationSettingsTab->AddWidget( _integrateButton );
+
     _integrationTypeCombo = new VComboBox( this, "Integration type" );
     _integrationTypeCombo->AddOption( "Steady", 0 );
     _integrationTypeCombo->AddOption( "Unsteady", 1 );
@@ -125,6 +155,7 @@ FlowIntegrationSubtab::FlowIntegrationSubtab(QWidget* parent) : QVaporSubtab(par
     _directionCombo = new VComboBox( this, "Integration direction" );
     _directionCombo->AddOption( "Forward", 0 );
     _directionCombo->AddOption( "Backward", 1 );
+    _directionCombo->AddOption( "Bi-directional", 2 );
     _integrationSettingsTab->AddWidget( _directionCombo );
 
     _startSpinBox = new VSpinBox( this, "Integration start time" );
@@ -218,6 +249,12 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
     );
     _layout->addWidget( _geometryWidget );
 
+    _exportGeometryDialog = new VFileWriter( 
+        this, 
+        "Export geometry", 
+        QDir::homePath().toStdString()
+    );
+    _layout->addWidget( _exportGeometryDialog );
 }
 
 void FlowSeedingSubtab::Update(
