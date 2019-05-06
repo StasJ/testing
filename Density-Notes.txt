@@ -1,0 +1,2 @@
+All the density calculation code lives in folder:
+apps/voronoi-density
