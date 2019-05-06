@@ -45,7 +45,7 @@ float CalcLen( const float* p )                 // one point
 }
 
 void ReadParticles2( const char* name,       // input:  filename
-                     UINT&        len,        // output: number of particles
+                     UINT&       len,        // output: number of particles
                      float**     buf )       // output: data read from file
 {
     FILE*  f    = fopen( name, "r" );
@@ -58,7 +58,7 @@ void ReadParticles2( const char* name,       // input:  filename
 }
 
 void FillHelicity( const char* xname,      // input:  location filename, which starts with `xlg`
-                   UINT         len,        // input:  number of particles
+                   UINT        len,        // input:  number of particles
                    float*      buf )       // output: data read from file
 {
     char   vname[256], wname[256];
@@ -156,10 +156,10 @@ int main(int argc, char** argv )
     struct timeval start, end;
 
     // Read in particles
-    UINT       nParticles;
+    UINT      nParticles;
     float*    ptcBuf = NULL;
     ReadParticles2( argv[1], nParticles, &ptcBuf );
-    UINT       nPtcToUse = nParticles;           // use a subset of particles for experiments
+    UINT      nPtcToUse = nParticles;           // use a subset of particles for experiments
 
     // Put particles in a "PointCloud"
 	PointCloud<float> cloud;
@@ -272,8 +272,8 @@ int main(int argc, char** argv )
             UINT yOffset = y * GRIDX + zOffset;
             for( UINT x = 0; x < GRIDX; x++ )
             {
-                UINT   idx          = x+yOffset;
-                UINT   count        = counter     [ pcounter[idx] ];
+                UINT   idx         = x+yOffset;
+                UINT   count       = counter     [ pcounter[idx] ];
                 density[ idx ]     = contribution[ pcounter[idx] ] / (float)count;
             }
         }
