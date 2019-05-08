@@ -1,5 +1,5 @@
-CXX=pgc++
-CC=pgcc
+CXX=g++
+CC=gcc
 
 GCCOPTIM=-march=haswell -O3 -DNDEBUG
 PGIOPTIM=-tp=haswell-64 -O3 -DNDEBUG
@@ -9,9 +9,9 @@ GCCOMP=-fopenmp
 PGIOMP=-mp
 INTOMP=-qopenmp
 
-BINDIR=pgi_bin
-FLAG=$(PGIOPTIM)
-OMP=$(PGIOMP)
+BINDIR=bin
+FLAG=$(GCCOPTIM)
+OMP=$(GCCOMP)
 
 VORO_INSTALL=/home/shaomeng/Build/voro++-0.4.6/install
 
@@ -33,4 +33,7 @@ v4: voro2densityV4.cpp
 	$(CXX) -std=c++11 $(FLAG) -o $(BINDIR)/v4 voro2densityV4.cpp
 
 v5: voro2densityV5.cpp
+	$(CXX) -std=c++11 $(FLAG) -o $(BINDIR)/v5 voro2densityV5.cpp $(OMP)
+
+v6: voro2densityV5.cpp
 	$(CXX) -std=c++11 $(FLAG) -o $(BINDIR)/v5 voro2densityV5.cpp $(OMP)
