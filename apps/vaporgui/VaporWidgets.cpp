@@ -258,6 +258,11 @@ void VComboBox::_userIndexChanged(int index) {
     emit _indexChanged(index);
 }
 
+int VComboBox::GetNumOfItems() const
+{
+    return _combo->count();
+}
+
 int VComboBox::GetCurrentIndex() const {
     return _combo->currentIndex();
 }
@@ -364,7 +369,7 @@ void VFileSelector::SetPath( const std::string& path ) {
 }
 
 void VFileSelector::SetFileFilter( const QString& filter ) {
-    SetFileFilter( filter.toStdString() );
+    _fileDialog->setNameFilter( filter );
 }
 
 void VFileSelector::SetFileFilter( const std::string& filter) {

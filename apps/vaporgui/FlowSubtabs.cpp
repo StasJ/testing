@@ -1,11 +1,4 @@
 #include "FlowSubtabs.h"
-#include "VariablesWidget.h"
-#include "TFWidget.h"
-#include "GeometryWidget.h"
-#include "CopyRegionWidget.h"
-#include "TransformTable.h"
-#include "ColorbarWidget.h"
-#include "VaporWidgets.h"
 
 QVaporSubtab::QVaporSubtab(QWidget* parent) : QWidget(parent)
 {
@@ -72,7 +65,7 @@ FlowVariablesSubtab::_velocityMultiplierChanged()
 {
     bool ok;
     double d = _velocityMltp->text().toDouble( &ok );
-    if( ok )    // We don't need this verification once the line edit has its own validator
+    if( ok )    // Scott: this verification is no longer needed once the line edit has its own validator
         _params->SetVelocityMultiplier( d );
 }
 
@@ -81,7 +74,7 @@ FlowVariablesSubtab::_steadyNumOfStepsChanged()
 {
     bool ok;
     int i = _steadyNumOfSteps->text().toInt( &ok );
-    if( ok )    // We don't need this verification once the line edit has its own validator
+    if( ok )    // Scott: this verification is no longer needed once the line edit has its own validator
         _params->SetSteadyNumOfSteps( i );
 }
 
@@ -286,6 +279,7 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
     );
     _layout->addWidget( _geometryWidget );
 
+<<<<<<< HEAD
     _configureRakeType();
 
     _exportGeometryDialog = new VFileWriter( 
@@ -295,19 +289,56 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
         QDir::homePath().toStdString()
     );
     _layout->addWidget( _exportGeometryDialog );
+=======
+    _seedGenMode = new VComboBox( this, "Seed Generation Mode" );
+    /* Index numbers are in agreement with what's in FlowRenderer.h */
+    _seedGenMode->AddOption( "Programatically", 0 );
+    _seedGenMode->AddOption( "From a List", 1 );
+    _layout->addWidget( _seedGenMode );
+    connect( _seedGenMode, SIGNAL( _indexChanged(int) ), this, SLOT( _seedGenModeChanged(int) ) );
+   
+    _fileReader = new VFileReader( this, "Input Seed File" );
+    _fileReader->SetFileFilter( QString::fromAscii("*.txt") );
+    _layout->addWidget( _fileReader );
+    connect( _fileReader, SIGNAL( _pathChanged() ), this, SLOT( _fileReaderChanged() ) );
+
+    _flowDirection = new VComboBox( this, "Steady Flow Direction" );
+    /* Index numbers are in agreement with what's in FlowRenderer.h */
+    _flowDirection->AddOption( "Forward", 0 );
+    _flowDirection->AddOption( "Backward", 1 );
+    _flowDirection->AddOption( "Bi-Directional", 2 );
+    _layout->addWidget( _flowDirection );
+    connect( _flowDirection, SIGNAL(_indexChanged(int)), this, SLOT( _flowDirectionChanged(int) ) );
+
+    _fileWriter = new VFileWriter( this, "Output Flow Lines" );
+    _layout->addWidget( _fileWriter );
+    connect( _fileWriter, SIGNAL( _pathChanged() ), this, SLOT( _fileWriterChanged() ) );
+>>>>>>> flow
 }
 
-void FlowSeedingSubtab::Update(
-        VAPoR::DataMgr *dataMgr,
-        VAPoR::ParamsMgr *paramsMgr,
-        VAPoR::RenderParams *rParams
-    )
+void FlowSeedingSubtab::Update( VAPoR::DataMgr      *dataMgr,
+                                VAPoR::ParamsMgr    *paramsMgr,
+                                VAPoR::RenderParams *params )
 {
-    //VAPoR::Box* rakeBox = rParams->GetRakeBox();
-    //_geometryWidget->Update(paramsMgr, dataMgr, rParams, rakeBox);
-    _geometryWidget->Update(paramsMgr, dataMgr, rParams );
+    _params = dynamic_cast<VAPoR::FlowParams*>(params);
+
+    //VAPoR::Box* rakeBox = params->GetRakeBox();
+    //_geometryWidget->Update(paramsMgr, dataMgr, params, rakeBox);
+    _geometryWidget->Update(paramsMgr, dataMgr, params );
+
+    long idx = _params->GetSeedGenMode();
+    if( idx >= 0 && idx < _seedGenMode->GetNumOfItems() )
+        _seedGenMode->SetIndex( idx );
+    else
+        _seedGenMode->SetIndex( 0 );
+
+    if( !_params->GetSeedInputFilename().empty() ) 
+        _fileReader->SetPath( _params->GetSeedInputFilename() );
+    if( !_params->GetFlowlineOutputFilename().empty() ) 
+        _fileWriter->SetPath( _params->GetFlowlineOutputFilename() );
 }
 
+<<<<<<< HEAD
 void FlowSeedingSubtab::_configureRakeType() {
     string seedType = _distributionCombo->GetCurrentText();
     if ( seedType == "Random" ) {
@@ -352,20 +383,33 @@ void FlowSeedingSubtab::_configureRakeType() {
 }
 
 void FlowSeedingSubtab::_pushTestPressed() 
+=======
+void
+FlowSeedingSubtab::_seedGenModeChanged( int newIdx )
+>>>>>>> flow
 {
-    cout << "Push button pressed" << endl;
+    _params->SetSeedGenMode( newIdx );
 }
 
-void FlowSeedingSubtab::_comboBoxSelected( int index ) 
+void
+FlowSeedingSubtab::_fileReaderChanged()
 {
-    string option = "*** Need to turn on _comboTest at FlowSubtabs.cpp:107";
-    cout << "Combo selected at index " << index << " for option " << option << endl;
+    std::string filename = _fileReader->GetPath();
+    _params->SetSeedInputFilename( filename );
 }
 
-void FlowSeedingSubtab::_checkBoxSelected() 
+void
+FlowSeedingSubtab::_fileWriterChanged()
 {
-    bool checked = 0;//_checkboxTest->GetCheckState();
-    cout << "Checkbox is checked? " << checked << endl;
+    std::string filename = _fileWriter->GetPath();
+    _params->SetFlowlineOutputFilename( filename );
+std::cout << filename << std::endl;
+}
+
+void
+FlowSeedingSubtab::_flowDirectionChanged( int newIdx )
+{
+    _params->SetFlowDirection( newIdx );
 }
 
 

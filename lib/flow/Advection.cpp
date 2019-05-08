@@ -9,8 +9,6 @@ Advection::Advection() : _lowerAngle( 3.0f ), _upperAngle( 15.0f )
 {
     _lowerAngleCos = glm::cos( glm::radians( _lowerAngle ) );
     _upperAngleCos = glm::cos( glm::radians( _upperAngle ) );
-    _latestAdvectionTime = 0.0f;
-    //_advectionComplete = false;
 }
 
 // Destructor;
@@ -45,8 +43,6 @@ Advection::UseSeedParticles( const std::vector<Particle>& seeds )
     _streams.resize( seeds.size() );
     for( size_t i = 0; i < seeds.size(); i++ )
         _streams[i].push_back( seeds[i] );
-    
-    _latestAdvectionTime = seeds.at(0).time;
 }
 
 int
@@ -143,9 +139,11 @@ Advection::AdvectOneStep( Field* velocity, float deltaT, ADVECTION_METHOD method
             const auto& past1 = s[ s.size()-2 ];
             const auto& past2 = s[ s.size()-3 ];
             dt  = p0.time - past1.time;     // step size used by last integration
-            dt  = dt < maxdt ? dt : maxdt ;
-            dt  = dt > mindt ? dt : mindt ;
             dt *= _calcAdjustFactor( past2, past1, p0 );
+            if( dt > 0 )    // integrate forward 
+                dt  = glm::clamp( dt, mindt, maxdt );
+            else            // integrate backward
+                dt  = glm::clamp( dt, maxdt, mindt );
         }
 
         Particle p1;
@@ -163,8 +161,6 @@ Advection::AdvectOneStep( Field* velocity, float deltaT, ADVECTION_METHOD method
         {
             happened = true;
             s.push_back( p1 );
-            if( p1.time > _latestAdvectionTime )
-                _latestAdvectionTime = p1.time;
         }
     }
 
@@ -219,9 +215,6 @@ Advection::AdvectTillTime( Field* velocity, float deltaT, float targetT, ADVECTI
             {
                 happened = true;
                 s.push_back( p1 );
-                if( p1.time > _latestAdvectionTime )
-                    _latestAdvectionTime = p1.time;
-
                 p0 = p1;
             }
         }
@@ -235,46 +228,57 @@ Advection::AdvectTillTime( Field* velocity, float deltaT, float targetT, ADVECTI
 
 
 int
-Advection::CalculateParticleProperty( Field* scalar, bool useAsColor )
+Advection::CalculateParticleValues( Field* scalar, bool skipNonZero )
 {
     size_t mostSteps = 0;
     for( const auto& s : _streams )
         if( s.size() > mostSteps )
             mostSteps = s.size();
 
-    if( useAsColor )    // put the new value to the "value" field of the particle
-    {
+    // Color step i of all particles, and then move on to the next step
     for( size_t i = 0; i < mostSteps; i++ )
     {
         for( auto& s : _streams )
             if( i < s.size() )
             {
                 auto& p = s[i];
+                // Do not evaluate this particle if its value is non-zero
+                if( skipNonZero && p.value != 0.0f )
+                    continue;
                 float value;
-                int rv = scalar->GetScalar( p.time, p.location, value );
-                assert( rv == 0 || rv == OUT_OF_FIELD );
+                int rv = scalar->GetScalar( p.time, p.location, value, false );
+                assert( rv == 0 );
                 p.value = value;
             }
-    }
-    }
-    else    // put the new value to the "properties" field of the particle
-    {
-    for( size_t i = 0; i < mostSteps; i++ )
-    {
-        for( auto& s : _streams )
-            if( i < s.size() )
-            {
-                auto& p = s[i];
-                float value;
-                int rv = scalar->GetScalar( p.time, p.location, value );
-                assert( rv == 0 || rv == OUT_OF_FIELD );
-                p.AttachProperty( value );
-            }
-    }
     }
 
     return 0;
 }
+
+int
+Advection::CalculateParticleProperties( Field* scalar )
+{
+    size_t mostSteps = 0;
+    for( const auto& s : _streams )
+        if( s.size() > mostSteps )
+            mostSteps = s.size();
+     
+    for( size_t i = 0; i < mostSteps; i++ )
+    {
+        for( auto& s : _streams )
+            if( i < s.size() )
+            {
+                auto& p = s[i];
+                float value;
+                int rv = scalar->GetScalar( p.time, p.location, value, false );
+                assert( rv == 0 );
+                p.AttachProperty( value );
+            }
+    }
+
+    return 0;
+}
+
 
 int
 Advection::_advectEuler( Field* velocity, const Particle& p0, float dt, Particle& p1 ) const
@@ -426,10 +430,13 @@ Advection::GetStreamAt( size_t i ) const
     return _streams.at(i);
 }
 
-float
-Advection::GetLatestAdvectionTime() const
+size_t
+Advection::GetMaxNumOfSteps() const
 {
-    return _latestAdvectionTime;
+    size_t num = 0;
+    for( const auto& s : _streams )
+        num = s.size() > num ? s.size() : num;
+    return num;
 }
 
 /*
@@ -490,4 +497,12 @@ Advection::ClearParticleProperties()
     for( auto& stream : _streams )
         for( auto& part : stream )
             part.ClearProperties();
+}
+
+void 
+Advection::ResetParticleValues()
+{
+    for( auto& stream : _streams )
+        for( auto& part : stream )
+            part.value = 0.0f;
 }

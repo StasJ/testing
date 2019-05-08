@@ -56,15 +56,32 @@ protected:
     float               _colorMapRange[3];   // min, max, and their diff
     bool                _advectionComplete;
     bool                _coloringComplete;
-    unsigned int        _steadyTotalSteps;
 
     // A few variables to keep the current advection states
     int                 _cache_refinementLevel;
     int                 _cache_compressionLevel;
     float               _cache_velocityMltp;
     bool                _cache_isSteady;
-    int                 _cache_steadyNumOfSteps;
+    long                _cache_steadyNumOfSteps;
     size_t              _cache_currentTS;
+
+    // A few different modes to generate advection seeds:
+    //   0 - programmatical
+    //   1 - reading a list of seeds
+    //   2 - uniformly generate 
+    //   3 - randomly generate
+    //   4 - randomly generate with bias
+    long                _cache_seedGenMode;
+    std::string         _cache_seedInputFilename;
+
+    // A few different ways to integrate a flow line in steady mode:
+    //   0 - forward
+    //   1 - backward
+    //   2 - bi-directional
+    long                _cache_flowDirection;
+
+    // This Advection class is only used in bi-directional advection mode 
+    flow::Advection*    _2ndAdvection;
 
     FlowStatus          _velocityStatus;
     FlowStatus          _colorStatus;

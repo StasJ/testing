@@ -68,12 +68,16 @@ FlowRenderer::FlowRenderer( const ParamsMgr*    pm,
     _cache_isSteady         = false;
     _cache_steadyNumOfSteps = 0;
     _cache_velocityMltp     = 1.0;
+    _cache_seedGenMode      = 0;
+    _cache_flowDirection    = 0;
+
     _velocityStatus         = FlowStatus::SIMPLE_OUTOFDATE;
     _colorStatus            = FlowStatus::SIMPLE_OUTOFDATE;
-    _steadyTotalSteps       = 0;
 
     _advectionComplete      = false;
     _coloringComplete       = false;
+
+    _2ndAdvection           = nullptr;
 }
 
 // Destructor
@@ -95,6 +99,12 @@ FlowRenderer::~FlowRenderer()
     {
         glDeleteTextures( 1, &_colorMapTexId );
         _colorMapTexId = 0;
+    }
+
+    if( _2ndAdvection )
+    {
+        delete _2ndAdvection;
+        _2ndAdvection = nullptr;
     }
 }
 
@@ -134,23 +144,36 @@ int
 FlowRenderer::_paintGL( bool fast )
 {
     FlowParams* params = dynamic_cast<FlowParams*>( GetActiveParams() );
+    int rv;     // return value
 
     _updateFlowCacheAndStates( params );
     _velocityField.UpdateParams( params );
     _colorField.UpdateParams( params );
 
-// retrieve something from the velocity field
-glm::vec3 position( 0.0 ), vel;
-_velocityField.GetVelocity( _timestamps.at(0), position, vel );
-
     if( _velocityStatus == FlowStatus::SIMPLE_OUTOFDATE )
     {
-        std::vector<flow::Particle> seeds;
-        _genSeedsXY( seeds, _timestamps.at(0) );
-        _advection.UseSeedParticles( seeds );
+        if( _cache_seedGenMode == 0 )
+        {
+            std::vector<flow::Particle> seeds;
+            _genSeedsXY( seeds, _timestamps.at(0) );
+            _advection.UseSeedParticles( seeds );
+            if( _2ndAdvection )     // bi-directional advection
+                _2ndAdvection->UseSeedParticles( seeds );
+        }
+        else if( _cache_seedGenMode == 1 )
+        {
+            rv = _advection.InputStreamsGnuplot( params->GetSeedInputFilename() );
+            if( rv != 0 )
+            {
+                MyBase::SetErrMsg("Input seed list wrong!");
+                return flow::FILE_ERROR;
+            }
+            if( _2ndAdvection )     // bi-directional advection
+                _2ndAdvection->InputStreamsGnuplot( params->GetSeedInputFilename() );
+        }
+
         _advectionComplete = false;
         _velocityStatus = FlowStatus::UPTODATE;
-        _steadyTotalSteps = 0;
     }
     else if( _velocityStatus == FlowStatus::TIME_STEP_OOD )
     {
@@ -158,37 +181,56 @@ _velocityField.GetVelocity( _timestamps.at(0), position, vel );
         _velocityStatus = FlowStatus::UPTODATE;
     }
 
-    if( !params->UseSingleColor() && _colorStatus == FlowStatus::SIMPLE_OUTOFDATE )
+    if( !params->UseSingleColor() )
     {
-        _coloringComplete = false;
-        _colorStatus      = FlowStatus::UPTODATE;
+        if( _colorStatus == FlowStatus::SIMPLE_OUTOFDATE )
+        {
+            _advection.ResetParticleValues();
+            _coloringComplete = false;
+            _colorStatus      = FlowStatus::UPTODATE;
+            if( _2ndAdvection )     // bi-directional advection
+                _2ndAdvection->ResetParticleValues();
+        }
+        else if( _colorStatus == FlowStatus::TIME_STEP_OOD )
+        {
+            _coloringComplete = false;
+            _colorStatus      = FlowStatus::UPTODATE;
+        }
     }
 
     if( !_advectionComplete )
     {
-        float deltaT = 0.05;                // For only 1 timestep case
+        float deltaT = 0.05;          // For only 1 timestep case
         if( _timestamps.size() > 1 )  // For multiple timestep case
             deltaT *= _timestamps[1] - _timestamps[0];
 
-        int rv = flow::ADVECT_HAPPENED;
+        rv = flow::ADVECT_HAPPENED;
 
         /* Advection scheme 1: advect a maximum number of steps.
          * This scheme is used for steady flow */
         if( params->GetIsSteady() )
         {
-            size_t actualSteps = 0;
+            /* If the advection is single-directional */
+            if( params->GetFlowDirection() == 1 )   // backward integration
+                deltaT *= -1.0f;
             int numOfSteps = params->GetSteadyNumOfSteps();
-struct timeval startT, finishT;
-gettimeofday( &startT, NULL );
-            for( size_t i = _steadyTotalSteps; i < numOfSteps && rv == flow::ADVECT_HAPPENED; i++ )
+            for( size_t i = _advection.GetMaxNumOfSteps(); i < numOfSteps && rv == flow::ADVECT_HAPPENED; i++ )
             {
                 rv = _advection.AdvectOneStep( &_velocityField, deltaT );
-                _steadyTotalSteps++;
-                actualSteps++;
             }
-gettimeofday( &finishT, NULL );
-std::cout << "Advection execution steps: " << actualSteps << std::endl;
-std::cout << "Using time: " << _getElapsedSeconds( &startT, &finishT ) << std::endl;
+
+            /* If the advection is bi-directional */
+            if( _2ndAdvection )
+            {
+                assert( deltaT > 0.0f );
+                float   deltaT2 = deltaT * -1.0f;
+                rv = flow::ADVECT_HAPPENED;
+                for( size_t i = _2ndAdvection->GetMaxNumOfSteps(); 
+                            i < numOfSteps && rv == flow::ADVECT_HAPPENED; i++ )
+                {
+                    rv = _2ndAdvection->AdvectOneStep( &_velocityField, deltaT2 );
+                }
+            }
 
         }
 
@@ -205,9 +247,12 @@ std::cout << "Using time: " << _getElapsedSeconds( &startT, &finishT ) << std::e
         _advectionComplete = true;
     }
 
+
     if( !_coloringComplete )
     {
-        int rv = _advection.CalculateParticleProperty( &_colorField, true );
+        rv = _advection.CalculateParticleValues( &_colorField, true );
+        if( _2ndAdvection )     // bi-directional advection
+            rv = _2ndAdvection->CalculateParticleValues( &_colorField, true );
         _coloringComplete = true;
     }
 
@@ -231,6 +276,21 @@ FlowRenderer::_purePaint( FlowParams* params, bool fast )
         else
         {
             _drawAStreamAsLines( s, params );
+        }
+    }
+
+    if( _2ndAdvection )
+    {
+        numOfStreams = _2ndAdvection->GetNumberOfStreams();
+        for( size_t i = 0; i < numOfStreams; i++ )
+        {
+            const auto& s = _2ndAdvection->GetStreamAt( i );
+            if( fast )
+                _drawAStreamAsLines( s, params );
+            else
+            {
+                _drawAStreamAsLines( s, params );
+            }
         }
     }
     
@@ -327,6 +387,26 @@ FlowRenderer::_updateFlowCacheAndStates( const FlowParams* params )
      * Second, branch into steady and unsteady cases, and deal with them separately.
      */
 
+    // Check seed generation mode
+    if( _cache_seedGenMode != params->GetSeedGenMode() )
+    {
+        _cache_seedGenMode  = params->GetSeedGenMode();
+        _velocityStatus     = FlowStatus::SIMPLE_OUTOFDATE;
+        _colorStatus        = FlowStatus::SIMPLE_OUTOFDATE;
+    }
+
+    // Check seed input filename
+    if( _cache_seedInputFilename != params->GetSeedInputFilename() )
+    {
+        _cache_seedInputFilename  = params->GetSeedInputFilename();
+        // we only update status if the current seed generation mode IS seed list.
+        if( _cache_seedGenMode   == 1 )
+        {
+            _velocityStatus     = FlowStatus::SIMPLE_OUTOFDATE;
+            _colorStatus        = FlowStatus::SIMPLE_OUTOFDATE;
+        }
+    }
+
     // Check variable names
     // If names not the same, entire stream is out of date
     // Note: variable names are kept in VaporFields.
@@ -393,9 +473,23 @@ FlowRenderer::_updateFlowCacheAndStates( const FlowParams* params )
             _colorStatus            = FlowStatus::SIMPLE_OUTOFDATE;
             _velocityStatus         = FlowStatus::SIMPLE_OUTOFDATE;
         }
+
+        if( _cache_flowDirection   != params->GetFlowDirection() )
+        {
+            _colorStatus            = FlowStatus::SIMPLE_OUTOFDATE;
+            _velocityStatus         = FlowStatus::SIMPLE_OUTOFDATE;
+            _cache_flowDirection    = params->GetFlowDirection();
+            if( _cache_flowDirection == 2 && !_2ndAdvection )
+                _2ndAdvection = new flow::Advection();
+            if( _cache_flowDirection != 2 && _2ndAdvection )
+            {
+                delete _2ndAdvection;
+                _2ndAdvection = nullptr;
+            }
+        }
     }
-    /* in case of unsteady flow */
-    else
+
+    else  /* in case of unsteady flow */
     {
         if( !_cache_isSteady )  // unsteady state isn't changed
         {
@@ -420,105 +514,17 @@ FlowRenderer::_updateFlowCacheAndStates( const FlowParams* params )
     }
 }
 
-/*
-int
-FlowRenderer::_colorLastParticle()
-{
-    // The caller of this function is responsible for checking if 
-    //   this function is in need to be called.
-    //
-    if( _colorField == nullptr )
-        return flow::NO_FIELD_YET;
-
-    size_t numOfStreams = _advection.GetNumberOfStreams();
-    for( size_t i = 0; i < numOfStreams; i++ )
-    {
-        const auto& stream   = _advection.GetStreamAt( i );
-        const auto& particle = stream.back();
-        float oldValue       = particle.value;
-        if( oldValue == 0.0f )  // We only calculate its value if it's not been calculated yet.
-        {
-            float newVal;
-            int rv  = _colorField->GetScalar( particle.time, particle.location, newVal );
-            if( rv == 0 )   // We have the new value!
-                _advection.AssignLastParticleValueOfAStream( newVal, i );
-            else            // Copy the value from previous particle
-                _advection.RepeatLastTwoParticleValuesOfAStream( i );
-        }
-    }
-    return 0;
-}*/
-
-/*
-int
-FlowRenderer::_populateParticleProperties( const std::string& varname,
-                                           const FlowParams*  params,
-                                           bool  useAsColor )
-{
-    flow::ScalarField* scalar = nullptr;
-    if( useAsColor )
-        scalar = _colorField;
-    else
-    {
-        std::string name = varname; // Subsequent functions ain't const
-        if( params->GetIsSteady() )
-        {
-            Grid *grid;
-            int rv  = _getAGrid( params, _cache_currentTS, name, &grid );
-            if( rv != 0 )   
-                return rv;
-
-            flow::SteadyVAPORScalar* ptr = new flow::SteadyVAPORScalar();
-            ptr->UseGrid( grid );
-            ptr->ScalarName = name;
-            scalar = ptr;
-        }
-        else
-        { 
-            // create an UnsteadyVAPORScalar
-        }
-    }
-
-    if( scalar == nullptr )
-        return flow::NO_FIELD_YET;
-
-    std::vector<float> properties;
-    size_t numOfStreams = _advection.GetNumberOfStreams();
-    for( size_t i = 0; i < numOfStreams; i++ )
-    {
-        const auto& stream   = _advection.GetStreamAt( i );
-        properties.clear();
-        float newVal = 0.0f;
-        for( const auto& p : stream )
-        {
-            scalar->GetScalar( p.time, p.location, newVal );
-            properties.push_back( newVal );
-        }
-        if( useAsColor )
-            _advection.AssignParticleValuesOfAStream( properties, i );
-        else
-            _advection.AttachParticlePropertiesOfAStream( properties, i );
-    }
-
-    if( scalar != _colorField ) // Clean up scalar if it's what we just created
-        delete scalar;
-    
-    return 0;
-}
-*/
-
-
 
 int
 FlowRenderer::_genSeedsXY( std::vector<flow::Particle>& seeds, float timeVal ) const
 {
-    int numX = 5, numY = 5;
+    int numX = 8, numY = 8;
     std::vector<double>           extMin, extMax;
     FlowParams* params = dynamic_cast<FlowParams*>( GetActiveParams() );
     params->GetBox()->GetExtents( extMin, extMax );
-    float stepX = (extMax[0] - extMin[0]) / (numX + 1.0);
-    float stepY = (extMax[1] - extMin[1]) / (numY + 1.0);
-    float stepZ = extMin[2] + (extMax[2] - extMin[2]) / 100.0;
+    float stepX = (extMax[0] - extMin[0]) / (numX + 1.0f);
+    float stepY = (extMax[1] - extMin[1]) / (numY + 1.0f);
+    float stepZ = extMin[2] + (extMax[2] - extMin[2]) / 4.0f;
 
     seeds.resize( numX * numY );
     for( int y = 0; y < numY; y++ )

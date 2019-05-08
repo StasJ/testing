@@ -9,6 +9,13 @@
 
 #include <QLineEdit>
 
+#include "VariablesWidget.h"
+#include "TFWidget.h"
+#include "GeometryWidget.h"
+#include "CopyRegionWidget.h"
+#include "TransformTable.h"
+#include "ColorbarWidget.h"
+
 namespace VAPoR {
 	class ControlExec;
 	class RenderParams;
@@ -77,9 +84,7 @@ private:
 private slots:
     // Respond to user input
     void _steadyGotClicked();
-
     void _velocityMultiplierChanged();
-
     void _steadyNumOfStepsChanged();
 };
 
@@ -128,18 +133,29 @@ public:
 		VAPoR::RenderParams *rParams
 	);
 
+<<<<<<< HEAD
 protected slots:
     void _pushTestPressed();
     void _comboBoxSelected( int index );
     void _checkBoxSelected();
     void _configureRakeType();
+=======
+private slots:
+    // Respond to user input
+    void _seedGenModeChanged( int newIdx );
+    void _fileReaderChanged();
+    void _fileWriterChanged();
+    void _flowDirectionChanged( int newIdx );
+>>>>>>> flow
 
 private:
     VAPoR::DataMgr*         _dataMgr;
     VAPoR::ParamsMgr*       _paramsMgr;
     VAPoR::FlowParams*      _params;
+
     GeometryWidget*         _geometryWidget;
 
+<<<<<<< HEAD
     VTabWidget*             _seedSettingsTab;
     VComboBox*              _distributionCombo;
     VSpinBox*               _randomCountSpinBox;
@@ -194,6 +210,13 @@ private:
     VSpinBox*               _intervalSpinBox;
 
     bool                    _initialized;
+=======
+    VComboBox*              _seedGenMode;
+    VFileReader*            _fileReader;
+    VFileWriter*            _fileWriter;
+
+    VComboBox*              _flowDirection;
+>>>>>>> flow
 };
 
 //
