@@ -52,8 +52,15 @@ public:
     std::string GetSeedInputFilename() const;
     void        SetSeedInputFilename( std::string& ) ;
 
+    std::string GetFlowlineOutputFilename() const;
+    void        SetFlowlineOutputFilename( std::string& ) ;
+
+    void        SetNeedFlowlineOutput( bool );
+    bool        GetNeedFlowlineOutput( ) const;
+
     long  GetFlowDirection() const;
     void  SetFlowDirection( long );
+
 
 protected:
 
@@ -62,7 +69,9 @@ protected:
     static const std::string    _steadyNumOfStepsTag;
     static const std::string    _seedGenModeTag;
     static const std::string    _seedInputFilenameTag;
+    static const std::string    _flowlineOutputFilenameTag;
     static const std::string    _flowDirectionTag;
+    static const std::string    _needFlowlineOutputTag;
 
 };
 

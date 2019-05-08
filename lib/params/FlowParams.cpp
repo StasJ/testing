@@ -7,7 +7,9 @@ const std::string FlowParams::_velocityMultiplierTag = "velocityMultiplierTag";
 const std::string FlowParams::_steadyNumOfStepsTag   = "steadyNumOfStepsTag";
 const std::string FlowParams::_seedGenModeTag        = "seedGenModeTag";
 const std::string FlowParams::_seedInputFilenameTag  = "seedInputFilenameTag";
+const std::string FlowParams::_flowlineOutputFilenameTag  = "flowlineOutputFilenameTag";
 const std::string FlowParams::_flowDirectionTag      = "flowDirectionTag";
+const std::string FlowParams::_needFlowlineOutputTag = "needFlowlineOutputTag";
 
 static RenParamsRegistrar<FlowParams> registrar(FlowParams::GetClassType());
 
@@ -50,6 +52,19 @@ bool
 FlowParams::GetIsSteady() const
 {
 	long rv = GetValueLong( _isSteadyTag, long(false) );
+    return bool(rv);
+}
+
+void
+FlowParams::SetNeedFlowlineOutput( bool need )
+{
+    SetValueLong( _needFlowlineOutputTag, "need to do an output of the flow lines", long(need) ); 
+}
+
+bool
+FlowParams::GetNeedFlowlineOutput( ) const
+{
+    long rv = GetValueLong( _needFlowlineOutputTag, long(false) );
     return bool(rv);
 }
     
@@ -99,6 +114,18 @@ void
 FlowParams::SetSeedInputFilename( std::string& name )
 {
     SetValueString( _seedInputFilenameTag, "filename for input seeding list", name ); 
+}
+
+std::string
+FlowParams::GetFlowlineOutputFilename() const
+{
+    return GetValueString( _flowlineOutputFilenameTag, "" );
+}
+
+void
+FlowParams::SetFlowlineOutputFilename( std::string& name )
+{
+    SetValueString( _flowlineOutputFilenameTag, "filename for output flow lines", name ); 
 }
 
 long

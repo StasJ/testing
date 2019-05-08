@@ -56,7 +56,6 @@ protected:
     float               _colorMapRange[3];   // min, max, and their diff
     bool                _advectionComplete;
     bool                _coloringComplete;
-    unsigned int        _steadyTotalSteps;
 
     // A few variables to keep the current advection states
     int                 _cache_refinementLevel;
@@ -80,6 +79,9 @@ protected:
     //   1 - backward
     //   2 - bi-directional
     long                _cache_flowDirection;
+
+    // This Advection class is only used in bi-directional advection mode 
+    flow::Advection*    _2ndAdvection;
 
     FlowStatus          _velocityStatus;
     FlowStatus          _colorStatus;
