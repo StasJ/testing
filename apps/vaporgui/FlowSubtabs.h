@@ -132,9 +132,11 @@ protected slots:
     void _pushTestPressed();
     void _comboBoxSelected( int index );
     void _checkBoxSelected();
-    void _configureRakeOptions();
+    void _configureRakeType();
 
 private:
+    VAPoR::DataMgr*         _dataMgr;
+    VAPoR::ParamsMgr*       _paramsMgr;
     VAPoR::FlowParams*      _params;
     GeometryWidget*         _geometryWidget;
 
@@ -167,13 +169,19 @@ public:
 	);
 
 protected slots:
-    void _configureIntegrationOptions();
+    void _configureIntegrationType();
+
+private slots:
+    void _multiplierChanged();
 
 private:
+    void _initialize();
 
+    VAPoR::DataMgr*         _dataMgr;
+    VAPoR::ParamsMgr*       _paramsMgr;
     VAPoR::FlowParams*      _params;
     VTabWidget*             _integrationSettingsTab;
-    VPushButton*            _integrateButton;
+    VLineEdit*              _integrationLengthEdit;
     VComboBox*              _integrationTypeCombo;
     VComboBox*              _directionCombo;
     VCheckBox*              _periodicBoundaryComboX;
@@ -182,7 +190,10 @@ private:
     VLineEdit*              _multiplierLineEdit;
     VSpinBox*               _startSpinBox;
     VSpinBox*               _endSpinBox;
+    VSpinBox*               _lifespanSpinBox;
     VSpinBox*               _intervalSpinBox;
+
+    bool                    _initialized;
 };
 
 //

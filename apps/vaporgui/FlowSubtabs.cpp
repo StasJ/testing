@@ -138,19 +138,30 @@ void FlowAppearanceSubtab::Update(  VAPoR::DataMgr *dataMgr,
 //
 //================================
 //
-FlowIntegrationSubtab::FlowIntegrationSubtab(QWidget* parent) : QVaporSubtab(parent)
+FlowIntegrationSubtab::FlowIntegrationSubtab(
+    QWidget* parent) : 
+    QVaporSubtab(parent),
+    _dataMgr(nullptr),
+    _paramsMgr(nullptr),
+    _params(nullptr),
+    _initialized(false)
 {
     _integrationSettingsTab = new VTabWidget( this, "Flow Integration Settings" );
-
-    _integrateButton = new VPushButton( this, "Perform integration" );
-    _integrationSettingsTab->AddWidget( _integrateButton );
 
     _integrationTypeCombo = new VComboBox( this, "Integration type" );
     _integrationTypeCombo->AddOption( "Steady", 0 );
     _integrationTypeCombo->AddOption( "Unsteady", 1 );
     _integrationSettingsTab->AddWidget( _integrationTypeCombo );
     connect( _integrationTypeCombo, SIGNAL( _indexChanged(int) ),
-        this, SLOT( _configureIntegrationOptions() ));
+        this, SLOT( _configureIntegrationType() ));
+
+    _multiplierLineEdit = new VLineEdit( this, "Vector field multiplier" );
+    _integrationSettingsTab->AddWidget( _multiplierLineEdit );
+    connect( _multiplierLineEdit, SIGNAL( _editingFinished() ),
+        this, SLOT( _multiplierChanged() ) );
+
+    _integrationLengthEdit = new VLineEdit( this, "Integration Length/Steps/Multiplier" );
+    _integrationSettingsTab->AddWidget( _integrationLengthEdit );
 
     _directionCombo = new VComboBox( this, "Integration direction" );
     _directionCombo->AddOption( "Forward", 0 );
@@ -158,11 +169,13 @@ FlowIntegrationSubtab::FlowIntegrationSubtab(QWidget* parent) : QVaporSubtab(par
     _directionCombo->AddOption( "Bi-directional", 2 );
     _integrationSettingsTab->AddWidget( _directionCombo );
 
-    _startSpinBox = new VSpinBox( this, "Integration start time" );
+    _startSpinBox = new VSpinBox( this, "Injection start time step", 0 );
     _integrationSettingsTab->AddWidget( _startSpinBox );
-    _endSpinBox = new VSpinBox( this, "Integration end time" );
+    _endSpinBox = new VSpinBox( this, "Injection end time step" );
     _integrationSettingsTab->AddWidget( _endSpinBox );
-    _intervalSpinBox = new VSpinBox( this, "Seed injection interval" );
+    _lifespanSpinBox = new VSpinBox( this, "Seed lifespan after injection" );
+    _integrationSettingsTab->AddWidget( _lifespanSpinBox );
+    _intervalSpinBox = new VSpinBox( this, "Seed injection interval", 1);
     _integrationSettingsTab->AddWidget( _intervalSpinBox );
     
     _periodicBoundaryComboX = new VCheckBox( this, "X axis periodicity" );
@@ -172,35 +185,61 @@ FlowIntegrationSubtab::FlowIntegrationSubtab(QWidget* parent) : QVaporSubtab(par
     _periodicBoundaryComboZ = new VCheckBox( this, "Z axis periodicity" );
     _integrationSettingsTab->AddWidget( _periodicBoundaryComboZ );
 
-    _multiplierLineEdit = new VLineEdit( this, "Vector field multiplier" );
-    _integrationSettingsTab->AddWidget( _multiplierLineEdit );
-
-    _configureIntegrationOptions();
+    _configureIntegrationType();
     _layout->addWidget( _integrationSettingsTab );
 
 }
 
-void FlowIntegrationSubtab::_configureIntegrationOptions() {
+void FlowIntegrationSubtab::_multiplierChanged() {
+    double value = (double)_multiplierLineEdit->GetEditText();
+    std::cout << "Vector multiplier line edit changed to " << value << std::endl;
+    _params->SetVelocityMultiplier( value );
+    std::cout << "Vector multiplier line edit changed to " << _params->GetVelocityMultiplier() << std::endl;
+}
+
+
+
+void FlowIntegrationSubtab::_configureIntegrationType() {
     string seedType = _integrationTypeCombo->GetCurrentText();
     if ( seedType == "Steady" ) {
+        _params->SetIsSteady( true );
         _startSpinBox->hide();
         _endSpinBox->hide();
+        _lifespanSpinBox->hide();
         _intervalSpinBox->hide();
+        _directionCombo->show();
+        _integrationLengthEdit->show();
     }
     else {
+        _params->SetIsSteady( false );
         _startSpinBox->show();
         _endSpinBox->show();
+        _lifespanSpinBox->show();
         _intervalSpinBox->show();
+        _directionCombo->hide();
+        _integrationLengthEdit->hide();
     }
 }
 
-void FlowIntegrationSubtab::Update(
-        VAPoR::DataMgr *dataMgr,
-        VAPoR::ParamsMgr *paramsMgr,
-        VAPoR::RenderParams *rParams
-    )
-{
+void FlowIntegrationSubtab::_initialize() {
+    int numTimeSteps = _dataMgr->GetNumTimeSteps();
+    _endSpinBox->SetValue( numTimeSteps );
+    _lifespanSpinBox->SetValue( numTimeSteps );
+}
 
+void FlowIntegrationSubtab::Update(
+    VAPoR::DataMgr *dataMgr,
+    VAPoR::ParamsMgr *paramsMgr,
+    VAPoR::RenderParams *rParams
+) {
+    _dataMgr = dataMgr;
+    _paramsMgr = paramsMgr;
+    _params = dynamic_cast<VAPoR::FlowParams*>(rParams);
+
+    if (!_initialized) {
+        _initialize();
+        _initialized = true;
+    }
 }
 
 //
@@ -215,7 +254,7 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
     _distributionCombo->AddOption( "List of points", 2 );
     _seedSettingsTab->AddWidget( _distributionCombo );
     connect( _distributionCombo, SIGNAL( _indexChanged(int) ),
-        this, SLOT( _configureRakeOptions() ));
+        this, SLOT( _configureRakeType() ));
 
     // Random rake options
     _randomCountSpinBox = new VSpinBox( this, "Number of random seeds", 64 );
@@ -237,10 +276,8 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
     // List of seed file picker
     _fileReader = new VFileReader( this, "Seed File" );
     _seedSettingsTab->AddWidget( _fileReader );
-
-    _configureRakeOptions();
     _layout->addWidget( _seedSettingsTab );
-   
+
     // Rake region selector 
     _geometryWidget   = new GeometryWidget(this);
     _geometryWidget->Reinit( 
@@ -249,9 +286,12 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
     );
     _layout->addWidget( _geometryWidget );
 
+    _configureRakeType();
+
     _exportGeometryDialog = new VFileWriter( 
         this, 
-        "Export geometry", 
+        "Export geometry",
+        "Select",
         QDir::homePath().toStdString()
     );
     _layout->addWidget( _exportGeometryDialog );
@@ -268,7 +308,7 @@ void FlowSeedingSubtab::Update(
     _geometryWidget->Update(paramsMgr, dataMgr, rParams );
 }
 
-void FlowSeedingSubtab::_configureRakeOptions() {
+void FlowSeedingSubtab::_configureRakeType() {
     string seedType = _distributionCombo->GetCurrentText();
     if ( seedType == "Random" ) {
         _randomCountSpinBox->show();
@@ -280,6 +320,8 @@ void FlowSeedingSubtab::_configureRakeOptions() {
         _zDistributionSpinBox->hide();
 
         _fileReader->hide();
+        
+        _geometryWidget->setEnabled(true);
     }
     else if ( seedType == "Gridded" ) {
         _randomCountSpinBox->hide();
@@ -292,6 +334,7 @@ void FlowSeedingSubtab::_configureRakeOptions() {
 
         _fileReader->hide();
 
+        _geometryWidget->setEnabled(true);
     }
     else { // ( seedType == "List of points" )
         _randomCountSpinBox->hide();
@@ -304,6 +347,7 @@ void FlowSeedingSubtab::_configureRakeOptions() {
 
         _fileReader->show();
 
+        _geometryWidget->setEnabled(false);
     }
 }
 
