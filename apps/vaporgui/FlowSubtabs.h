@@ -133,20 +133,17 @@ public:
 		VAPoR::RenderParams *rParams
 	);
 
-<<<<<<< HEAD
-protected slots:
-    void _pushTestPressed();
-    void _comboBoxSelected( int index );
-    void _checkBoxSelected();
+private slots:
     void _configureRakeType();
-=======
+    void _seedGenModeChanged( int newIdx );
+
+/*
 private slots:
     // Respond to user input
-    void _seedGenModeChanged( int newIdx );
     void _fileReaderChanged();
     void _fileWriterChanged();
     void _flowDirectionChanged( int newIdx );
->>>>>>> flow
+*/
 
 private:
     VAPoR::DataMgr*         _dataMgr;
@@ -155,7 +152,6 @@ private:
 
     GeometryWidget*         _geometryWidget;
 
-<<<<<<< HEAD
     VTabWidget*             _seedSettingsTab;
     VComboBox*              _distributionCombo;
     VSpinBox*               _randomCountSpinBox;
@@ -189,6 +185,7 @@ protected slots:
 
 private slots:
     void _multiplierChanged();
+    void _integrationDirectionChanged( int index );
 
 private:
     void _initialize();
@@ -210,13 +207,14 @@ private:
     VSpinBox*               _intervalSpinBox;
 
     bool                    _initialized;
-=======
+
+/*
     VComboBox*              _seedGenMode;
     VFileReader*            _fileReader;
     VFileWriter*            _fileWriter;
 
     VComboBox*              _flowDirection;
->>>>>>> flow
+*/
 };
 
 //

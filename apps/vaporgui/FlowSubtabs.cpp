@@ -1,4 +1,5 @@
 #include "FlowSubtabs.h"
+#include "VaporWidgets.h"
 
 QVaporSubtab::QVaporSubtab(QWidget* parent) : QWidget(parent)
 {
@@ -161,6 +162,8 @@ FlowIntegrationSubtab::FlowIntegrationSubtab(
     _directionCombo->AddOption( "Backward", 1 );
     _directionCombo->AddOption( "Bi-directional", 2 );
     _integrationSettingsTab->AddWidget( _directionCombo );
+    connect( _directionCombo, SIGNAL( _indexChanged( int ) ),
+        this, SLOT( _integrationDirectionChanged() ) );
 
     _startSpinBox = new VSpinBox( this, "Injection start time step", 0 );
     _integrationSettingsTab->AddWidget( _startSpinBox );
@@ -183,19 +186,38 @@ FlowIntegrationSubtab::FlowIntegrationSubtab(
 
 }
 
+void FlowIntegrationSubtab::_integrationDirectionChanged() {
+    int paramsValue;
+    string direction = _directionCombo->GetCurrentText();
+    if ( direction == "Forward" )
+        paramsValue = 0;
+    if ( direction == "Backward" )
+        paramsValue = 1;
+    if (direction == "Bi-directional" )
+        paramsValue = 2;
+
+    std::cout << "Direction combo changed to " << direction << endl;
+
+    _params->SetFlowDirection( paramsValue );
+
+    std::cout << "Params direction changed to " << _params->GetFlowDirection() << endl;
+    std::cout << endl;
+}
+
 void FlowIntegrationSubtab::_multiplierChanged() {
-    double value = (double)_multiplierLineEdit->GetEditText();
+    double value = stod(_multiplierLineEdit->GetEditText());
     std::cout << "Vector multiplier line edit changed to " << value << std::endl;
     _params->SetVelocityMultiplier( value );
-    std::cout << "Vector multiplier line edit changed to " << _params->GetVelocityMultiplier() << std::endl;
+    std::cout << "Vector multiplier params changed to " << _params->GetVelocityMultiplier() << std::endl;
+    std::cout << std::endl;
 }
 
 
 
 void FlowIntegrationSubtab::_configureIntegrationType() {
+    bool isSteady = true;
     string seedType = _integrationTypeCombo->GetCurrentText();
     if ( seedType == "Steady" ) {
-        _params->SetIsSteady( true );
         _startSpinBox->hide();
         _endSpinBox->hide();
         _lifespanSpinBox->hide();
@@ -204,6 +226,7 @@ void FlowIntegrationSubtab::_configureIntegrationType() {
         _integrationLengthEdit->show();
     }
     else {
+        isSteady = false;
         _params->SetIsSteady( false );
         _startSpinBox->show();
         _endSpinBox->show();
@@ -212,6 +235,15 @@ void FlowIntegrationSubtab::_configureIntegrationType() {
         _directionCombo->hide();
         _integrationLengthEdit->hide();
     }
+    
+    std::cout << "Integration combo changed to " << seedType << endl;
+
+    if ( _params != nullptr ) {
+        _params->SetIsSteady( isSteady );
+        std::cout << "Integration params changed to " << _params->GetIsSteady() << endl;
+    }
+
+    std::cout << std::endl;
 }
 
 void FlowIntegrationSubtab::_initialize() {
@@ -279,7 +311,6 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
     );
     _layout->addWidget( _geometryWidget );
 
-<<<<<<< HEAD
     _configureRakeType();
 
     _exportGeometryDialog = new VFileWriter( 
@@ -289,9 +320,10 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
         QDir::homePath().toStdString()
     );
     _layout->addWidget( _exportGeometryDialog );
-=======
+
+/*    
     _seedGenMode = new VComboBox( this, "Seed Generation Mode" );
-    /* Index numbers are in agreement with what's in FlowRenderer.h */
+    // Index numbers are in agreement with what's in FlowRenderer.h
     _seedGenMode->AddOption( "Programatically", 0 );
     _seedGenMode->AddOption( "From a List", 1 );
     _layout->addWidget( _seedGenMode );
@@ -303,7 +335,7 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
     connect( _fileReader, SIGNAL( _pathChanged() ), this, SLOT( _fileReaderChanged() ) );
 
     _flowDirection = new VComboBox( this, "Steady Flow Direction" );
-    /* Index numbers are in agreement with what's in FlowRenderer.h */
+    // Index numbers are in agreement with what's in FlowRenderer.h
     _flowDirection->AddOption( "Forward", 0 );
     _flowDirection->AddOption( "Backward", 1 );
     _flowDirection->AddOption( "Bi-Directional", 2 );
@@ -313,7 +345,7 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) : QVaporSubtab(parent)
     _fileWriter = new VFileWriter( this, "Output Flow Lines" );
     _layout->addWidget( _fileWriter );
     connect( _fileWriter, SIGNAL( _pathChanged() ), this, SLOT( _fileWriterChanged() ) );
->>>>>>> flow
+*/
 }
 
 void FlowSeedingSubtab::Update( VAPoR::DataMgr      *dataMgr,
@@ -326,6 +358,16 @@ void FlowSeedingSubtab::Update( VAPoR::DataMgr      *dataMgr,
     //_geometryWidget->Update(paramsMgr, dataMgr, params, rakeBox);
     _geometryWidget->Update(paramsMgr, dataMgr, params );
 
+    long genMode = _params->GetSeedGenMode();
+    if ( genMode == 3 || genMode == 4 )
+        _distributionCombo->SetIndex( 1 );
+    else if ( genMode == 2 )
+        _distributionCombo->SetIndex( 0 );
+    else if ( genMode == 1 )
+        _distributionCombo->SetIndex( 2 );
+
+
+/*
     long idx = _params->GetSeedGenMode();
     if( idx >= 0 && idx < _seedGenMode->GetNumOfItems() )
         _seedGenMode->SetIndex( idx );
@@ -336,12 +378,24 @@ void FlowSeedingSubtab::Update( VAPoR::DataMgr      *dataMgr,
         _fileReader->SetPath( _params->GetSeedInputFilename() );
     if( !_params->GetFlowlineOutputFilename().empty() ) 
         _fileWriter->SetPath( _params->GetFlowlineOutputFilename() );
+*/
 }
 
-<<<<<<< HEAD
 void FlowSeedingSubtab::_configureRakeType() {
+    // FlowParams specifies its rake type numerically.  We need to set the
+    // appropriate value from the following list:
+    //  0 - programmatical
+    //  1 - list of seeds
+    //  2 - uniform
+    //  3 - random
+    //  4 - random+bias
+    //
+    long paramsValue;
+
     string seedType = _distributionCombo->GetCurrentText();
     if ( seedType == "Random" ) {
+        paramsValue = 3;
+
         _randomCountSpinBox->show();
         _biasVariableCombo->show();
         _biasSliderEdit->show();
@@ -355,6 +409,7 @@ void FlowSeedingSubtab::_configureRakeType() {
         _geometryWidget->setEnabled(true);
     }
     else if ( seedType == "Gridded" ) {
+        paramsValue = 2;
         _randomCountSpinBox->hide();
         _biasVariableCombo->hide();
         _biasSliderEdit->hide();
@@ -368,6 +423,7 @@ void FlowSeedingSubtab::_configureRakeType() {
         _geometryWidget->setEnabled(true);
     }
     else { // ( seedType == "List of points" )
+        paramsValue = 1;
         _randomCountSpinBox->hide();
         _biasVariableCombo->hide();
         _biasSliderEdit->hide();
@@ -380,13 +436,19 @@ void FlowSeedingSubtab::_configureRakeType() {
 
         _geometryWidget->setEnabled(false);
     }
+
+    std::cout << "Distribution type combo set to " << seedType << std::endl;
+
+    if ( _params != nullptr) {
+        _params->SetSeedGenMode( paramsValue );
+        std::cout << "Distribution param set to " << paramsValue << std::endl;
+    }
+    std::cout << std::endl;
 }
 
-void FlowSeedingSubtab::_pushTestPressed() 
-=======
+/*
 void
 FlowSeedingSubtab::_seedGenModeChanged( int newIdx )
->>>>>>> flow
 {
     _params->SetSeedGenMode( newIdx );
 }
@@ -411,7 +473,7 @@ FlowSeedingSubtab::_flowDirectionChanged( int newIdx )
 {
     _params->SetFlowDirection( newIdx );
 }
-
+*/
 
 //
 //================================
