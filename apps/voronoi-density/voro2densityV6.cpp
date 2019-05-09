@@ -14,16 +14,12 @@
 
 #include "kdtree/nanoflann.hpp"
 
-#define GRIDX (1024)
-#define GRIDY (1024)
-#define GRIDZ (1024)
+#define GRIDX (512)
+#define GRIDY (512)
+#define GRIDZ (512)
 
 using UINT = unsigned int;
-
 const UINT totalGridPts = (GRIDX) * (GRIDY) * (GRIDZ);
-const float extX       = M_PI*2.0;
-const float extY       = M_PI*2.0;
-const float extZ       = M_PI*2.0;
 
 double GetElapsedSeconds( const struct timeval* begin, 
                           const struct timeval* end )
@@ -38,64 +34,35 @@ float CalcDist2( const float* p, const UINT* q )  // two points
              (p[2]-(float)q[2]) * (p[2]-(float)q[2]) );
 }
 
-float CalcLen( const float* p )                 // one point
+// Specialized method to 1) read in, and 2) process Bipin's data.
+void ReadBipin( const char* name,       // input:  filename
+                UINT&       len,        // output: number of particles
+                float**     buf )       // output: (x, y, z) of each particle
 {
-    return std::sqrt( p[0]*p[0] + p[1]*p[1] + p[2]*p[2] );
-}
+    FILE*  f  = fopen( name, "r" );
+    fseek( f, 0, SEEK_END );
+    long int totalByte = ftell( f );
+    assert( totalByte % 20 == 0 );      // Every 20 byte represents one particle
+    len =   totalByte / 20;
+    rewind( f );
 
-void ReadParticles2( const char* name,       // input:  filename
-                     UINT&       len,        // output: number of particles
-                     float**     buf )       // output: data read from file
-{
-    FILE*  f    = fopen( name, "r" );
-    float  tmp[2];
-    size_t rt   = fread( tmp, sizeof(float), 2, f );
-    len         = (UINT)tmp[0];
-    *buf        = new float[len*3];
-    rt          = fread( *buf, sizeof(float), len*3, f );
+    // First, read in all the values, each particle is represented by (id, x, y, z, r)
+    float* inputBuf = new float[ totalByte / 4 ];
+    size_t rt = fread( inputBuf, 4, totalByte / 4, f );
     fclose( f );
-}
+    assert( rt == totalByte / 4 );
 
-void FillHelicity( const char* xname,      // input:  location filename, which starts with `xlg`
-                   UINT        len,        // input:  number of particles
-                   float*      buf )       // output: data read from file
-{
-    char   vname[256], wname[256];
-    strcpy( vname, xname );
-    strcpy( wname, xname );
-    char*  p    = strstr( vname, "xlg" );
-    assert( p );
-    *p          = 'v';
-    p           = strstr( wname, "xlg" );
-    assert( p );
-    *p          = 'w';
-
-    float* vbuf = new float[len*3];
-    FILE*  vf   = fopen( vname, "r" );
-    float  tmp[2];
-    size_t rt   = fread( tmp, sizeof(float), 2, vf );
-    assert( len == (UINT)tmp[0] );
-    rt          = fread( vbuf, sizeof(float), len*3, vf );
-    fclose( vf );
-
-    float* wbuf = new float[len*3];
-    FILE*  wf   = fopen( wname, "r" );
-    rt          = fread( tmp, sizeof(float), 2, wf );
-    assert( len == (UINT)tmp[0] );
-    rt          = fread( wbuf, sizeof(float), len*3, wf );
-    fclose( wf );
-
+    // Second, extract all the (x, y, z) tuples
+    // !! For a grid size of 512, we also multiply the coordinate (x, y, z) by 4 !!
+    *buf = new float[ len * 3 ];
     for( UINT i = 0; i < len; i++ )
     {
-        buf[i] = vbuf[i*3  ] * wbuf[i*3  ] +
-                 vbuf[i*3+1] * wbuf[i*3+1] +
-                 vbuf[i*3+2] * wbuf[i*3+2];
-        // uncomment the following line to normalize the helicity
-        // buf[i] /= CalcLen( vbuf + i*3 ) * CalcLen( wbuf + i*3 );
+        memcpy( (*buf) + i * 3, inputBuf + i * 5 + 1, sizeof(float) * 3 );
+        for( int j = 0; j < 3; j++ )
+            (*buf)[ i * 3 + j ] *= 5.0f;
     }
     
-    delete[] wbuf;
-    delete[] vbuf;
+    delete[] inputBuf;
 }
 
 template <typename T>
@@ -131,12 +98,12 @@ public:
     void FillByArray( const UINT N, const T* buf )
     {
         pts.resize(N);
+        UINT idx = 0;
         for (UINT i = 0; i < N; i++)
         {
-            UINT idx  = i*3;
-            pts[i].x = buf[idx]   / extX * (GRIDX-1);
-            pts[i].y = buf[idx+1] / extY * (GRIDY-1);
-            pts[i].z = buf[idx+2] / extZ * (GRIDZ-1); 
+            pts[i].x = buf[idx++];
+            pts[i].y = buf[idx++];
+            pts[i].z = buf[idx++];
         }
     }
 };
@@ -156,8 +123,8 @@ int main(int argc, char** argv )
 
     // Read in particles
     UINT      nParticles;
-    float*    ptcBuf = NULL;
-    ReadParticles2( argv[1], nParticles, &ptcBuf );
+    float*    ptcBuf = nullptr;
+    ReadBipin( argv[1], nParticles, &ptcBuf );
     UINT      nPtcToUse = nParticles;           // use a subset of particles for experiments
 
     // Put particles in a "PointCloud"
@@ -190,7 +157,7 @@ int main(int argc, char** argv )
     for( UINT z = 0; z < GRIDZ; z++ ) 
     {
         nanoflann::KNNResultSet<float, UINT> resultSet(1);
-        UINT    ret_index;
+        UINT   ret_index;
         float  out_dist_sqr;
         #ifdef DEBUG
         struct timeval planeStart, planeEnd;
@@ -247,13 +214,12 @@ int main(int argc, char** argv )
     #endif  /**** finish printing diagnostic info ****/
 
     
-    // Each grid point calculates its own density from either a mass of 1.0,
-    //   or its helicity.
+    // Each grid point calculates its own density from either a mass of 1.0 or its helicity.
     float* contribution = new float[nPtcToUse];
     if( use_helicity )
     {
         std::cout << "Distributing helicity, instead of mass, of the particles!" << std::endl;
-        FillHelicity( argv[1], nPtcToUse, contribution );
+        //FillHelicity( argv[1], nPtcToUse, contribution );
     }
     else
     {
@@ -288,9 +254,7 @@ int main(int argc, char** argv )
             float c = contribution[i];
 
             // Distribute the contribution of this particle to its eight enclosing grid points.
-            float ptc[3] = { ptcBuf[i*3  ] / extX * (GRIDX-1),
-                             ptcBuf[i*3+1] / extY * (GRIDY-1),
-                             ptcBuf[i*3+2] / extZ * (GRIDZ-1) };
+            float ptc[3] = { ptcBuf[i*3], ptcBuf[i*3+1], ptcBuf[i*3+2] };
             UINT g0[3] = { (UINT)ptc[0], (UINT)ptc[1], (UINT)ptc[2] };  // grid indices
             if( g0[0] == GRIDX )   g0[0]--;
             if( g0[1] == GRIDY )   g0[1]--;
@@ -320,7 +284,8 @@ int main(int argc, char** argv )
             density[ g7[2] * GRIDX * GRIDY + g7[1] * GRIDY + g7[0] ] += c * dist[7] / total;
         }
     }
-    std::cerr << "percentage of voronoi cell without a grid point: " << 100.0f * emptyCellCount / nPtcToUse << std::endl;
+    std::cerr << "percentage of voronoi cell without a grid point: " 
+              << 100.0f * emptyCellCount / nPtcToUse << std::endl;
     
     // Output the density field
     gettimeofday( &start, NULL );

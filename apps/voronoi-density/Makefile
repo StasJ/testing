@@ -1,7 +1,7 @@
 CXX=g++
 CC=gcc
 
-GCCOPTIM=-march=haswell -O3 -DNDEBUG
+GCCOPTIM=-march=native -O3 -DNDEBUG
 PGIOPTIM=-tp=haswell-64 -O3 -DNDEBUG
 INTOPTIM=-march=broadwell -O3 -DNDEBUG
 
@@ -36,4 +36,4 @@ v5: voro2densityV5.cpp
 	$(CXX) -std=c++11 $(FLAG) -o $(BINDIR)/v5 voro2densityV5.cpp $(OMP)
 
 v6: voro2densityV5.cpp
-	$(CXX) -std=c++11 $(FLAG) -o $(BINDIR)/v5 voro2densityV5.cpp $(OMP)
+	$(CXX) -std=c++11 $(FLAG) -o $(BINDIR)/v6 voro2densityV6.cpp $(OMP)
