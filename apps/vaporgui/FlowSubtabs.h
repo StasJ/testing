@@ -134,8 +134,10 @@ public:
 	);
 
 private slots:
+    void _seedInputFileChanged();
     void _configureRakeType();
-    void _seedGenModeChanged( int newIdx );
+//    void _seedGenModeChanged( int newIdx );
+    void _exportGeometryPathChanged();
 
 /*
 private slots:
@@ -161,7 +163,7 @@ private:
     VSpinBox*               _yDistributionSpinBox;
     VSpinBox*               _zDistributionSpinBox;
     VFileReader*            _fileReader;
-    VFileWriter*            _exportGeometryDialog;
+    VFileWriter*            _exportGeometryWriter;
 };
 
 //
@@ -185,7 +187,8 @@ protected slots:
 
 private slots:
     void _multiplierChanged();
-    void _integrationDirectionChanged( int index );
+    void _integrationDirectionChanged();
+    void _integrationLengthChanged();
 
 private:
     void _initialize();

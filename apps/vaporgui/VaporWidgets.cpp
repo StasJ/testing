@@ -357,6 +357,9 @@ void VFileSelector::SetPath( const QString& path) {
 }
 
 void VFileSelector::SetPath( const std::string& path ) {
+    if ( path == "" )
+        return;
+
     if ( !_isFileOperable( path ) ) {
         MSG_ERR(
             FileOperationChecker::GetLastErrorMessage().toStdString()
