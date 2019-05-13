@@ -250,6 +250,7 @@ void OpacityWidget::enable(bool flag)
 //----------------------------------------------------------------------------
 void OpacityWidget::deleteSelectedControlPoint()
 {
+
   if (_selected >= CONTROL_POINT)
   {
     emit startChange("Delete opacity control point");
