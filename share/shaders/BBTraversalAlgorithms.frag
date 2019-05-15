@@ -243,12 +243,23 @@ int SearchSideForInitialCellWithOctree_5Levels(vec3 origin, vec3 dir, float t0, 
 				for (int x1 = x2*2; x1 < xEnd1; x1++) {
 				if (IntersectRaySideCellBBoxDirect(origin, dir, t0, x1, y1, sideID, 1)) {
 				
+
+#if S == 2
+						index[slowDim] = y1*2;
+						index[fastDim] = x1*2;
+						if (IsFaceThatPassedBBAnInitialCell(origin, dir, t0, index, side, cellIndex, entranceFace, t1))
+							intersections++;
+#endif
+
+#if S == 1
 					int yEnd0 = y1 == lDims1.y-1 ? lDims0.y : (y1+1)*2;
 					int xEnd0 = x1 == lDims1.x-1 ? lDims0.x : (x1+1)*2;
-					
+
 					for (int y0 = y1*2; y0 < yEnd0; y0++) {
 					for (int x0 = x1*2; x0 < xEnd0; x0++) {
 					if (IntersectRaySideCellBBoxDirect(origin, dir, t0, x0, y0, sideID, 0)) {
+
+						//DBG=vec3(1);
 					
 						index[slowDim] = y0;
 						index[fastDim] = x0;
@@ -259,6 +270,7 @@ int SearchSideForInitialCellWithOctree_5Levels(vec3 origin, vec3 dir, float t0, 
 					}
 					}
 					}
+#endif
 				
 				
 				}

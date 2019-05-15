@@ -12,6 +12,15 @@ uniform sampler2DArray boxMins;
 uniform sampler2DArray boxMaxs;
 uniform isampler2D levelDims;
 
+bool checkpoint1 = false;
+vec3 DBG = vec3(0);
+#define WHITE vec3(1);
+#define RED vec3(1,0,0);
+#define GREEN vec3(0,1,0);
+#define BLUE vec3(0,0,1);
+
+#define S 2
+
 #define FI_LEFT  0
 #define FI_RIGHT 1
 #define FI_UP    2
@@ -20,13 +29,13 @@ uniform isampler2D levelDims;
 #define FI_BACK  5
 #define FI_NONE 99
 
-#define F_LEFT  ivec3(-1, 0, 0)
-#define F_RIGHT ivec3( 1, 0, 0)
-#define F_UP    ivec3( 0, 0, 1)
-#define F_DOWN  ivec3( 0, 0,-1)
-#define F_FRONT ivec3( 0,-1, 0)
-#define F_BACK  ivec3( 0, 1, 0)
-#define F_NONE  ivec3(-1,-1,-1)
+#define F_LEFT  ivec3(-S, 0, 0)
+#define F_RIGHT ivec3( S, 0, 0)
+#define F_UP    ivec3( 0, 0, S)
+#define F_DOWN  ivec3( 0, 0,-S)
+#define F_FRONT ivec3( 0,-S, 0)
+#define F_BACK  ivec3( 0, S, 0)
+#define F_NONE  ivec3(-S,-S,-S)
 
 // face   fast  slow
 // DOWN    0     1
@@ -85,45 +94,49 @@ void GetFaceCoordinateIndices(ivec3 cell, ivec3 face, OUT ivec3 i0, OUT ivec3 i1
     // CCW
     if (face == F_DOWN) {
         i0 = cell + ivec3(0, 0, 0);
-        i1 = cell + ivec3(0, 1, 0);
-        i2 = cell + ivec3(1, 1, 0);
-        i3 = cell + ivec3(1, 0, 0);
+        i1 = cell + ivec3(0, S, 0);
+        i2 = cell + ivec3(S, S, 0);
+        i3 = cell + ivec3(S, 0, 0);
     }
     else if (face == F_UP) {
-        i0 = cell + ivec3(0, 0, 1);
-        i1 = cell + ivec3(1, 0, 1);
-        i2 = cell + ivec3(1, 1, 1);
-        i3 = cell + ivec3(0, 1, 1);
+        i0 = cell + ivec3(0, 0, S);
+        i1 = cell + ivec3(S, 0, S);
+        i2 = cell + ivec3(S, S, S);
+        i3 = cell + ivec3(0, S, S);
     }
     else if (face == F_LEFT) {
         i0 = cell + ivec3(0, 0, 0);
-        i1 = cell + ivec3(0, 0, 1);
-        i2 = cell + ivec3(0, 1, 1);
-        i3 = cell + ivec3(0, 1, 0);
+        i1 = cell + ivec3(0, 0, S);
+        i2 = cell + ivec3(0, S, S);
+        i3 = cell + ivec3(0, S, 0);
     }
     else if (face == F_RIGHT) {
-        i0 = cell + ivec3(1, 0, 0);
-        i1 = cell + ivec3(1, 1, 0);
-        i2 = cell + ivec3(1, 1, 1);
-        i3 = cell + ivec3(1, 0, 1);
+        i0 = cell + ivec3(S, 0, 0);
+        i1 = cell + ivec3(S, S, 0);
+        i2 = cell + ivec3(S, S, S);
+        i3 = cell + ivec3(S, 0, S);
     }
     else if (face == F_FRONT) {
         i0 = cell + ivec3(0, 0, 0);
-        i1 = cell + ivec3(1, 0, 0);
-        i2 = cell + ivec3(1, 0, 1);
-        i3 = cell + ivec3(0, 0, 1);
+        i1 = cell + ivec3(S, 0, 0);
+        i2 = cell + ivec3(S, 0, S);
+        i3 = cell + ivec3(0, 0, S);
     }
     else if (face == F_BACK) {
-        i0 = cell + ivec3(0, 1, 0);
-        i1 = cell + ivec3(0, 1, 1);
-        i2 = cell + ivec3(1, 1, 1);
-        i3 = cell + ivec3(1, 1, 0);
+        i0 = cell + ivec3(0, S, 0);
+        i1 = cell + ivec3(0, S, S);
+        i2 = cell + ivec3(S, S, S);
+        i3 = cell + ivec3(S, S, 0);
     }
 }
 
 void GetFaceCoordsAndVertices(ivec3 cellIndex, ivec3 face, OUT ivec3 i0, OUT ivec3 i1, OUT ivec3 i2, OUT ivec3 i3, OUT vec3 v0, OUT vec3 v1, OUT vec3 v2, OUT vec3 v3)
 {
     GetFaceCoordinateIndices(cellIndex, face, i0, i1, i2, i3);
+	i0 = max(ivec3(0), min(coordDims-1, i0));
+	i1 = max(ivec3(0), min(coordDims-1, i1));
+	i2 = max(ivec3(0), min(coordDims-1, i2));
+	i3 = max(ivec3(0), min(coordDims-1, i3));
     v0 = texelFetch(coords, i0, 0).xyz;
     v1 = texelFetch(coords, i1, 0).xyz;
     v2 = texelFetch(coords, i2, 0).xyz;
@@ -134,6 +147,10 @@ void GetFaceVertices(ivec3 cellIndex, ivec3 face, OUT vec3 v0, OUT vec3 v1, OUT 
 {
     ivec3 i0, i1, i2, i3;
     GetFaceCoordsAndVertices(cellIndex, face, i0, i1, i2, i3, v0, v1, v2, v3);
+	if (any(greaterThanEqual(i1, coordDims)) || 
+			any(lessThan(i1, ivec3(0)))) {
+		//DBG=RED;
+	}
 }
 
 float GetDataCoordinateSpace(vec3 coordinates)
@@ -183,10 +200,22 @@ bool IntersectRayCellFace(vec3 o, vec3 d, float rt0, ivec3 cellIndex, ivec3 face
     ivec3 i0, i1, i2, i3;
     vec3 v0, v1, v2, v3;
     GetFaceCoordsAndVertices(cellIndex, face, i0, i1, i2, i3, v0, v1, v2, v3);
+
+	if (checkpoint1) {
+		// DBG=(v3-dataBoundsMin)/(dataBoundsMax-dataBoundsMin);
+
+		//DBG=ROYGBV(rt0, 0, 10000000).rgb;
+		//DBG=cellIndex/coordDimsF;
+
+		// if (any(greaterThanEqual(i3, coordDims)) || any(lessThan(i3, ivec3(0)))) {
+			// DBG=BLUE;
+		// }
+	}
     
     vec4 weights;
     if (IntersectRayQuad(o, d, rt0, v0, v1, v2, v3, t, weights)) {
-        dataCoordinate = (weights.x*i0 + weights.y*i1 + weights.z*i2 + weights.w*i3 + vec3(0.5));
+		if (checkpoint1)DBG=BLUE;
+        dataCoordinate = (weights.x*i0 + weights.y*i1 + weights.z*i2 + weights.w*i3 + vec3(0.5)*S);
         return true;
     }
     return false;
@@ -202,16 +231,19 @@ vec3 GetCellFaceNormal(ivec3 cellIndex, ivec3 face)
     vec3 v0, v1, v2, v3;
     GetFaceVertices(cellIndex, face, v0, v1, v2, v3);
     
-    return (GetTriangleNormal(v0, v1, v2) + GetTriangleNormal(v0, v2, v3)) / 2.0f;
+    vec3 n = (GetTriangleNormal(v0, v1, v2) + GetTriangleNormal(v0, v2, v3)) / 2.0f;
+	return n;
 }
 
 bool FindCellExit(vec3 origin, vec3 dir, float t0, ivec3 currentCell, ivec3 entranceFace, OUT ivec3 exitFace, OUT vec3 exitCoord, OUT float t1)
 {
+	checkpoint1 = true;
     for (int i = 0; i < 6; i++) {
         ivec3 testFace = GetFaceFromFaceIndex(i);
         
-        if (testFace == entranceFace)
+        if (testFace == entranceFace) {
             continue;
+		}
             
         if (IntersectRayCellFace(origin, dir, t0, currentCell, testFace, t1, exitCoord)) {
             if (t1 - t0 > EPSILON) {
@@ -278,6 +310,7 @@ bool ShouldRenderCell(const ivec3 cellIndex)
 bool IsRayEnteringCell(vec3 d, ivec3 cellIndex, ivec3 face)
 {
     vec3 n = GetCellFaceNormal(cellIndex, face);
+	// DBG=abs(normalize(n));
     return dot(d, n) < 0;
 }
 
@@ -328,6 +361,7 @@ bool IsFaceThatPassedBBAnInitialCell(vec3 origin, vec3 dir, float t0, ivec3 inde
     vec3 null;
     if (IntersectRayCellFace(origin, dir, t0, index, side, tFace, null)) {
         if (IsRayEnteringCell(dir, index, side)) {
+	//DBG = RED;
             // Only update initial cell values if this is the closest cell
             if (tFace < t1) {
                 cellIndex = index;
@@ -457,6 +491,11 @@ void main(void)
             t0 = t1;
             
         } while (intersections > 1);
+
+		if (DBG != vec3(0)) {
+			fragColor = vec4(DBG, 1);
+			return;
+		}
         
         if (accum.a < ALPHA_DISCARD) {
             // discard; // There is a bug on in the 2015 15" AMD MBP laptops where this does not work with larger(?) datasets

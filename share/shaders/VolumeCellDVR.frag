@@ -81,6 +81,9 @@ vec4 Traverse(vec3 origin, vec3 dir, vec3 rayLightingNormal, float tMin, float t
             break;
         
         hasNext = FindNextCell(origin, dir, t0, currentCell, entranceFace, nextCell, exitFace, exitCoord, t1);
+
+		// if (hasNext)
+		// DBG=ROYGBV(t1-t0, -100000, 100000).rgb;
         
         if (t0 >= tMin || (t0 <= tMin && tMin < t1)) {
             float tEnd = min(t1, tMax);
