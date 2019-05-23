@@ -86,6 +86,7 @@ protected:
         MapperFunction *tf = nullptr;
         std::vector<double> mapRange;
         std::vector<float> constantColor;
+        bool normalize = false;
         
         std::string algorithmName = "";
         

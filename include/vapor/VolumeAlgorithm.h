@@ -29,6 +29,8 @@ namespace VAPoR {
             DVR,
             Iso
         };
+        bool normalize = false;
+        float normalizeMin, normalizeMax;
         
         VolumeAlgorithm(GLManager *gl);
         virtual ~VolumeAlgorithm() {}

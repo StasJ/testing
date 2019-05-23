@@ -50,6 +50,7 @@ public:
 private slots:
     void on__castingModeComboBox_currentIndexChanged(const QString &text);
     void on__samplingRateComboBox_currentIndexChanged(const QString &text);
+    void on_memoryCheckbox_stateChanged(int state);
     void on__lightingCheckBox_toggled(bool checked);
     void on__ambientWidget_valueChanged(double value);
     void on__diffuseWidget_valueChanged(double value);

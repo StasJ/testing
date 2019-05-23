@@ -210,8 +210,8 @@ void VolumeRenderer::_setShaderUniforms(const ShaderProgram *shader, const bool 
     shader->SetUniform("scales", extScales);
     
     shader->SetUniform("density", (float)_cache.tf->getOpacityScale());
-    shader->SetUniform("LUTMin", (float)_cache.mapRange[0]);
-    shader->SetUniform("LUTMax", (float)_cache.mapRange[1]);
+    shader->SetUniform("LUTMin", _algorithm->normalize ? 0 : (float)_cache.mapRange[0]);
+    shader->SetUniform("LUTMax", _algorithm->normalize ? 1 : (float)_cache.mapRange[1]);
     
     shader->SetSampler("LUT", _LUTTexture);
     shader->SetSampler("sceneDepth", _depthTexture);
@@ -376,6 +376,9 @@ int VolumeRenderer::_loadData()
     CheckCache(_cache.ts, RP->GetCurrentTimestep());
     CheckCache(_cache.refinement, RP->GetRefinementLevel());
     CheckCache(_cache.compression, RP->GetCompressionLevel());
+    CheckCache(_cache.normalize, RP->GetValueLong("normalize", 0));
+    if (RP->GetValueLong("normalize", 0))
+        CheckCache(_cache.mapRange, RP->GetMapperFunc(_cache.var)->getMinMaxMapValue());
     if (!_cache.needsUpdate)
         return 0;
     
@@ -391,6 +394,9 @@ int VolumeRenderer::_loadData()
         }
     }
     
+    _algorithm->normalize = RP->GetValueLong("normalize", 0);
+    _algorithm->normalizeMin = RP->GetMapperFunc(_cache.var)->getMinMaxMapValue()[0];
+    _algorithm->normalizeMax = RP->GetMapperFunc(_cache.var)->getMinMaxMapValue()[1];
     int ret = _algorithm->LoadData(grid);
     delete grid;
     return ret;

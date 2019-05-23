@@ -55,18 +55,34 @@ int VolumeRegular::_loadDataDirect(const Grid *grid, Texture3D *dataTexture, Tex
 {
     const vector<size_t> dims = grid->GetDimensions();
     const size_t nVerts = dims[0]*dims[1]*dims[2];
-    float *data = new float[nVerts];
-    if (!data) {
+    float *data = nullptr;
+    unsigned char *dataN = nullptr;
+    if (normalize)
+        dataN = new unsigned char[nVerts];
+    else
+        data = new float[nVerts];
+    if ((!normalize && !data) || (normalize && !dataN)) {
         Wasp::MyBase::SetErrMsg("Could not allocate enough RAM to load data");
         return -1;
     }
     
+    printf("Min = %f\n", normalizeMin);
+    printf("Max = %f\n", normalizeMax);
     auto dataIt = grid->cbegin();
-    for (size_t i = 0; i < nVerts; ++i, ++dataIt) {
-        data[i] = *dataIt;
-    }
+    if (normalize)
+        for (size_t i = 0; i < nVerts; ++i, ++dataIt) {
+            dataN[i] = 255 * (*dataIt-normalizeMin)/(normalizeMax-normalizeMin);
+            if (i % 500000 == 0)
+                printf("data[%li] = %i\n", i, dataN[i]);
+        }
+    else
+        for (size_t i = 0; i < nVerts; ++i, ++dataIt)
+            data[i] = *dataIt;
     
-    dataTexture->TexImage(GL_R32F, dims[0], dims[1], dims[2], GL_RED, GL_FLOAT, data);
+    if (normalize)
+        dataTexture->TexImage(GL_R8, dims[0], dims[1], dims[2], GL_RED, GL_UNSIGNED_BYTE, dataN);
+    else
+        dataTexture->TexImage(GL_R32F, dims[0], dims[1], dims[2], GL_RED, GL_FLOAT, data);
     
     *hasMissingData = grid->HasMissingData();
     if (*hasMissingData) {
@@ -85,7 +101,8 @@ int VolumeRegular::_loadDataDirect(const Grid *grid, Texture3D *dataTexture, Tex
         delete [] missingMask;
     }
     
-    delete [] data;
+    if (data) delete [] data;
+    if (dataN) delete [] dataN;
     return 0;
 }
 
