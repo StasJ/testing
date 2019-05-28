@@ -29,9 +29,20 @@ FlowVariablesSubtab::FlowVariablesSubtab(QWidget* parent) : QVaporSubtab(parent)
     _steadyNumOfSteps = new QLineEdit( this );
     _layout->addWidget( _steadyNumOfSteps);
 
+    _periodicX = new VCheckBox( this, "Particles periodic in X" );
+    _layout->addWidget( _periodicX );
+    _periodicY = new VCheckBox( this, "Particles periodic in Y" );
+    _layout->addWidget( _periodicY );
+    _periodicZ = new VCheckBox( this, "Particles periodic in Z" );
+    _layout->addWidget( _periodicZ );
+
     connect( _steady,           SIGNAL( _checkboxClicked() ), this, SLOT( _steadyGotClicked() ) );
     connect( _velocityMltp,     SIGNAL( editingFinished() ),  this, SLOT( _velocityMultiplierChanged() ) );
     connect( _steadyNumOfSteps, SIGNAL( editingFinished() ),  this, SLOT( _steadyNumOfStepsChanged() ) );
+
+    connect( _periodicX,        SIGNAL( _checkboxClicked() ), this, SLOT( _periodicClicked() ) );
+    connect( _periodicY,        SIGNAL( _checkboxClicked() ), this, SLOT( _periodicClicked() ) );
+    connect( _periodicZ,        SIGNAL( _checkboxClicked() ), this, SLOT( _periodicClicked() ) );
 }
 
 void 
@@ -52,6 +63,21 @@ FlowVariablesSubtab::Update( VAPoR::DataMgr      *dataMgr,
 
     int numOfSteps = _params->GetSteadyNumOfSteps();
     _steadyNumOfSteps->setText( QString::number( numOfSteps ) );
+
+    auto bools = _params->GetPeriodic();
+    _periodicX->SetCheckState( bools[0] );
+    _periodicY->SetCheckState( bools[1] );
+    _periodicZ->SetCheckState( bools[2] );
+}
+    
+void 
+FlowVariablesSubtab::_periodicClicked()
+{
+    std::vector<bool> bools( 3, false );
+    bools[0] = _periodicX->GetCheckState();
+    bools[1] = _periodicY->GetCheckState();
+    bools[2] = _periodicZ->GetCheckState();
+    _params->SetPeriodic( bools );
 }
 
 void
@@ -381,9 +407,20 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) :
     connect( _flowDirection, SIGNAL(_indexChanged(int)), this, SLOT( _flowDirectionChanged(int) ) );
 
     _fileWriter = new VFileWriter( this, "Output Flow Lines" );
+    _fileWriter->SetFileFilter( QString::fromAscii("*.txt") );
     _layout->addWidget( _fileWriter );
     connect( _fileWriter, SIGNAL( _pathChanged() ), this, SLOT( _fileWriterChanged() ) );
 */
+
+    _outputButton = new QPushButton( "Output Flow Lines", this );
+    _layout->addWidget( _outputButton );
+    connect( _outputButton, SIGNAL( clicked() ), this, SLOT( _outputButtonClicked() ) );
+}
+
+void
+FlowSeedingSubtab::_outputButtonClicked( )
+{
+    _params->SetNeedFlowlineOutput( true );
 }
 
 void FlowSeedingSubtab::Update( VAPoR::DataMgr      *dataMgr,
@@ -523,7 +560,6 @@ FlowSeedingSubtab::_fileWriterChanged()
 {
     std::string filename = _fileWriter->GetPath();
     _params->SetFlowlineOutputFilename( filename );
-std::cout << filename << std::endl;
 }
 
 void

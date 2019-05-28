@@ -70,6 +70,8 @@ FlowRenderer::FlowRenderer( const ParamsMgr*    pm,
     _cache_velocityMltp     = 1.0;
     _cache_seedGenMode      = 0;
     _cache_flowDirection    = 0;
+    for( int i = 0; i < 3; i++ )
+        _cache_periodic[i] = false;
 
     _velocityStatus         = FlowStatus::SIMPLE_OUTOFDATE;
     _colorStatus            = FlowStatus::SIMPLE_OUTOFDATE;
@@ -146,6 +148,22 @@ FlowRenderer::_paintGL( bool fast )
     FlowParams* params = dynamic_cast<FlowParams*>( GetActiveParams() );
     int rv;     // return value
 
+    if( params->GetNeedFlowlineOutput() )
+    {
+        rv = _advection.OutputStreamsGnuplot( params->GetFlowlineOutputFilename() );
+        if( rv != 0 )
+        {
+                MyBase::SetErrMsg("Output flow lines wrong!");
+                return flow::FILE_ERROR;
+        }
+        if( _2ndAdvection )     // bi-directional advection
+        {
+            rv = _2ndAdvection->OutputStreamsGnuplot( params->GetFlowlineOutputFilename(), true );
+        }
+
+        params->SetNeedFlowlineOutput( false );
+    }
+
     _updateFlowCacheAndStates( params );
     _velocityField.UpdateParams( params );
     _colorField.UpdateParams( params );
@@ -156,9 +174,16 @@ FlowRenderer::_paintGL( bool fast )
         {
             std::vector<flow::Particle> seeds;
             _genSeedsXY( seeds, _timestamps.at(0) );
+            // Note on UseSeedParticles(): this is the only function that resets
+            // all the streams inside of an Advection class.
+            // It should immediately followed by a function to set its periodicity
             _advection.UseSeedParticles( seeds );
+            _updatePeriodicity( &_advection );
             if( _2ndAdvection )     // bi-directional advection
+            {
                 _2ndAdvection->UseSeedParticles( seeds );
+                _updatePeriodicity( _2ndAdvection ); 
+            }
         }
         else if( _cache_seedGenMode == 1 )
         {
@@ -256,95 +281,99 @@ FlowRenderer::_paintGL( bool fast )
         _coloringComplete = true;
     }
 
-    _purePaint( params, fast );
+    _prepareColormap( params );
+    _renderFromAnAdvection( &_advection, params, fast );
+    /* If the advection is bi-directional */
+    if( _2ndAdvection )
+        _renderFromAnAdvection( _2ndAdvection, params, fast );
     _restoreGLState();
 
     return 0;
 }
 
 int
-FlowRenderer::_purePaint( FlowParams* params, bool fast )
+FlowRenderer::_renderFromAnAdvection( const flow::Advection* adv,
+                                      FlowParams*            params,
+                                      bool                   fast )
 {
-    _prepareColormap( params );
+    size_t numOfStreams = adv->GetNumberOfStreams();
+    auto   numOfPart    = params->GetSteadyNumOfSteps() + 1;
+    bool   singleColor  = params->UseSingleColor();
 
-    size_t numOfStreams = _advection.GetNumberOfStreams();
-    for( size_t i = 0; i < numOfStreams; i++ )
-    {
-        const auto& s = _advection.GetStreamAt( i );
-        if( fast )
-            _drawAStreamAsLines( s, params );
-        else
-        {
-            _drawAStreamAsLines( s, params );
-        }
-    }
 
-    if( _2ndAdvection )
+    if( _cache_isSteady )
     {
-        numOfStreams = _2ndAdvection->GetNumberOfStreams();
-        for( size_t i = 0; i < numOfStreams; i++ )
+        std::vector<float> vec;
+        for( size_t s = 0; s < numOfStreams; s++ )
         {
-            const auto& s = _2ndAdvection->GetStreamAt( i );
-            if( fast )
-                _drawAStreamAsLines( s, params );
-            else
+            const auto& stream = adv->GetStreamAt( s );
+            size_t totalPart   = 0;
+            for( size_t i = 0; i < stream.size() && totalPart <= numOfPart; i++ )
             {
-                _drawAStreamAsLines( s, params );
+                const auto& p = stream[i];
+                if( !p.IsSpecial() )  // p isn't a separator
+                {
+                    vec.push_back( p.location.x );
+                    vec.push_back( p.location.y );
+                    vec.push_back( p.location.z );
+                    vec.push_back( p.value );
+                    totalPart++;
+                }
+                else                        // p is a separator
+                {
+                    _drawLineSegs( vec.data(), vec.size() / 4, singleColor );
+                    vec.clear();
+                }
+            }   // Finish processing a stream
+                    
+            if( !vec.empty() )
+            {
+                _drawLineSegs( vec.data(), vec.size() / 4, singleColor );
+                vec.clear();
             }
-        }
+        }   // Finish processing all streams
     }
-    
+    else    // Unsteady flow (only forward direction)
+    {
+        std::vector<float> vec;
+        for( size_t s = 0; s < numOfStreams; s++ )
+        {
+            const auto& stream = adv->GetStreamAt( s );
+            for( const auto& p : stream )
+            {
+                // Finish this stream once we go beyond the current TS
+                if( p.time > _timestamps.at( _cache_currentTS ) )
+                    break;
+
+                if( !p.IsSpecial() )    // p isn't a separator
+                {
+                    vec.push_back( p.location.x );
+                    vec.push_back( p.location.y );
+                    vec.push_back( p.location.z );
+                    vec.push_back( p.value );
+                }
+                else                    // p is a separator
+                {
+                    _drawLineSegs( vec.data(), vec.size() / 4, singleColor );
+                    vec.clear();
+                }
+            }   // Finish processing a stream
+                    
+            if( !vec.empty() )
+            {
+                _drawLineSegs( vec.data(), vec.size() / 4, singleColor );
+                vec.clear();
+            }
+        }   // Finish processing all streams
+    }
+
     return 0;
 }
 
+
 int
-FlowRenderer::_drawAStreamAsLines( const std::vector<flow::Particle>& stream,
-                                   const FlowParams* params ) const
+FlowRenderer::_drawLineSegs( const float* buf, size_t numOfParts, bool singleColor ) const
 {
-    size_t numOfPart = 0;
-    std::vector<float> vec;
-    const float* bufPtr = nullptr;
-
-    // In case of steady flow, we render up to _cache_steadyNumOfSteps + 1.
-    if( _cache_isSteady )
-    {
-        size_t numOfStep = params->GetSteadyNumOfSteps();
-        numOfPart     = stream.size();
-        numOfPart     = numOfPart < numOfStep+1 ? numOfPart : numOfStep+1;
-        float* buffer = new float[ 4 * numOfPart ];
-        size_t i = 0;
-        for( const auto& p : stream )
-        {
-            if( i < numOfPart )
-            {
-                std::memcpy( buffer + i * 4, glm::value_ptr(p.location), sizeof(glm::vec3) );
-                buffer[ i * 4 + 3 ] = p.value;
-                i++;
-            }
-            else
-                break;
-        }
-        bufPtr = buffer;
-    }
-    // In case of unsteady, we use particles up to currentTS
-    else 
-    {
-        for( const auto& p : stream )
-        {
-            if( p.time <= _timestamps.at( _cache_currentTS ) )
-            {
-                vec.push_back( p.location.x );
-                vec.push_back( p.location.y );
-                vec.push_back( p.location.z );
-                vec.push_back( p.value );
-            }
-            else
-                break;
-        }
-        numOfPart = vec.size() / 4;
-        bufPtr    = vec.data();
-    }
-
     // Make some OpenGL function calls
     glm::mat4 modelview  = _glManager->matrixManager->GetModelViewMatrix();
     glm::mat4 projection = _glManager->matrixManager->GetProjectionMatrix();
@@ -352,7 +381,6 @@ FlowRenderer::_drawAStreamAsLines( const std::vector<flow::Particle>& stream,
     _shader->SetUniform("MV", modelview);
     _shader->SetUniform("Projection", projection);
     _shader->SetUniform("colorMapRange", glm::make_vec3(_colorMapRange));
-    bool singleColor = params->UseSingleColor();
     _shader->SetUniform( "singleColor", int(singleColor) );
 
     glActiveTexture( GL_TEXTURE0 + _colorMapTexOffset );
@@ -362,9 +390,9 @@ FlowRenderer::_drawAStreamAsLines( const std::vector<flow::Particle>& stream,
     glBindVertexArray( _vertexArrayId );
     glEnableVertexAttribArray( 0 );
     glBindBuffer( GL_ARRAY_BUFFER, _vertexBufferId );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(float) * 4 * numOfPart, bufPtr, GL_STREAM_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(float) * 4 * numOfParts, buf, GL_STREAM_DRAW );
     glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0 );
-    glDrawArrays( GL_LINE_STRIP, 0, numOfPart );
+    glDrawArrays( GL_LINE_STRIP, 0, numOfParts );
 
     // Some OpenGL cleanup
     glBindBuffer( GL_ARRAY_BUFFER, 0 );
@@ -372,16 +400,14 @@ FlowRenderer::_drawAStreamAsLines( const std::vector<flow::Particle>& stream,
     glBindTexture( GL_TEXTURE_1D,  _colorMapTexId );
     glBindVertexArray( 0 );
 
-    if( _cache_isSteady )
-        delete[] bufPtr;
-
     return 0;
 }
 
 void
 FlowRenderer::_updateFlowCacheAndStates( const FlowParams* params )
 {
-    /* Strategy:
+    /* 
+     * Strategy:
      * First, compare parameters that if changed, they would put both steady and unsteady
      *   streams out of date.
      * Second, branch into steady and unsteady cases, and deal with them separately.
@@ -444,7 +470,23 @@ FlowRenderer::_updateFlowCacheAndStates( const FlowParams* params )
         _velocityStatus           = FlowStatus::SIMPLE_OUTOFDATE;
     }
 
-    /* Now we branch into steady and unsteady cases, and treat them separately */
+    // Check periodicity
+    // If periodicity changes along any dimension, then the entire stream is out of date
+    const auto& peri = params->GetPeriodic();
+    if( ( _cache_periodic[0] != peri.at(0) ) ||
+        ( _cache_periodic[1] != peri.at(1) ) ||
+        ( _cache_periodic[2] != peri.at(2) )  )
+    {
+        for( int i = 0; i < 3; i++ )
+            _cache_periodic[i] = peri[i];
+        _colorStatus              = FlowStatus::SIMPLE_OUTOFDATE;
+        _velocityStatus           = FlowStatus::SIMPLE_OUTOFDATE;
+    }
+    
+
+    /* 
+     * Now we branch into steady and unsteady cases, and treat them separately 
+     */
     if( params->GetIsSteady() )
     {
         if( _cache_isSteady )   // steady state isn't changed
@@ -488,8 +530,7 @@ FlowRenderer::_updateFlowCacheAndStates( const FlowParams* params )
             }
         }
     }
-
-    else  /* in case of unsteady flow */
+    else  // in case of unsteady flow
     {
         if( !_cache_isSteady )  // unsteady state isn't changed
         {
@@ -518,7 +559,7 @@ FlowRenderer::_updateFlowCacheAndStates( const FlowParams* params )
 int
 FlowRenderer::_genSeedsXY( std::vector<flow::Particle>& seeds, float timeVal ) const
 {
-    int numX = 8, numY = 8;
+    int numX = 4, numY = 4;
     std::vector<double>           extMin, extMax;
     FlowParams* params = dynamic_cast<FlowParams*>( GetActiveParams() );
     params->GetBox()->GetExtents( extMin, extMax );
@@ -605,6 +646,28 @@ FlowRenderer::_restoreGLState() const
 {
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_1D, 0 );
+}
+
+void
+FlowRenderer::_updatePeriodicity( flow::Advection* advc )
+{
+    glm::vec3 minxyz, maxxyz;
+    _velocityField.GetFirstStepVelocityIntersection( minxyz, maxxyz );
+
+    if( _cache_periodic[0] )
+        advc->SetXPeriodicity( true, minxyz.x, maxxyz.x );
+    else
+        advc->SetXPeriodicity( false );
+
+    if( _cache_periodic[1] )
+        advc->SetYPeriodicity( true, minxyz.y, maxxyz.y );
+    else
+        advc->SetYPeriodicity( false );
+
+    if( _cache_periodic[2] )
+        advc->SetZPeriodicity( true, minxyz.z, maxxyz.z );
+    else
+        advc->SetZPeriodicity( false );
 }
 
 #ifndef WIN32

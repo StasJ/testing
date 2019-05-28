@@ -57,22 +57,6 @@ public:
     // Retrieve the maximum number of steps
     size_t GetMaxNumOfSteps() const;
 
-    // As part of the functionality of this class, it manages the 
-    //    particles that it stores.
-    //
-    // 1) this function assigns values to the Particle.value field for an entire stream
-    //int  AssignParticleValuesOfAStream( std::vector<float>& values, size_t idx );
-    //
-    // 2) this function assigns a value to the last Particle of a stream
-    //int  AssignLastParticleValueOfAStream( float value, size_t idx );
-    //
-    // 3) this function copies the value field from second last particle to the last one
-    //int  RepeatLastTwoParticleValuesOfAStream( size_t idx );
-    //
-    // 4) this function calls Particle::AttachProperty() function for a stream
-    //int  AttachParticlePropertiesOfAStream( std::vector<float>& properties, size_t idx );
-
-
     //
     // Output a file that could be plotted by gnuplot
     //   Command:  splot "filename" u 1:2:3 w lines
@@ -84,17 +68,23 @@ public:
     //   - each line should have at least three columns for X, Y, Z position.
     //     An optional 4th column is used to indicate time.
     //     The rest columns are omitted.
-    int  OutputStreamsGnuplot( const std::string& filename ) const;
+    //
+    int  OutputStreamsGnuplot( const std::string& filename, bool append = false ) const;
     int  InputStreamsGnuplot(  const std::string& filename );
 
     // Query properties (most are properties of the velocity field)
     int  CheckReady() const;
 
+    // Specify periodicity on each dimension
+    void  SetXPeriodicity( bool, float min = 0.0f, float max = 0.0f );
+    void  SetYPeriodicity( bool, float min = 0.0f, float max = 0.0f );
+    void  SetZPeriodicity( bool, float min = 0.0f, float max = 0.0f );
+
 private:
-    //const VelocityField*                    _velocity;
     std::vector< std::vector<Particle> >    _streams;
     const float _lowerAngle,    _upperAngle;    // Thresholds for step size adjustment
     float       _lowerAngleCos, _upperAngleCos; // Cosine values of the threshold angles
+    std::vector<size_t>         _separatorCount;// how many separators does each stream have
 
     // Advection methods here could assume all input is valid.
     int _advectEuler( Field*, const Particle&, float deltaT, // Input
@@ -109,6 +99,16 @@ private:
     float _calcAdjustFactor( const Particle& past2, 
                              const Particle& past1, 
                              const Particle& current ) const;
+
+    // If the advection is performed in a periodic fashion along one or more dimensions.
+    // These variables are **not** intended to be decided by Advection, but by someone
+    // who's more knowledgeable about the field.
+    bool        _isPeriodic[3];         // is it periodic in X, Y, Z dimensions ?
+    glm::vec2   _periodicBounds[3];     // periodic boundaries in X, Y, Z dimensions
+
+    // Adjust input "val" according to the bound specified by min and max.
+    // Returns the value after adjustment.
+    float       _applyPeriodic( float val, float min, float max ) const;
 
 };
 };

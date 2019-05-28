@@ -5,6 +5,7 @@
 
 #include <QWidget>
 #include <QVBoxLayout>
+#include <QPushButton>
 #include <vapor/FlowParams.h>
 
 #include <QLineEdit>
@@ -79,6 +80,10 @@ private:
     // Sam's attempt to add more widgets
     //   TODO: add validator/mask so that only positive integers are accepted
     QLineEdit*          _steadyNumOfSteps;
+
+    VCheckBox*          _periodicX;
+    VCheckBox*          _periodicY;
+    VCheckBox*          _periodicZ;
     
 
 private slots:
@@ -86,6 +91,7 @@ private slots:
     void _steadyGotClicked();
     void _velocityMultiplierChanged();
     void _steadyNumOfStepsChanged();
+    void _periodicClicked();
 };
 
 //
@@ -146,6 +152,7 @@ private slots:
     void _fileWriterChanged();
     void _flowDirectionChanged( int newIdx );
 */
+    void _outputButtonClicked();
 
 private:
     VAPoR::DataMgr*         _dataMgr;
@@ -215,6 +222,7 @@ private:
     VComboBox*              _seedGenMode;
     VFileReader*            _fileReader;
     VFileWriter*            _fileWriter;
+    QPushButton*            _outputButton;
 
     VComboBox*              _flowDirection;
 */
