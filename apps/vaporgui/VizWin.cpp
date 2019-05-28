@@ -374,12 +374,12 @@ void VizWin::_mousePressEventNavigate(QMouseEvent* e)
 // We record the position of the click.
 //
 void VizWin::mousePressEvent(QMouseEvent* e) {
+
     if (_mouseClicked)
         return;
     
 	_buttonNum = 0;
 	_mouseClicked = true;
-
 
 	if ((e->buttons() & Qt::LeftButton) &&  (e->buttons() & Qt::RightButton))
 		;//do nothing
@@ -389,7 +389,7 @@ void VizWin::mousePressEvent(QMouseEvent* e) {
 	//If ctrl + left button is pressed, only respond in navigation mode
 	if (
 		(_buttonNum == 1) && 
-		((e->modifiers() & (Qt::ControlModifier|Qt::MetaModifier)))
+	    ((e->modifiers() & (Qt::ControlModifier|Qt::MetaModifier)))
 	) {
 		_buttonNum = 0;
 	}
@@ -459,7 +459,10 @@ void VizWin::_mouseReleaseEventNavigate(QMouseEvent*e) {
  */
 void VizWin::mouseReleaseEvent(QMouseEvent*e)
 {
-	if (_buttonNum == 0) return;
+	if (_buttonNum == 0) {
+	    _mouseClicked = false;
+        return;
+    }
 
 	_mouseClicked = false;
 
