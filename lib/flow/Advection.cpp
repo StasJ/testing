@@ -9,32 +9,18 @@ Advection::Advection() : _lowerAngle( 3.0f ), _upperAngle( 15.0f )
 {
     _lowerAngleCos = glm::cos( glm::radians( _lowerAngle ) );
     _upperAngleCos = glm::cos( glm::radians( _upperAngle ) );
+
+    for( int i = 0; i < 3; i++ )
+    {
+        _isPeriodic[i]     = false;
+        _periodicBounds[i] = glm::vec2( 0.0f );
+    }
 }
 
 // Destructor;
 Advection::~Advection()
-{
-/*    if( _velocity )
-    {
-        delete _velocity;
-        _velocity = nullptr;
-    }*/
-}
+{ }
 
-/*
-void
-Advection::SetBaseStepSize( float f )
-{
-    _baseDeltaT = f;
-}
-
-void
-Advection::UseVelocity( const VelocityField* p )
-{
-    if( _velocity )
-        delete _velocity;
-    _velocity = p;
-}*/
 
 void
 Advection::UseSeedParticles( const std::vector<Particle>& seeds )
@@ -43,13 +29,15 @@ Advection::UseSeedParticles( const std::vector<Particle>& seeds )
     _streams.resize( seeds.size() );
     for( size_t i = 0; i < seeds.size(); i++ )
         _streams[i].push_back( seeds[i] );
+
+    _separatorCount.resize( seeds.size() );
+    for( auto& e : _separatorCount )
+        e = 0;
 }
 
 int
 Advection::CheckReady() const
 {
-    //if( _velocity == nullptr )
-    //    return NO_FIELD_YET;
 
     for( const auto& s : _streams )
     {
@@ -60,63 +48,6 @@ Advection::CheckReady() const
     return 0;
 }
 
-/*
-bool
-Advection::IsSteady() const
-{
-    if( _velocity )
-        return _velocity->IsSteady;
-    else
-        return false;
-}*/
-
-/*
-bool
-Advection::IsAdvectionComplete() const
-{
-    return _advectionComplete;
-}
-
-void
-Advection::ToggleAdvectionComplete( bool comp )
-{
-    _advectionComplete = comp;
-}
-
-const std::string 
-Advection::GetVelocityNameU() const
-{
-    if( _velocity )
-        return _velocity->VelocityNameU;
-    else
-        return std::string("");
-}
-const std::string 
-Advection::GetVelocityNameV() const
-{
-    if( _velocity )
-        return _velocity->VelocityNameV;
-    else
-        return std::string("");
-}
-const std::string 
-Advection::GetVelocityNameW() const
-{
-    if( _velocity )
-        return _velocity->VelocityNameW;
-    else
-        return std::string("");
-}
-
-const std::string 
-Advection::GetScalarName() const
-{
-    if( _velocity )
-        return _velocity->ScalarName;
-    else
-        return std::string("");
-}
-*/
 
 int
 Advection::AdvectOneStep( Field* velocity, float deltaT, ADVECTION_METHOD method )
@@ -126,24 +57,67 @@ Advection::AdvectOneStep( Field* velocity, float deltaT, ADVECTION_METHOD method
         return ready;
 
     bool happened = false;
+    size_t streamIdx = 0;
     for( auto& s : _streams )       // Process one stream at a time
     {
-        const auto& p0 = s.back();  // Start from the last particle in this stream
-        if( !velocity->InsideVolumeVelocity( p0.time, p0.location ) )
-            continue;
+        // Check if the particle is inside of the volume.
+        // Also wrap it along periodic dimensions if enabled.
+        if( !velocity->InsideVolumeVelocity( s.back().time, s.back().location ) )
+        {
+            auto& p0 = s.back();
+            // Attempt to apply periodicity
+            bool locChanged = false;
+            auto loc = p0.location;
+            for( int i = 0; i < 3; i++ )    // correct coordinates in each periodic dimension
+            {
+                if( _isPeriodic[i] )
+                {
+                    loc[i] = _applyPeriodic( loc[i], _periodicBounds[i][0], _periodicBounds[i][1] );
+                    locChanged = true;
+                }
+            }
 
+            if( !locChanged )   // no dimension is periodic
+                continue;
+
+            // If the new location comes inside volume, then we do these things:
+            // 1) Update the location of p0 to represent the wrapped result.
+            // 2) Insert a separator particle before p0.
+            // Note: the order of these two operations cannot be altered.
+            if( velocity->InsideVolumeVelocity( p0.time, loc ) )
+            {
+                p0.location = loc;
+
+                Particle separator;
+                auto citr = s.cend();
+                --citr;      // insert before the last element, p0
+                s.insert( citr, separator );
+                auto itr2 = s.end();
+                --itr2;     // now pointing to the last element
+                --itr2;     // now pointing to the 2nd last element
+                itr2->SetSpecial( true );
+                _separatorCount[streamIdx]++;
+            }
+            else
+                continue;
+        }
+
+        const auto& past0 = s.back();
         float dt = deltaT;
         float mindt = deltaT / 20.0f,   maxdt = deltaT * 50.0f;
-        if( s.size() > 2 )  // If there are at least 3 particles in the stream, 
-        {                   // we also adjust *dt*
+        if( s.size() > 2 )  // If there are at least 3 particles in the stream and
+        {                   // neither is a separator, we also adjust *dt*
             const auto& past1 = s[ s.size()-2 ];
             const auto& past2 = s[ s.size()-3 ];
-            dt  = p0.time - past1.time;     // step size used by last integration
-            dt *= _calcAdjustFactor( past2, past1, p0 );
-            if( dt > 0 )    // integrate forward 
-                dt  = glm::clamp( dt, mindt, maxdt );
-            else            // integrate backward
-                dt  = glm::clamp( dt, maxdt, mindt );
+            if( (!past1.IsSpecial()) && (!past2.IsSpecial()) )
+            {
+                dt  = past0.time - past1.time;     // step size used by last integration
+                dt *= _calcAdjustFactor( past2, past1, past0 );
+                if( dt > 0 )    // integrate forward 
+                    dt  = glm::clamp( dt, mindt, maxdt );
+                else            // integrate backward
+                    dt  = glm::clamp( dt, maxdt, mindt );
+            }
         }
 
         Particle p1;
@@ -151,9 +125,9 @@ Advection::AdvectOneStep( Field* velocity, float deltaT, ADVECTION_METHOD method
         switch (method)
         {
             case ADVECTION_METHOD::EULER:
-                rv = _advectEuler( velocity, p0, dt, p1 ); break;
+                rv = _advectEuler( velocity, past0, dt, p1 ); break;
             case ADVECTION_METHOD::RK4:
-                rv = _advectRK4(   velocity, p0, dt, p1 ); break;
+                rv = _advectRK4(   velocity, past0, dt, p1 ); break;
         }
         if( rv != 0 )   // Advection wasn't successful for some reason...
             continue;
@@ -162,6 +136,8 @@ Advection::AdvectOneStep( Field* velocity, float deltaT, ADVECTION_METHOD method
             happened = true;
             s.push_back( p1 );
         }
+
+        streamIdx++;
     }
 
     if( happened )
@@ -178,13 +154,44 @@ Advection::AdvectTillTime( Field* velocity, float deltaT, float targetT, ADVECTI
         return ready;
 
     bool happened = false;
+    size_t streamIdx = 0;
     for( auto& s : _streams )       // Process one stream at a time
     {
         Particle p0 = s.back();     // Start from the last particle in this stream
         while( p0.time < targetT )
         {
+            // Check if the particle is inside of the volume.
+            // Wrap it along periodic dimensions if applicable.
             if( !velocity->InsideVolumeVelocity( p0.time, p0.location ) )
-                break;
+            {
+                bool locChanged = false;
+                auto itr = s.end(); --itr;  // last element
+                auto loc = itr->location;
+                for( int i = 0; i < 3; i++ )
+                {
+                    if( _isPeriodic[i] )
+                    {
+                        loc[i] = _applyPeriodic( loc[i], _periodicBounds[i][0], _periodicBounds[i][1] );  
+                        locChanged = true; 
+                    } 
+                }
+                if( !locChanged )   // no dimension is periodic
+                    break;
+
+                // See if the new location is inside of the volume
+                if( velocity->InsideVolumeVelocity( p0.time, loc ) )
+                {
+                    itr->location = loc;
+                    p0 = *itr;
+                    
+                    Particle separator;
+                    separator.SetSpecial( true );
+                    s.insert( itr, separator );
+                    _separatorCount[streamIdx]++;
+                }
+                else 
+                    break;
+            }
 
             float dt = deltaT;
             float mindt = deltaT / 20.0f,   maxdt = deltaT * 50.0f;
@@ -192,10 +199,13 @@ Advection::AdvectTillTime( Field* velocity, float deltaT, float targetT, ADVECTI
             {                   // we also adjust *dt*
                 const auto& past1 = s[ s.size()-2 ];
                 const auto& past2 = s[ s.size()-3 ];
-                dt  = p0.time - past1.time;     // step size used by last integration
-                dt  = dt < maxdt ? dt : maxdt ;
-                dt  = dt > mindt ? dt : mindt ;
-                dt *= _calcAdjustFactor( past2, past1, p0 );
+                if( (!past1.IsSpecial()) && (!past2.IsSpecial()) )
+                {
+                    dt  = p0.time - past1.time;     // step size used by last integration
+                    dt  = dt < maxdt ? dt : maxdt ;
+                    dt  = dt > mindt ? dt : mindt ;
+                    dt *= _calcAdjustFactor( past2, past1, p0 );
+                }
             }
 
             Particle p1;
@@ -217,8 +227,9 @@ Advection::AdvectTillTime( Field* velocity, float deltaT, float targetT, ADVECTI
                 s.push_back( p1 );
                 p0 = p1;
             }
-        }
-    }
+        }   // Finish the while loop to advect one particle to a time
+        streamIdx++;
+    }   // Finish the for loop to advect all particles to a time
 
     if( happened )
         return ADVECT_HAPPENED;
@@ -242,6 +253,9 @@ Advection::CalculateParticleValues( Field* scalar, bool skipNonZero )
             if( i < s.size() )
             {
                 auto& p = s[i];
+                // Skip this particle if it's a separator
+                if( p.IsSpecial() )
+                    continue;
                 // Do not evaluate this particle if its value is non-zero
                 if( skipNonZero && p.value != 0.0f )
                     continue;
@@ -335,9 +349,20 @@ Advection::_calcAdjustFactor( const Particle& p2, const Particle& p1,
 }
 
 int
-Advection::OutputStreamsGnuplot( const std::string& filename ) const
+Advection::OutputStreamsGnuplot( const std::string& filename, bool append ) const
 {
-    FILE* f = std::fopen( filename.c_str(), "w" );
+    if( filename.empty() )
+        return FILE_ERROR;
+
+    FILE* f = nullptr;
+    if( append )
+    {
+        f = std::fopen( filename.c_str(), "a" );
+    }
+    else
+    {
+        f = std::fopen( filename.c_str(), "w" );
+    }
     if( f == nullptr )
         return FILE_ERROR;
 
@@ -345,8 +370,11 @@ Advection::OutputStreamsGnuplot( const std::string& filename ) const
     for( const auto& s : _streams )
     {
         for( const auto& p : s )
-            std::fprintf( f, "%f, %f, %f, %f, %f\n", p.location.x, p.location.y, p.location.z,
-                              p.time, p.value );
+        {
+            if( !p.IsSpecial() )
+                std::fprintf( f, "%f, %f, %f, %f, %f\n", p.location.x, p.location.y, 
+                p.location.z, p.time, p.value );
+        }
         std::fprintf( f, "\n\n" );
     }
     std::fclose( f );
@@ -379,7 +407,7 @@ Advection::InputStreamsGnuplot( const std::string& filename )
             continue;
 
         // Now try to parse numbers separated by comma
-        line.push_back(',');
+        line.push_back(',');    // append a comma to the very end of the line
         std::vector<float> values;
         size_t start = 0;
         size_t end   = line.find( ',' );
@@ -390,7 +418,8 @@ Advection::InputStreamsGnuplot( const std::string& filename )
             try{  val = std::stof( str ); }
             catch( const std::invalid_argument& e )
             {
-                break;
+                ifs.close();
+                return FILE_ERROR;
             }
             values.push_back( val );
             start = end + 1;
@@ -433,63 +462,16 @@ Advection::GetStreamAt( size_t i ) const
 size_t
 Advection::GetMaxNumOfSteps() const
 {
-    size_t num = 0;
+    size_t max = 0;
+    size_t idx = 0;
     for( const auto& s : _streams )
-        num = s.size() > num ? s.size() : num;
-    return num;
-}
-
-/*
-int
-Advection::AssignParticleValuesOfAStream( std::vector<float>& valsIn, size_t idx )
-{
-    if( valsIn.size() != _streams.at(idx).size() )
-        return SIZE_MISMATCH;
-
-    // Now we assign value to each particle
-    auto itr = _streams.at(idx).begin();
-    for( auto v : valsIn )
     {
-        (*itr).value = v;
-        ++itr;
+        size_t num = s.size() - _separatorCount[idx];
+        max = max > num ? max : num;
+        idx++;
     }
-    return 0;
+    return max;
 }
-
-int
-Advection::AssignLastParticleValueOfAStream( float newVal, size_t idx )
-{
-    _streams.at(idx).back().value = newVal;
-    return 0;
-}
-
-int
-Advection::RepeatLastTwoParticleValuesOfAStream( size_t idx )
-{
-    auto& s = _streams.at(idx);
-    size_t size = s.size();
-    if( size > 1 )  // At least there are two particles
-        s[ size-1 ].value = s[ size-2 ].value;
-
-    return 0;
-}
-
-int
-Advection::AttachParticlePropertiesOfAStream( std::vector<float>& prop, size_t idx )
-{
-    if( prop.size() != _streams.at(idx).size() )
-        return SIZE_MISMATCH;
-
-    // Now we attach properties to each particle
-    auto itr = _streams.at(idx).begin();
-    for( auto v : prop )
-    {
-        (*itr).AttachProperty( v );
-        ++itr;
-    }
-    return 0;
-}
-*/
 
 void 
 Advection::ClearParticleProperties()
@@ -505,4 +487,55 @@ Advection::ResetParticleValues()
     for( auto& stream : _streams )
         for( auto& part : stream )
             part.value = 0.0f;
+}
+
+void
+Advection::SetXPeriodicity( bool isPeri, float min, float max )
+{
+    _isPeriodic[0] = isPeri;
+    if( isPeri )
+        _periodicBounds[0] = glm::vec2( min, max );
+    else
+        _periodicBounds[0] = glm::vec2( 0.0f );
+}
+
+void
+Advection::SetYPeriodicity( bool isPeri, float min, float max )
+{
+    _isPeriodic[1]     = isPeri;
+    if( isPeri )
+        _periodicBounds[1] = glm::vec2( min, max );
+    else
+        _periodicBounds[1] = glm::vec2( 0.0f );
+}
+
+void
+Advection::SetZPeriodicity( bool isPeri, float min, float max )
+{
+    _isPeriodic[2]     = isPeri;
+    if( isPeri )
+        _periodicBounds[2] = glm::vec2( min, max );
+    else
+        _periodicBounds[2] = glm::vec2( 0.0f );
+}
+
+float
+Advection::_applyPeriodic( float val, float min, float max ) const
+{
+    float span = max - min;
+    float pval = val;
+    if( val >= min && val <= max )
+        return pval;
+    else if( val < min )
+    {
+        while( pval < min )
+            pval += span;
+        return pval;
+    }
+    else    // val > max
+    {
+        while( pval > max )
+            pval -= span;
+        return pval;
+    }
 }
