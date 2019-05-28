@@ -53,6 +53,8 @@ void main(void)
             float dataNorm = (texture(data, dataSTR).r - LUTMin) / (LUTMax - LUTMin);
             vec4 color = texture(LUT, dataNorm);
             vec3 normal = GetNormal(dataSTR);
+            
+            color = vec4(vec3(texture(data, dataSTR).r), 1.0f);
 			
             color.rgb *= PhongLighting(normal, rayLightingNormal);
             

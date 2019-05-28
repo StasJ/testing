@@ -79,9 +79,11 @@ int VolumeRegular::_loadDataDirect(const Grid *grid, Texture3D *dataTexture, Tex
         for (size_t i = 0; i < nVerts; ++i, ++dataIt)
             data[i] = *dataIt;
     
-    if (normalize)
+    if (normalize) {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         dataTexture->TexImage(GL_R8, dims[0], dims[1], dims[2], GL_RED, GL_UNSIGNED_BYTE, dataN);
-    else
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+    } else
         dataTexture->TexImage(GL_R32F, dims[0], dims[1], dims[2], GL_RED, GL_FLOAT, data);
     
     *hasMissingData = grid->HasMissingData();

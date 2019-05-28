@@ -77,7 +77,12 @@ int Texture::TexImage(int internalFormat, int width, int height, int depth, unsi
         glTexImage2D(_type, level, internalFormat, width, height, 0, format, type, data);
     else if (_nDims == 3) {
         glTexImage3D(_type, level, internalFormat, 0, 0, 0, 0, format, type, NULL); // Fix driver bug with re-uploading large textures
-        glTexImage3D(_type, level, internalFormat, width, height, depth, 0, format, type, data);
+        glTexImage3D(_type, level, internalFormat, width, height, depth, 0, format, type, NULL);
+        glFinish();
+        for (int z = 0; z < depth; z++) {
+            glTexSubImage3D(_type, level, 0, 0, z, width, height, 1, format, type, &((char*)data)[width*height*z]);
+        }
+//        glTexImage3D(_type, level, internalFormat, width, height, depth, 0, format, type, data);
     }
     
     UnBind();
