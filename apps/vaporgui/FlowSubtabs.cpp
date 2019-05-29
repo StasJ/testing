@@ -1,6 +1,9 @@
 #include "FlowSubtabs.h"
 #include "VaporWidgets.h"
 
+#define disableNoOps 1
+#define verbose 1
+
 QVaporSubtab::QVaporSubtab(QWidget* parent) : QWidget(parent)
 {
     _layout = new QVBoxLayout(this);
@@ -20,7 +23,7 @@ FlowVariablesSubtab::FlowVariablesSubtab(QWidget* parent) : QVaporSubtab(parent)
                                 (DimFlags)(THREED) );
     _layout->addWidget( _variablesWidget, 0, 0 );
 
-    _velocityMltp = new QLineEdit( this );
+    /*_velocityMltp = new QLineEdit( this );
     _layout->addWidget( _velocityMltp );
 
     _steady = new VCheckBox( this, "Use Steady Flow" );
@@ -43,6 +46,7 @@ FlowVariablesSubtab::FlowVariablesSubtab(QWidget* parent) : QVaporSubtab(parent)
     connect( _periodicX,        SIGNAL( _checkboxClicked() ), this, SLOT( _periodicClicked() ) );
     connect( _periodicY,        SIGNAL( _checkboxClicked() ), this, SLOT( _periodicClicked() ) );
     connect( _periodicZ,        SIGNAL( _checkboxClicked() ), this, SLOT( _periodicClicked() ) );
+*/
 }
 
 void 
@@ -54,6 +58,7 @@ FlowVariablesSubtab::Update( VAPoR::DataMgr      *dataMgr,
     assert(_params);
     _variablesWidget->Update(dataMgr, paramsMgr, rParams);
 
+/*
     // Update custom widgets
     bool isSteady = _params->GetIsSteady();
     _steady->SetCheckState( isSteady );
@@ -68,12 +73,15 @@ FlowVariablesSubtab::Update( VAPoR::DataMgr      *dataMgr,
     _periodicX->SetCheckState( bools[0] );
     _periodicY->SetCheckState( bools[1] );
     _periodicZ->SetCheckState( bools[2] );
+*/
 }
-    
+   
+/* 
 void 
 FlowVariablesSubtab::_periodicClicked()
 {
     std::vector<bool> bools( 3, false );
+    cout << "periodicity changed " << bools[0] << " " << bools[1] << " " << bools[2] << endl;
     bools[0] = _periodicX->GetCheckState();
     bools[1] = _periodicY->GetCheckState();
     bools[2] = _periodicZ->GetCheckState();
@@ -104,6 +112,7 @@ FlowVariablesSubtab::_steadyNumOfStepsChanged()
     if( ok )    // Scott: this verification is no longer needed once the line edit has its own validator
         _params->SetSteadyNumOfSteps( i );
 }
+*/
 
 //
 //================================
@@ -119,6 +128,8 @@ FlowAppearanceSubtab::FlowAppearanceSubtab(QWidget* parent) :
     _shapeCombo->AddOption( "Points", 1 );
     _shapeCombo->AddOption( "Arrows", 2 );
     _streamlineAppearanceTab->AddWidget( _shapeCombo );
+    _streamlineAppearanceTab->AddWidget( _shapeCombo );
+    if (disableNoOps) _shapeCombo->setEnabled( false );
 
     _colorCombo = new VComboBox( this, "Color" );
     _colorCombo->AddOption( "Constant" );
@@ -126,16 +137,21 @@ FlowAppearanceSubtab::FlowAppearanceSubtab(QWidget* parent) :
     _colorCombo->AddOption( "Distance from start" );
     _colorCombo->AddOption( "Seed index" );
     _streamlineAppearanceTab->AddWidget( _colorCombo );
+    if (disableNoOps) _colorCombo->setEnabled( false );
 
     _lengthSpinBox = new VSpinBox( this, "Length" );
     _streamlineAppearanceTab->AddWidget( _lengthSpinBox );
+    if (disableNoOps) _lengthSpinBox->setEnabled( false );
 
     _sizeSpinBox = new VSpinBox( this, "Size" );
     _streamlineAppearanceTab->AddWidget( _sizeSpinBox );
+    if (disableNoOps) _sizeSpinBox->setEnabled( false );
 
     _smoothnessSliderEdit = new QSliderEdit( this );
     _smoothnessSliderEdit->SetLabel( "Smoothness" );
+    if (disableNoOps) _smoothnessSliderEdit->setEnabled( false );
     _streamlineAppearanceTab->AddWidget( _smoothnessSliderEdit );
+
     _layout->addWidget( _streamlineAppearanceTab );
 
     _TFWidget = new TFWidget(this);
@@ -177,15 +193,12 @@ FlowIntegrationSubtab::FlowIntegrationSubtab(
     connect( _integrationTypeCombo, SIGNAL( _indexChanged(int) ),
         this, SLOT( _configureIntegrationType() ));
 
-    _multiplierLineEdit = new VLineEdit( this, "Vector field multiplier" );
-    _integrationSettingsTab->AddWidget( _multiplierLineEdit );
-    connect( _multiplierLineEdit, SIGNAL( _editingFinished() ),
-        this, SLOT( _multiplierChanged() ) );
-
-    _integrationLengthEdit = new VLineEdit( this, "Integration Length/Steps/Multiplier" );
+    _integrationLengthEdit = new VLineEdit( this, "Integration length" );
     _integrationSettingsTab->AddWidget( _integrationLengthEdit );
     connect( _integrationLengthEdit, SIGNAL( _editingFinished() ),
         this, SLOT( _integrationLengthChanged() ) );
+    if (disableNoOps)
+        _integrationLengthEdit->setEnabled( false );
 
     _directionCombo = new VComboBox( this, "Integration direction" );
     _directionCombo->AddOption( "Forward", 0 );
@@ -197,31 +210,69 @@ FlowIntegrationSubtab::FlowIntegrationSubtab(
 
     _startSpinBox = new VSpinBox( this, "Injection start time step", 0 );
     _integrationSettingsTab->AddWidget( _startSpinBox );
+    if (disableNoOps) 
+        _startSpinBox->setEnabled(false);
+
     _endSpinBox = new VSpinBox( this, "Injection end time step" );
     _integrationSettingsTab->AddWidget( _endSpinBox );
+    if (disableNoOps) 
+        _endSpinBox->setEnabled(false);
+
     _lifespanSpinBox = new VSpinBox( this, "Seed lifespan after injection" );
     _integrationSettingsTab->AddWidget( _lifespanSpinBox );
+    if (disableNoOps) 
+        _lifespanSpinBox->setEnabled(false);
+
     _intervalSpinBox = new VSpinBox( this, "Seed injection interval", 1);
     _integrationSettingsTab->AddWidget( _intervalSpinBox );
+    if (disableNoOps) 
+        _intervalSpinBox->setEnabled(false);
     
     _periodicBoundaryComboX = new VCheckBox( this, "X axis periodicity" );
     _integrationSettingsTab->AddWidget( _periodicBoundaryComboX );
+    connect( _periodicBoundaryComboX, SIGNAL( _checkboxClicked() ),
+        this, SLOT( _periodicityChanged() ) );
+
     _periodicBoundaryComboY = new VCheckBox( this, "Y axis periodicity" );
     _integrationSettingsTab->AddWidget( _periodicBoundaryComboY );
+    connect( _periodicBoundaryComboY, SIGNAL( _checkboxClicked() ),
+        this, SLOT( _periodicityChanged() ) );
+
     _periodicBoundaryComboZ = new VCheckBox( this, "Z axis periodicity" );
     _integrationSettingsTab->AddWidget( _periodicBoundaryComboZ );
+    connect( _periodicBoundaryComboZ, SIGNAL( _checkboxClicked() ),
+        this, SLOT( _periodicityChanged() ) );
+
+    _multiplierLineEdit = new VLineEdit( this, "Vector field multiplier" );
+    _integrationSettingsTab->AddWidget( _multiplierLineEdit );
+    connect( _multiplierLineEdit, SIGNAL( _editingFinished() ),
+        this, SLOT( _multiplierChanged() ) );
 
     _configureIntegrationType();
     _layout->addWidget( _integrationSettingsTab );
 
 }
 
+void FlowIntegrationSubtab::_periodicityChanged() {
+    std::vector<bool> periodicity = {
+        _periodicBoundaryComboX->GetCheckState(),
+        _periodicBoundaryComboY->GetCheckState(),
+        _periodicBoundaryComboZ->GetCheckState()
+    };
+    if (verbose) std::cout << "GUI changed periodicity to " << periodicity[0] << " " << periodicity[1] << " " << periodicity[2] << endl;
+    _params->SetPeriodic( periodicity );
+    if (verbose) {
+        std::vector<bool> bools = _params->GetPeriodic();
+        cout << "Params periodicity changed to " << bools[0] << " " << bools[1] << " " << bools[2] << endl << endl;
+    }
+}
+
 void FlowIntegrationSubtab::_integrationLengthChanged() {
     long value = stod(_integrationLengthEdit->GetEditText());
-    std::cout << "integration length edit changed to " << value << std::endl;
+    if (verbose) std::cout << "integration length edit changed to " << value << std::endl;
     _params->SetSteadyNumOfSteps( value );
-    std::cout << "integration length params changed to " << _params->GetSteadyNumOfSteps() << std::endl;
-    std::cout << std::endl;
+    if (verbose) std::cout << "integration length params changed to " << _params->GetSteadyNumOfSteps() << std::endl;
+    if (verbose) std::cout << std::endl;
 }
 
 void FlowIntegrationSubtab::_integrationDirectionChanged() {
@@ -234,20 +285,20 @@ void FlowIntegrationSubtab::_integrationDirectionChanged() {
     if (direction == "Bi-directional" )
         paramsValue = 2;
 
-    std::cout << "Direction combo changed to " << direction << endl;
+    if (verbose) std::cout << "Direction combo changed to " << direction << endl;
 
     _params->SetFlowDirection( paramsValue );
 
-    std::cout << "Params direction changed to " << _params->GetFlowDirection() << endl;
-    std::cout << endl;
+    if (verbose) std::cout << "Params direction changed to " << _params->GetFlowDirection() << endl;
+    if (verbose) std::cout << endl;
 }
 
 void FlowIntegrationSubtab::_multiplierChanged() {
     double value = stod(_multiplierLineEdit->GetEditText());
-    std::cout << "Vector multiplier line edit changed to " << value << std::endl;
+    if (verbose) std::cout << "Vector multiplier line edit changed to " << value << std::endl;
     _params->SetVelocityMultiplier( value );
-    std::cout << "Vector multiplier params changed to " << _params->GetVelocityMultiplier() << std::endl;
-    std::cout << std::endl;
+    if (verbose) std::cout << "Vector multiplier params changed to " << _params->GetVelocityMultiplier() << std::endl;
+    if (verbose) std::cout << std::endl;
 }
 
 void FlowIntegrationSubtab::_configureIntegrationType() {
@@ -272,14 +323,14 @@ void FlowIntegrationSubtab::_configureIntegrationType() {
         _integrationLengthEdit->hide();
     }
     
-    std::cout << "Integration combo changed to " << seedType << endl;
+    if (verbose) std::cout << "Integration combo changed to " << seedType << endl;
 
     if ( _params != nullptr ) {
         _params->SetIsSteady( isSteady );
-        std::cout << "Integration params changed to " << _params->GetIsSteady() << endl;
+        if (verbose) std::cout << "Integration params changed to " << _params->GetIsSteady() << endl;
     }
 
-    std::cout << std::endl;
+    if (verbose) std::cout << std::endl;
 }
 
 void FlowIntegrationSubtab::_initialize() {
@@ -341,28 +392,48 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) :
     connect( _distributionCombo, SIGNAL( _indexChanged(int) ),
         this, SLOT( _configureRakeType() ));
 
+    //
     // Random rake options
+    //
     _randomCountSpinBox = new VSpinBox( this, "Number of random seeds", 64 );
     _seedSettingsTab->AddWidget( _randomCountSpinBox );
+    if (disableNoOps) 
+        _randomCountSpinBox->setEnabled( false );
+
     _biasVariableCombo = new VComboBox( this, "Random distribution bias variable" );
     _seedSettingsTab->AddWidget( _biasVariableCombo );
+    if (disableNoOps) 
+        _biasVariableCombo->setEnabled( false );
+
     _biasSliderEdit = new QSliderEdit( this );
     _biasSliderEdit->SetLabel( "Bias weight" );
     _seedSettingsTab->AddWidget( _biasSliderEdit );
+    if (disableNoOps) 
+        _biasSliderEdit->setEnabled( false );
 
+    //
     // Gridded rake options
+    //
     _xDistributionSpinBox = new VSpinBox( this, "X axis seeds", 8 );
     _seedSettingsTab->AddWidget( _xDistributionSpinBox );
+    if (disableNoOps) 
+        _xDistributionSpinBox->setEnabled( false );
+    
     _yDistributionSpinBox = new VSpinBox( this, "Y axis seeds", 8 );
     _seedSettingsTab->AddWidget( _yDistributionSpinBox );
+    if (disableNoOps) 
+        _yDistributionSpinBox->setEnabled( false );
+    
     _zDistributionSpinBox = new VSpinBox( this, "Z axis seeds", 8 );
     _seedSettingsTab->AddWidget( _zDistributionSpinBox );
+    if (disableNoOps) 
+        _zDistributionSpinBox->setEnabled( false );
 
     // List of seed file picker
-    _fileReader = new VFileReader( this, "Seed File" );
-    _seedSettingsTab->AddWidget( _fileReader );
+    _seedpointFileReader = new VFileReader( this, "Seed File" );
+    _seedSettingsTab->AddWidget( _seedpointFileReader );
     _layout->addWidget( _seedSettingsTab );
-    connect( _fileReader, SIGNAL( _pathChanged() ),
+    connect( _seedpointFileReader, SIGNAL( _pathChanged() ),
         this, SLOT( _seedInputFileChanged() ) );
 
     // Rake region selector 
@@ -377,50 +448,29 @@ FlowSeedingSubtab::FlowSeedingSubtab(QWidget* parent) :
 
     _exportGeometryWriter = new VFileWriter( 
         this, 
-        "Export geometry",
+        "Export geometry file",
         "Select",
         QDir::homePath().toStdString()
     );
+    _exportGeometryWriter->SetFileFilter( (std::string)"*.txt" );
     _layout->addWidget( _exportGeometryWriter );
     connect( _exportGeometryWriter, SIGNAL( _pathChanged() ),
-        this, SLOT( _exportGeometryWriterChanged() ) );
+        this, SLOT( _exportGeometryPathChanged() ) );
 
-/*    
-    _seedGenMode = new VComboBox( this, "Seed Generation Mode" );
-    // Index numbers are in agreement with what's in FlowRenderer.h
-    _seedGenMode->AddOption( "Programatically", 0 );
-    _seedGenMode->AddOption( "From a List", 1 );
-    _layout->addWidget( _seedGenMode );
-    connect( _seedGenMode, SIGNAL( _indexChanged(int) ), this, SLOT( _seedGenModeChanged(int) ) );
-   
-    _fileReader = new VFileReader( this, "Input Seed File" );
-    _fileReader->SetFileFilter( QString::fromAscii("*.txt") );
-    _layout->addWidget( _fileReader );
-    connect( _fileReader, SIGNAL( _pathChanged() ), this, SLOT( _fileReaderChanged() ) );
 
-    _flowDirection = new VComboBox( this, "Steady Flow Direction" );
-    // Index numbers are in agreement with what's in FlowRenderer.h
-    _flowDirection->AddOption( "Forward", 0 );
-    _flowDirection->AddOption( "Backward", 1 );
-    _flowDirection->AddOption( "Bi-Directional", 2 );
-    _layout->addWidget( _flowDirection );
-    connect( _flowDirection, SIGNAL(_indexChanged(int)), this, SLOT( _flowDirectionChanged(int) ) );
-
-    _fileWriter = new VFileWriter( this, "Output Flow Lines" );
-    _fileWriter->SetFileFilter( QString::fromAscii("*.txt") );
-    _layout->addWidget( _fileWriter );
-    connect( _fileWriter, SIGNAL( _pathChanged() ), this, SLOT( _fileWriterChanged() ) );
-*/
-
-    _outputButton = new QPushButton( "Output Flow Lines", this );
-    _layout->addWidget( _outputButton );
-    connect( _outputButton, SIGNAL( clicked() ), this, SLOT( _outputButtonClicked() ) );
-}
-
-void
-FlowSeedingSubtab::_outputButtonClicked( )
-{
-    _params->SetNeedFlowlineOutput( true );
+    _exportGeometryButton = new VPushButton(
+        this,
+        "",
+        "Export"
+    );
+    _layout->addWidget( _exportGeometryButton );
+    connect( _exportGeometryButton, SIGNAL( _pressed() ),
+        this, SLOT( _exportButtonClicked() ) );
+    
+//
+// ToDo: Turn off hack to set default to LIST OF SEEDS!!!    
+//
+    _distributionCombo->SetIndex(2);
 }
 
 void FlowSeedingSubtab::Update( VAPoR::DataMgr      *dataMgr,
@@ -442,38 +492,46 @@ void FlowSeedingSubtab::Update( VAPoR::DataMgr      *dataMgr,
         _distributionCombo->SetIndex( 2 );
 
     string file = _params->GetSeedInputFilename();
-    _fileReader->SetPath( file );
+    _seedpointFileReader->SetPath( file );
 
     file = _params->GetFlowlineOutputFilename();
     _exportGeometryWriter->SetPath( file );
-/*
-    long idx = _params->GetSeedGenMode();
-    if( idx >= 0 && idx < _seedGenMode->GetNumOfItems() )
-        _seedGenMode->SetIndex( idx );
-    else
-        _seedGenMode->SetIndex( 0 );
+}
 
-    if( !_params->GetSeedInputFilename().empty() ) 
-        _fileReader->SetPath( _params->GetSeedInputFilename() );
-    if( !_params->GetFlowlineOutputFilename().empty() ) 
-        _fileWriter->SetPath( _params->GetFlowlineOutputFilename() );
-*/
+void
+FlowSeedingSubtab::_exportButtonClicked( )
+{
+
+//  I'm a little unclear on how this is currently configured.
+//  I believe that triggering a file export would be an event issued by the
+//  user, not something that would b e enabled or disabled.
+    if ( _params->GetNeedFlowlineOutput() )
+        _params->SetNeedFlowlineOutput( false );
+    else
+        _params->SetNeedFlowlineOutput( true);
+    if (verbose) std::cout << "exportButton set NeedFlowlineOutput to " << _params->GetNeedFlowlineOutput() << endl;
 }
 
 void FlowSeedingSubtab::_exportGeometryPathChanged() {
     string path = _exportGeometryWriter->GetPath();
-    std::cout << "Geometry path dialog set " << path << std::endl;
+    if (verbose) std::cout << "Geometry path dialog set " << path << std::endl;
     _params->SetFlowlineOutputFilename( path );
-    std::cout << "Geometry path params set " << _params->GetFlowlineOutputFilename() << std::endl;
-    std::cout << std::endl;
+    if (verbose) std::cout << "Geometry path params set " << _params->GetFlowlineOutputFilename() << std::endl;
+    if (verbose) std::cout << std::endl;
 }
 
 void FlowSeedingSubtab::_seedInputFileChanged() {
-    string file = _fileReader->GetPath();
-    std::cout << "Input seed file changed to " << file << std::endl;
+    string file = _seedpointFileReader->GetPath();
+    if (verbose) std::cout << "Input seed file changed to " << file << std::endl;
     _params->SetSeedInputFilename( file );
-    std::cout << "Input seed params changed to " << _params->GetSeedInputFilename() << endl;
-    std::cout << std::endl;
+    if (verbose) std::cout << "Input seed params changed to " << _params->GetSeedInputFilename() << endl;
+    if (verbose) std::cout << std::endl;
+}
+
+void FlowSeedingSubtab::_seedpointReaderPathChanged()
+{
+    std::string filename = _seedpointFileReader->GetPath();
+    _params->SetFlowlineOutputFilename( filename );
 }
 
 void FlowSeedingSubtab::_configureRakeType() {
@@ -499,7 +557,7 @@ void FlowSeedingSubtab::_configureRakeType() {
         _yDistributionSpinBox->hide();
         _zDistributionSpinBox->hide();
 
-        _fileReader->hide();
+        _seedpointFileReader->hide();
         
         _geometryWidget->setEnabled(true);
     }
@@ -513,7 +571,7 @@ void FlowSeedingSubtab::_configureRakeType() {
         _yDistributionSpinBox->show();
         _zDistributionSpinBox->show();
 
-        _fileReader->hide();
+        _seedpointFileReader->hide();
 
         _geometryWidget->setEnabled(true);
     }
@@ -527,47 +585,19 @@ void FlowSeedingSubtab::_configureRakeType() {
         _yDistributionSpinBox->hide();
         _zDistributionSpinBox->hide();
 
-        _fileReader->show();
+        _seedpointFileReader->show();
 
         _geometryWidget->setEnabled(false);
     }
 
-    std::cout << "Distribution type combo set to " << seedType << std::endl;
+    if (verbose) std::cout << "Distribution type combo set to " << seedType << std::endl;
 
     if ( _params != nullptr) {
         _params->SetSeedGenMode( paramsValue );
-        std::cout << "Distribution param set to " << _params->GetSeedGenMode() << std::endl;
+        if (verbose) std::cout << "Distribution param set to " << _params->GetSeedGenMode() << std::endl;
     }
-    std::cout << std::endl;
+    if (verbose) std::cout << std::endl;
 }
-
-/*
-void
-FlowSeedingSubtab::_seedGenModeChanged( int newIdx )
-{
-    _params->SetSeedGenMode( newIdx );
-}
-
-void
-FlowSeedingSubtab::_fileReaderChanged()
-{
-    std::string filename = _fileReader->GetPath();
-    _params->SetSeedInputFilename( filename );
-}
-
-void
-FlowSeedingSubtab::_fileWriterChanged()
-{
-    std::string filename = _fileWriter->GetPath();
-    _params->SetFlowlineOutputFilename( filename );
-}
-
-void
-FlowSeedingSubtab::_flowDirectionChanged( int newIdx )
-{
-    _params->SetFlowDirection( newIdx );
-}
-*/
 
 //
 //================================

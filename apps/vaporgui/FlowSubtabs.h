@@ -70,6 +70,7 @@ private:
     VAPoR::FlowParams*  _params;
     VariablesWidget*    _variablesWidget;
 
+/*
     // Sam's attempt to add more widgets
     //   TODO: add validator/mask so that only numerical input 
     //   between 0.001 and 1000 are valid.
@@ -85,13 +86,13 @@ private:
     VCheckBox*          _periodicY;
     VCheckBox*          _periodicZ;
     
-
 private slots:
     // Respond to user input
     void _steadyGotClicked();
     void _velocityMultiplierChanged();
     void _steadyNumOfStepsChanged();
     void _periodicClicked();
+*/
 };
 
 //
@@ -144,15 +145,8 @@ private slots:
     void _configureRakeType();
 //    void _seedGenModeChanged( int newIdx );
     void _exportGeometryPathChanged();
-
-/*
-private slots:
-    // Respond to user input
-    void _fileReaderChanged();
-    void _fileWriterChanged();
-    void _flowDirectionChanged( int newIdx );
-*/
-    void _outputButtonClicked();
+    void _seedpointReaderPathChanged();
+    void _exportButtonClicked();
 
 private:
     VAPoR::DataMgr*         _dataMgr;
@@ -169,8 +163,10 @@ private:
     VSpinBox*               _xDistributionSpinBox;
     VSpinBox*               _yDistributionSpinBox;
     VSpinBox*               _zDistributionSpinBox;
-    VFileReader*            _fileReader;
+    VFileReader*            _seedpointFileReader;
     VFileWriter*            _exportGeometryWriter;
+    VPushButton*            _exportGeometryButton;    
+QPushButton*            _outputButton;
 };
 
 //
@@ -196,6 +192,7 @@ private slots:
     void _multiplierChanged();
     void _integrationDirectionChanged();
     void _integrationLengthChanged();
+    void _periodicityChanged();
 
 private:
     void _initialize();
@@ -217,15 +214,6 @@ private:
     VSpinBox*               _intervalSpinBox;
 
     bool                    _initialized;
-
-/*
-    VComboBox*              _seedGenMode;
-    VFileReader*            _fileReader;
-    VFileWriter*            _fileWriter;
-    QPushButton*            _outputButton;
-
-    VComboBox*              _flowDirection;
-*/
 };
 
 //
