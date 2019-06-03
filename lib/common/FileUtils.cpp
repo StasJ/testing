@@ -32,8 +32,7 @@ string FileUtils::ReadFileToString(const string &path)
         char *buf = new char[length + 1];
         size_t rv = fread(buf, length, 1, f);
         fclose(f);
-        if(rv != 1)
-        {
+        if (rv != 1) {
             delete[] buf;
             return string("");
         }
