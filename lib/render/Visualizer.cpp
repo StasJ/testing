@@ -177,10 +177,10 @@ int Visualizer::paintEvent(bool fast)
     
     _clearFramebuffer();
     
-    int width = viewport[2] - viewport[0];
-    int height = viewport[3] - viewport[1];
-    width = 2000;
-    height = 2000;
+    int owidth = viewport[2] - viewport[0];
+    int oheight = viewport[3] - viewport[1];
+    int height = 2000;
+    int width = height * (owidth/(double)oheight);
     _framebuffer.SetSize(width, height);
     _framebuffer.MakeRenderTarget();
     glClearColor(0, 0, 0, 0);
