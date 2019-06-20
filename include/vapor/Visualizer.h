@@ -27,6 +27,7 @@
 #include <vapor/ParamsMgr.h>
 #include <vapor/Renderer.h>
 #include <vapor/AnnotationRenderer.h>
+#include <vapor/Framebuffer.h>
 
 namespace VAPoR {
 
@@ -222,6 +223,7 @@ private:
 	string _winName;
     GLManager *_glManager;
 	AnnotationRenderer* _vizFeatures;
+    Framebuffer _framebuffer;
 
     bool _insideGLContext; // This is only to make sure we don't call certain functions when they are not supposed to be called. In some situations this variable will be set to true incorrectly. In those cases there is already some other error so it doesn't matter.
 	bool _imageCaptureEnabled;

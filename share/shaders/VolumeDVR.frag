@@ -25,6 +25,9 @@ float IntegrateConstantAlpha(float a, float distance)
 
 void main(void)
 {
+//    gl_FragDepth = -GetDepthBuffer();
+//    fragColor = vec4(vec3(GetDepthBuffer()),1);
+//    return;
     vec3 eye, dir, rayLightingNormal;
     float sceneDepthT;
     GetRayParameters(eye, dir, rayLightingNormal, sceneDepthT);

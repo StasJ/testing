@@ -10,5 +10,6 @@ out vec4 fragColor;
 void main(void)
 {
     fragColor = texture(colorBuffer, ST);
-    gl_FragDepth = texture(depthBuffer, ST).r;
+    gl_FragDepth = -texture(depthBuffer, ST).r;
+//    fragColor = vec4(vec3(texture(depthBuffer, ST).r),1);
 }
