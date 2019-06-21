@@ -149,7 +149,7 @@ private slots:
  void _copyInstanceTo(int);
  void _activeRendererChanged(int row, int col);
  void _tableValueChanged(int row, int col);
-    void on_size_textChanged(QString text);
+    void _size_textChanged(QString text);
 
 signals:
  void newRendererSignal(string vizName, string renderClass, string renderInst);
