@@ -194,6 +194,35 @@ RenderHolder::RenderHolder(
 
 	_makeConnections();
 	_initializeSplitter();
+    
+    QFrame *item = new QFrame;
+    QHBoxLayout *layout = new QHBoxLayout;
+    layout->setMargin(0);
+    item->setLayout(layout);
+    
+    QLabel *label = new QLabel("Height");
+    QSpacerItem *spacer = new QSpacerItem(108, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    heightEdit = new QLineEdit();
+    heightEdit->setValidator(new QIntValidator(1, 10000, this));
+    
+    connect(heightEdit, SIGNAL(textChanged(QString)), this, SLOT(on_size_textChanged(QString)));
+    
+    widthLabel = new QLabel;
+    
+    layout->addWidget(label);
+    layout->addWidget(heightEdit);
+    layout->addItem(spacer);
+    layout->addWidget(widthLabel);
+    
+    this->layout()->addWidget(item);
+}
+
+void RenderHolder::on_size_textChanged(QString text)
+{
+    int width = text.toInt();
+    printf("NEW \"%i\"\n", width);
+    ViewpointParams *VP = _controlExec->GetParamsMgr()->GetViewpointParams(_getStateParams()->GetActiveVizName());
+    VP->SetValueLong("HD_HEIGHT", "", width);
 }
 
 void RenderHolder::_makeConnections() {
@@ -605,6 +634,16 @@ void RenderHolder::_makeRendererTableHeaders(vector<string> &tableValues) {
 
 void RenderHolder::Update() {
 	std::vector<std::string> values;
+    
+    ParamsMgr *PM = _controlExec->GetParamsMgr();
+    ViewpointParams *VP = PM->GetViewpointParams(_getStateParams()->GetActiveVizName());
+    size_t owidth, oheight;
+    VP->GetWindowSize(owidth, oheight);
+    heightEdit->blockSignals(true);
+    int height = VP->GetValueLong("HD_HEIGHT", oheight);
+    heightEdit->setText(QString().sprintf("%i", height));
+    heightEdit->blockSignals(false);
+    widthLabel->setText(QString().sprintf("Width: %i", (int)(height * (owidth/(double)oheight))));
 
 	// Get active params from GUI state
 	//

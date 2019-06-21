@@ -149,6 +149,7 @@ private slots:
  void _copyInstanceTo(int);
  void _activeRendererChanged(int row, int col);
  void _tableValueChanged(int row, int col);
+    void on_size_textChanged(QString text);
 
 signals:
  void newRendererSignal(string vizName, string renderClass, string renderInst);
@@ -157,6 +158,8 @@ signals:
 private:
  VAPoR::ControlExec *_controlExec;
  NewRendererDialog *_newRendererDialog;
+    QLineEdit *heightEdit;
+    QLabel *widthLabel;
 
  VaporTable *_vaporTable;
  int _currentRow;
