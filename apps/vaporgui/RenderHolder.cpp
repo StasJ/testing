@@ -220,9 +220,9 @@ RenderHolder::RenderHolder(
 void RenderHolder::on_size_textChanged(QString text)
 {
     int width = text.toInt();
-    printf("NEW \"%i\"\n", width);
     ViewpointParams *VP = _controlExec->GetParamsMgr()->GetViewpointParams(_getStateParams()->GetActiveVizName());
-    VP->SetValueLong("HD_HEIGHT", "", width);
+    if (VP)
+        VP->SetValueLong("HD_HEIGHT", "", width);
 }
 
 void RenderHolder::_makeConnections() {
@@ -637,13 +637,15 @@ void RenderHolder::Update() {
     
     ParamsMgr *PM = _controlExec->GetParamsMgr();
     ViewpointParams *VP = PM->GetViewpointParams(_getStateParams()->GetActiveVizName());
-    size_t owidth, oheight;
-    VP->GetWindowSize(owidth, oheight);
-    heightEdit->blockSignals(true);
-    int height = VP->GetValueLong("HD_HEIGHT", oheight);
-    heightEdit->setText(QString().sprintf("%i", height));
-    heightEdit->blockSignals(false);
-    widthLabel->setText(QString().sprintf("Width: %i", (int)(height * (owidth/(double)oheight))));
+    if (VP) {
+        size_t owidth, oheight;
+        VP->GetWindowSize(owidth, oheight);
+        heightEdit->blockSignals(true);
+        int height = VP->GetValueLong("HD_HEIGHT", oheight);
+        heightEdit->setText(QString().sprintf("%i", height));
+        heightEdit->blockSignals(false);
+        widthLabel->setText(QString().sprintf("Width: %i", (int)(height * (owidth/(double)oheight))));
+    }
 
 	// Get active params from GUI state
 	//
