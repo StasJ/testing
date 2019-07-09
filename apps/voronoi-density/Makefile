@@ -35,5 +35,5 @@ v4: voro2densityV4.cpp
 v5: voro2densityV5.cpp
 	$(CXX) -std=c++11 $(FLAG) -o $(BINDIR)/v5 voro2densityV5.cpp $(OMP)
 
-v6: voro2densityV5.cpp
+v6: voro2densityV6.cpp
 	$(CXX) -std=c++11 $(FLAG) -o $(BINDIR)/v6 voro2densityV6.cpp $(OMP)
