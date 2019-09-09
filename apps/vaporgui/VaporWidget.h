@@ -29,7 +29,7 @@ class VaporWidget : public QWidget
 public:
     VaporWidget( QWidget* parent = nullptr );
 
-    void addToolTip( const std::string& toolTip);
+    void SetToolTip( const std::string& toolTip);
    
 protected:
     QBoxLayout* _layout;

@@ -1,4 +1,4 @@
-#include "VaporWidgets.h"
+#include "VaporWidget.h"
 #include "FileOperationChecker.h"
 #include "ErrorReporter.h"
 
@@ -32,7 +32,7 @@ VaporWidget::VaporWidget(
     QWidget( parent )
 {}
 
-void VaporWidget::addToolTip( const std::string& toolTip ) {
+void VaporWidget::SetToolTip( const std::string& toolTip ) {
     setToolTip( QString::fromStdString( toolTip ) );
 }
 
