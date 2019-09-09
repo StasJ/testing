@@ -58,8 +58,8 @@ public:
  VSpinBox* _vsb;
  PSlider* _psl;
  PSlider* _psl2;
- PRange* _prange;
- PGeometry* _pgeometry;
+ VRange* _vrange;
+ VGeometry* _vgeometry;
 
 protected:
  void _updateTab();

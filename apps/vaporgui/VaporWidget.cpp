@@ -32,9 +32,11 @@ VaporWidget::VaporWidget(
     QWidget( parent )
 {}
 
-void VaporWidget::_validateAndEmit() {};
+void VaporWidget::addToolTip( const std::string& toolTip ) {
+    setToolTip( QString::fromStdString( toolTip ) );
+}
 
-VLine::VLine(
+/*VLabel::VLabel(
     QWidget* parent,
     const std::string& labelText
     ) :
@@ -59,30 +61,32 @@ VLine::VLine(
     setSizePolicy( QSizePolicy::Minimum, QSizePolicy::Minimum );
 }
 
-void VLine::Update( const std::string& labelText ) {
-    SetLabelText( labelText );
-}
+VLabel::VLabel(
+    const std::string& labelText
+    ) : 
+    VLabel( nullptr, labelText ) 
+{}
+    
 
-void VLine::SetLabelText( const std::string& text )
+void VLabel::SetLabelText( const std::string& text )
 {
     _label->setText( QString::fromStdString( text ) );
-}
+}*/
 
-VSpinBox::VSpinBox(
+/*VSpinBox::VSpinBox(
         QWidget *parent,
         const std::string& labelText,
         int min,
         int max,
         int defaultValue
     ) :
-    VLine(parent, labelText), 
+    VLabel(parent, labelText), 
     _min( min ),
     _max( max ),
     _value( defaultValue )
 {
     _spinBox = new QSpinBox( this );
-    SetMinimum( min );
-    SetMaximum( max );
+    SetRange( min, max );
 
     _spinBox->setValue( _value );
     
@@ -92,7 +96,20 @@ VSpinBox::VSpinBox(
         this, SLOT( _validateAndEmit() ) );
 }
 
-void VSpinBox::Update( int value ) {
+VSpinBox::VSpinBox(
+        const std::string& labelText,
+        int min,
+        int max,
+        int defaultValue
+) : VSpinBox( nullptr, 
+              labelText,
+              min,
+              max,
+              defaultValue
+    ) 
+{} 
+
+void VSpinBox::SetValue( int value ) {
      if ( value != _value &&
           value <= _max   &&
           value >= _min   ) 
@@ -102,8 +119,8 @@ void VSpinBox::Update( int value ) {
     }
 }
 
-void VSpinBox::GetValue( int& value ) const {
-    value = _value;
+int VSpinBox::GetValue() const {
+    return _value;
 }
 
 void VSpinBox::_validateAndEmit() {
@@ -114,23 +131,19 @@ void VSpinBox::_validateAndEmit() {
           newValue >= _min   ) 
     {
         _value = newValue;
-        emit _valueChanged();
+        emit valueChanged();
     }
 }
 
-void VSpinBox::SetMaximum( int maximum ) {
-    if ( maximum >= _min ) {
-        _max = maximum;
-        _spinBox->setMaximum( maximum );
-    }
-}
+void VSpinBox::SetRange( int min, int max ) {
+    if ( max < min ) VAssert( max > min );
 
-void VSpinBox::SetMinimum( int minimum ) {
-    if ( minimum <= _max ) {
-        _min = minimum;
-        _spinBox->setMinimum( minimum );
-    }
-}
+    _min = min;
+    _max = max;
+
+    _spinBox->setMinimum( min );
+    _spinBox->setMaximum( max );
+}*/
 
 /*
 VDoubleSpinBox::VDoubleSpinBox(
@@ -138,7 +151,7 @@ VDoubleSpinBox::VDoubleSpinBox(
         const std::string& labelText,
         double defaultValue
     ) :
-    VLine(parent, labelText),
+    VLabel(parent, labelText),
     _value( defaultValue )
 {
     _spinBox = new QDoubleSpinBox( this );
@@ -154,7 +167,7 @@ void VDoubleSpinBox::_changed() {
     double newValue = _spinBox->value();
     if ( newValue != _value ) {
         _value = newValue;
-        emit _valueChanged();
+        emit valueChanged();
     }
 }
 
@@ -183,7 +196,7 @@ double VDoubleSpinBox::GetValue() const {
 //
 // ====================================
 //
-VRange::VRange( 
+/*VRange::VRange( 
     QWidget* parent, 
     double min, 
     double max, 
@@ -197,106 +210,96 @@ VRange::VRange(
 
     _minSlider = new VSlider( this, minLabel, min, max, min );
     _maxSlider = new VSlider( this, maxLabel, min, max, max );
-    connect( _minSlider, SIGNAL( _valueChanged() ), this, SLOT( _respondMinSlider() ) );
-    connect( _maxSlider, SIGNAL( _valueChanged() ), this, SLOT( _respondMaxSlider() ) );
+    connect( _minSlider, SIGNAL( valueChanged() ), this, SLOT( _respondMinSlider() ) );
+    connect( _maxSlider, SIGNAL( valueChanged() ), this, SLOT( _respondMaxSlider() ) );
 
     _layout->addWidget( _minSlider );
     _layout->addWidget( _maxSlider );
 }
 
+VRange::VRange( 
+    double min, 
+    double max, 
+    const std::string& minLabel, 
+    const std::string& maxLabel 
+) : VRange(
+        nullptr,
+        min,
+        max,
+        minLabel,
+        maxLabel
+    )
+{}
+
 VRange::~VRange() {}
 
 void 
-VRange::Update( const std::vector<double>& values ) {
-    if ( values.size() == 2 ) {
-        _minSlider->Update( values[0] );
-        _maxSlider->Update( values[1] );
-    }
+VRange::SetSelection( double min, double max ) {
+    VAssert( min <= max );
+    _minSlider->SetValue( min );
+    _maxSlider->SetValue( max );
 }
 
 void
-VRange::GetValue( std::vector<double>& value ) const {
-    value.clear();
-    double min, max;
-    _minSlider->GetValue( min );
-    _maxSlider->GetValue( max );
-    value.push_back( min );
-    value.push_back( max );
+VRange::GetSelection( double& min, double& max ) const {
+    min = _minSlider->GetValue();
+    max = _maxSlider->GetValue();
 }
 
 void
-VRange::SetRange( double min, double max )
+VRange::SetExtents( double extentsLow, double extentsHigh )
 {
-    VAssert( max > min );
-    _minSlider->SetRange( min, max );
-    _maxSlider->SetRange( min, max );
-}
-
-void
-VRange::SetCurrentValLow( double low )
-{
-    // _minSlider will only respond if low is within a valid range.
-    _minSlider->Update( low );
-    _adjustMaxToMin();    
-}
-
-void
-VRange::SetCurrentValHigh( double high )
-{
-    // _maxSlider will only respond if high is within a valid range.
-    _maxSlider->Update( high );
-    _adjustMinToMax();    
-}
-
-void
-VRange::GetCurrentValRange( double& low, double& high ) const
-{
-    _minSlider->GetValue( low );
-    _maxSlider->GetValue( high );
+    VAssert( extentsHigh >= extentsLow );
+    _minSlider->SetExtents( extentsLow, extentsHigh );
+    _maxSlider->SetExtents( extentsLow, extentsHigh );
 }
 
 void
 VRange::_adjustMaxToMin()
 {
-    double low, high;
-    _minSlider->GetValue( low );
-    _maxSlider->GetValue( high );
+    double low = _minSlider->GetValue();
+    double high = _maxSlider->GetValue();
     if( low > high )
-        _maxSlider->Update( low );
+        _maxSlider->SetValue( low );
 }
 
 void
 VRange::_adjustMinToMax()
 {
-    double low, high;
-    _minSlider->GetValue( low );
-    _maxSlider->GetValue( high );
+    double low = _minSlider->GetValue();
+    double high = _maxSlider->GetValue();
     if( high < low )
-        _minSlider->Update( high );
+        _minSlider->SetValue( high );
 }
 
 void
 VRange::_respondMinSlider()
 {
     _adjustMaxToMin();
-    emit _valueChanged();
+    emit valueChanged();
 }
 
 void
 VRange::_respondMaxSlider()
 {
     _adjustMinToMax();
-    emit _valueChanged();
-}
+    emit valueChanged();
+}*/
 
 //
 // ====================================
 //
-VSlider::VSlider( QWidget* parent, const std::string& label, double min, double max, double value )
-       : VLine( parent, label ),
-         _min( min ),
-         _max( max ),
-         _value( value )
+/*VSlider::VSlider( 
+    QWidget* parent, 
+    const std::string& label, 
+    double min, 
+    double max, 
+    double value )
+: 
+    VLabel( parent, label ),
+    _min( min ),
+    _max( max ),
+    _value( value )
 {
     VAssert( _max > _min );
     _value = (_min + _max) / 2.0f;
@@ -320,12 +323,25 @@ VSlider::VSlider( QWidget* parent, const std::string& label, double min, double 
     _qedit->setText( QString::number( _value, 'f', 3 ) );
 }
 
+VSlider::VSlider( 
+    const std::string& label, 
+    double min, 
+    double max, 
+    double value )
+: VSlider( 
+        nullptr,
+        label,
+        min,
+        max,
+        value
+) {}
+
 VSlider::~VSlider() {}
 
 void
-VSlider::SetRange( double min, double max )
+VSlider::SetExtents( double min, double max )
 {
-    VAssert( min < max );
+    VAssert( min <= max );
     _min = min;
     _max = max;
 
@@ -343,7 +359,7 @@ VSlider::SetRange( double min, double max )
 }
 
 void
-VSlider::Update( double val )
+VSlider::SetValue( double val )
 {
     // Only respond if val is within range
     if( val >= _min && val <= _max )
@@ -355,10 +371,10 @@ VSlider::Update( double val )
     }
 }
 
-void
-VSlider::GetValue( double& value ) const
+double
+VSlider::GetValue() const
 {
-    value = _value;
+    return _value;
 }
 
 void
@@ -370,7 +386,7 @@ VSlider::_respondQSliderReleased()
     _value = _min + percent * (_max - _min);
     _qedit->setText( QString::number( _value, 'f', 3 ) );
     
-    emit _valueChanged();
+    emit valueChanged();
 }
 
 void
@@ -380,7 +396,7 @@ VSlider::_respondQSliderMoved( int newPos )
     double percent   = (double)newPos / 100.0f;
     double tmpVal    = _min + percent * (_max - _min);
     _qedit->setText( QString::number( tmpVal, 'f', 3 ) );
-    emit _valueChanged();
+    emit valueChanged();
 }
 
 void
@@ -411,8 +427,8 @@ VSlider::_respondQLineEdit()
     double percent = (_value - _min) / (_max - _min) * 100.0f;
     _qslider->setValue( std::lround( percent ) );
 
-    emit _valueChanged();
-}
+    emit valueChanged();
+}*/
 
 
 
@@ -420,7 +436,7 @@ VSlider::_respondQLineEdit()
 // ====================================
 //
 
-VGeometry::VGeometry( 
+/*VGeometry::VGeometry( 
         QWidget* parent, 
         const std::vector<double>& range,
         const std::vector<std::string>& label
@@ -447,9 +463,9 @@ VGeometry::VGeometry(
         _zrange->hide();
     }
 
-    connect( _xrange, SIGNAL( _valueChanged() ), this, SLOT( _respondChanges() ) );
-    connect( _yrange, SIGNAL( _valueChanged() ), this, SLOT( _respondChanges() ) );
-    connect( _zrange, SIGNAL( _valueChanged() ), this, SLOT( _respondChanges() ) );
+    connect( _xrange, SIGNAL( valueChanged() ), this, SLOT( _respondChanges() ) );
+    connect( _yrange, SIGNAL( valueChanged() ), this, SLOT( _respondChanges() ) );
+    connect( _zrange, SIGNAL( valueChanged() ), this, SLOT( _respondChanges() ) );
 
     //_layout = new QVBoxLayout(this);
     _layout->addWidget( _xrange );
@@ -457,6 +473,11 @@ VGeometry::VGeometry(
     _layout->addWidget( _zrange );
     //addTab( pageWidget, QString::fromStdString(label) );
 }
+
+VGeometry::VGeometry( 
+        const std::vector<double>& range,
+        const std::vector<std::string>& label
+) : VGeometry( nullptr, range, label ) {}
 
 VGeometry::~VGeometry() {}
 
@@ -476,14 +497,14 @@ VGeometry::SetRange( const std::vector<double>& range )
     else 
         _zrange->hide();
 
-    _xrange->SetRange( range[0], range[3] );
-    _yrange->SetRange( range[1], range[4] );
+    _xrange->SetExtents( range[ XMIN ], range[ XMAX ] );
+    _yrange->SetExtents( range[ YMIN ], range[ YMAX ] );
     if( _dim == 3 )
-        _zrange->SetRange( range[2], range[5] );
+        _zrange->SetExtents( range[ ZMIN ], range[ ZMAX ] );
 }
 
 void
-VGeometry::Update( const std::vector<double>& vals )
+VGeometry::SetGeometry( const std::vector<double>& vals )
 { 
     if ( vals.size() != _dim * 2 )
         return;
@@ -492,32 +513,27 @@ VGeometry::Update( const std::vector<double>& vals )
         VAssert( vals[ i ] <= vals[ i+3 ] );
 
     // VRange widgets will only respond to values within their ranges
-    _xrange->SetCurrentValLow(  vals[ XMIN ] );
-    _xrange->SetCurrentValHigh( vals[ XMAX ] );
-    _yrange->SetCurrentValLow(  vals[ YMIN ] );
-    _yrange->SetCurrentValHigh( vals[ YMAX ] );
-    if( _dim == 3 )
-    {
-        _zrange->SetCurrentValLow(  vals[ ZMIN ] );
-        _zrange->SetCurrentValHigh( vals[ ZMAX ] );
-    }
+    _xrange->SetSelection( vals[ XMIN ], vals[ XMAX ] );
+    _yrange->SetSelection( vals[ YMIN ], vals[ YMAX ] );
+    if( _dim == 3 ) 
+        _zrange->SetSelection( vals[ ZMIN ], vals[ ZMAX ] );
 }
 
 void
-VGeometry::GetValue( std::vector<double>& vals ) const
+VGeometry::GetGeometry( std::vector<double>& vals ) const
 {
     vals.resize( _dim * 2, 0.0f );
-    _xrange->GetCurrentValRange( vals[ XMIN ], vals[ XMAX ] );
-    _yrange->GetCurrentValRange( vals[ YMIN ], vals[ YMAX ] );
+    _xrange->GetSelection( vals[ XMIN ], vals[ XMAX ] );
+    _yrange->GetSelection( vals[ YMIN ], vals[ YMAX ] );
     if( _dim == 3 )
-        _zrange->GetCurrentValRange( vals[ ZMIN ], vals[ ZMAX ] );
+        _zrange->GetSelection( vals[ ZMIN ], vals[ ZMAX ] );
 }
 
 void
 VGeometry::_respondChanges()
 {
-    emit _valueChanged();
-}
+    emit valueChanged();
+}*/
 
 
 

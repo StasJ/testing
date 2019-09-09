@@ -64,8 +64,13 @@ set (SRCS
 	VolumeIsoEventRouter.cpp
 	VolumeIsoSubtabs.cpp
 	VolumeSubtabs.cpp
-    VaporWidgets.cpp
+    VaporWidget.cpp
     ParamsWidgets.cpp
+    VLabel.cpp
+    VSpinBox.cpp
+    VSlider.cpp
+    VRange.cpp
+    VGeometry.cpp
 
 	# Need to include all files that request .ui files
 	TwoDSubtabs.h
