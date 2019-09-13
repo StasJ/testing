@@ -43,6 +43,7 @@ jobs:
             ls /VAPOR/test_apps/circleTests
             echo ' v log v'
             git log
+            git status
             echo ' ^ log ^'
             /VAPOR/test_apps/circleTests/checkForWarnings.sh
 
