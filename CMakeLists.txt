@@ -214,8 +214,8 @@ if (WIN32)
 	configure_file ("${PRE_UNINSTALL_LOCAL_PATH}.in" "${PRE_UNINSTALL_PATH}" @ONLY)
 
 	if (GENERATE_FULL_INSTALLER)
-		set (DLL_DIR ${THIRD_PARTY_DIR}/dll)
-		file (GLOB WIN_INSTALL_DLLS ${DLL_DIR}/*.dll ${QTDIR}/bin/*.dll)
+		set (LIB_DIR ${THIRD_PARTY_DIR}/lib)
+		file (GLOB WIN_INSTALL_DLLS ${LIB_DIR}/*.dll ${QTDIR}/bin/*.dll)
 
 		install (
 			FILES ${WIN_INSTALL_DLLS}
