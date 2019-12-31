@@ -52,8 +52,8 @@ PythonVariables::PythonVariables(
     _saveFader = nullptr;
     _testFader = nullptr;
 
-    _newItemDialog = new ::NewItemDialog(this);
-    _openAndDeleteDialog = new ::OpenAndDeleteDialog(this);
+    _newItemDialog = new NewItemDialog(this);
+    _openAndDeleteDialog = new OpenAndDeleteDialog(this);
 
     _justSaved = false;
 
@@ -283,6 +283,11 @@ void PythonVariables::_connectWidgets() {
         this, SLOT(_createNewVariable()));
     connect(_deleteOutVarButton, SIGNAL(clicked()),
         this, SLOT(_deleteVariable()));
+
+    connect( _newItemDialog, &NewItemDialog::accepted,
+        this, &PythonVariables::_newItemDialogAccepted);
+    connect( _openAndDeleteDialog, &OpenAndDeleteDialog::accepted,
+        this, &PythonVariables::_openAndDeleteDialogAccepted);
 }
 
 void PythonVariables::_setGUIEnabled(bool enabled) {

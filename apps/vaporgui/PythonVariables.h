@@ -36,10 +36,15 @@ public:
     void ShowMe();
 
 private slots:
-    void _newScript();
-    void _openScript();
-    void _deleteScript();
-    void _importScript();
+    //void _newScript();
+    //void _openScript();
+    //void _deleteScript();
+    //void _importScript();
+    //void _exportScript();
+    void _promptNewScript();
+    void _promptOpenScript();
+    void _promptDeleteScript();
+    void _promptIdmportScript();
     void _exportScript();
     bool _getFilePath(QString &filePath, bool operation = true);
     void _testScript();
@@ -48,8 +53,9 @@ private slots:
     void _updateSaveLabelColor(int r, int g, int b);
     void _updateTestLabelColor(int r, int g, int b);
 
-    void _createNewVariable();
-    void _deleteVariable();
+    //void _createNewVariable();
+    void _promptNewVariable();
+    void _promptDeleteVariable();
     void _scriptChanged();
 
     void _coordInputVarChanged(int row, int col);
