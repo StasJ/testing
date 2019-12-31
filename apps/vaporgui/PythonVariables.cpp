@@ -301,12 +301,16 @@ void PythonVariables::_updateNewItemDialog() {
     _newItemDialog->Update(::NewItemDialog::SCRIPT, dataMgrNames);
 }
 
-void PythonVariables::_newScript() {
+void PythonVariables::_promptNewScript() {
     VAPoR::DataStatus* dataStatus = _controlExec->GetDataStatus();
     std::vector<string> dataMgrNames = dataStatus->GetDataMgrNames();
     _newItemDialog->Update(::NewItemDialog::SCRIPT, dataMgrNames);
   
-    _newItemDialog->exec();  
+    //_newItemDialog->exec();  
+    _newItemDialog->open();  
+}
+
+void PythonVariables::_createNewScript() {
     int rc = _newItemDialog->result();
 
     if (rc > 0) { 
@@ -322,6 +326,7 @@ void PythonVariables::_newScript() {
         _scriptNameLabel->setText(QString::fromStdString(_scriptName));
         _dataMgrNameLabel->setText(QString::fromStdString(_dataMgrName));
    
+        VAPoR::DataStatus* dataStatus = _controlExec->GetDataStatus();
         VAPoR::DataMgr* dataMgr = dataStatus->GetDataMgr(_dataMgrName);
         _coordVars = dataMgr->GetCoordVarNames();
         _coordVarsEnabled.resize(_coordVars.size());
@@ -1120,7 +1125,8 @@ void NewItemDialog::Update(
     std::vector<string> optionNames,
     std::vector<int> categoryIndices
 ) {
-    _adjustToType(type);
+    _type = type;
+    _adjustToType(_type);
 
     _itemName   = "";
     _optionName = "";
@@ -1185,6 +1191,10 @@ string NewItemDialog::GetItemName() const {
 
 string NewItemDialog::GetOptionName() const {
     return _optionName;
+}
+
+int NewItemDialog::GetType() const {
+    return _type;
 }
 
 OpenAndDeleteDialog::OpenAndDeleteDialog(QWidget* parent) {

@@ -186,6 +186,7 @@ public:
     );
     string GetItemName() const;
     string GetOptionName() const;
+    int    GetType() const;
 
 private:
     void _connectWidgets();
