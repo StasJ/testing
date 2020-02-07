@@ -42,7 +42,7 @@ jobs:
             git pull
             cd build
             cmake ..
-            make
+            make &> /tmp/output.txt
 
       - store_artifacts:
           path: /tmp/output.txt
