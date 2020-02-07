@@ -44,6 +44,18 @@ jobs:
             cmake ..
             make
 
+      - store_artifacts:
+          path: /tmp/output.txt
+
+      - run:
+          name: check for warnings
+          command: |
+            if grep -q warning /tmp/output.txt; then
+               exit -1
+            else
+               exit 0
+            fi
+
   build_ubuntu18_2019:
     docker:
       - image: sgpearse/vapor3-ubuntu18:latest
