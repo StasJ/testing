@@ -12,6 +12,7 @@ jobs:
           command: |
             cd /VAPOR
             git pull
+            git checkout master
             cd build
             cmake ..
             make
