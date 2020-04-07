@@ -7,9 +7,9 @@ import glob
 import distro
 from collections import OrderedDict
 
-InstallationDir = "/home/pearse/2019-Aug-test"
+#InstallationDir = "/home/pearse/2019-Aug-test"
+InstallationDir = "/usr/local/VAPOR-Deps/2019-Aug-test"
 BuildDir = r'build/'
-#InstallationDir = "/home/pearse/2019-Aug-src"
 CCompiler = "gcc"
 CppCompiler = "g++"
 CMake = "cmake"
@@ -107,7 +107,7 @@ Libraries = OrderedDict( [
         "-DPROJ_COMPILER_NAME=CPP_COMPILER "
         "-DCMAKE_INSTALL_PREFIX=INSTALLATION_DIR "
         ".. "
-        "&& unzip ../../../proj-datumgrid-1.8.zip -d data "
+        "&& unzip ../proj-datumgrid-1.8.zip -d data "
         "&& MAKE_EXE "
         "&& MAKE_EXE install "),
     ("libgeotiff",
