@@ -20,6 +20,7 @@ set (SRCS
 	Plot.cpp
 	helloSubtabs.cpp
 	VariablesWidget.cpp
+	VariablesWidget2.cpp
 	GeometryWidget.cpp
 	CopyRegionWidget.cpp
 	RangeCombos.cpp
@@ -167,6 +168,7 @@ set (SRCS
 	PSliderEditHLI.h
 	PVariableSelector.cpp
 	PVariableSelector.h
+	PVariableSelectorHLI.h
 	PRegionSelector.cpp
 	PRegionSelector.h
 	ParamsWidgetDemo.cpp
