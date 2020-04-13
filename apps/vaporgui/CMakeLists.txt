@@ -167,7 +167,6 @@ set (SRCS
 	PSliderEditHLI.h
 	PVariableSelector.cpp
 	PVariableSelector.h
-	PVariableSelectorHLI.h
 	PRegionSelector.cpp
 	PRegionSelector.h
 	ParamsWidgetDemo.cpp
