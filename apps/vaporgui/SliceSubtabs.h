@@ -7,6 +7,8 @@
 #include "ui_SliceAnnotationGUI.h"
 #include "Flags.h"
 
+#include "VariablesWidget2.h"
+
 #include <vapor/SliceParams.h>
 
 namespace VAPoR {
@@ -36,6 +38,7 @@ private slots:
 
 private:
     VAPoR::SliceParams* _params;
+    VAPoR::VariablesWidget2* _vw2;
 };
 
 class SliceAppearanceSubtab : public QWidget, public Ui_SliceAppearanceGUI {

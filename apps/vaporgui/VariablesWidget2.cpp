@@ -1,5 +1,7 @@
-#include "VariablesWidget2.h"
 #include <vapor/RenderParams.h>
+
+#include "VariablesWidget2.h"
+#include "PVariableSelectorHLI.h"
 
 VariablesWidget2::VariablesWidget2()
 : VSection("Variable Selection")
@@ -9,6 +11,13 @@ VariablesWidget2::VariablesWidget2()
         "Variable Name"
     );
     layout()->addWidget( _scalarVar );
+
+    _scalarVarHLI = new PVariableSelectorHLI(
+        "Variable Name HLI",
+        &RenderParams::GetVariableName,
+        &RenderParams::SetVariableName
+    );
+    layout()->addWidget( _scalarVarHLI );
     /*_scalarVarHLI = new PVariableSelectorHLI( 
         "Variable Name HLI",
         &VAPoR::RenderParams::GetVariableName,
@@ -46,6 +55,7 @@ void VariablesWidget2::Update(
     VAPoR::RenderParams* rParams
 ) {
     _scalarVar->Update(    rParams, paramsMgr, dataMgr );
+    _scalarVarHLI->Update(    rParams, paramsMgr, dataMgr );
     //_scalarVarHLI->Update( rParams, paramsMgr, dataMgr );
     //_colorVar->Update( rParams,  paramsMgr, dataMgr );
     //_heightVar->Update( rParams,  paramsMgr, dataMgr );
