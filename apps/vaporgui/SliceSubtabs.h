@@ -9,8 +9,6 @@
 
 #include <vapor/SliceParams.h>
 
-#include "PEnumDropdownHLI.h"
-
 namespace VAPoR {
 	class ControlExec;
 	class RenderParams;
