@@ -32,7 +32,7 @@ SliceVariablesSubtab::SliceVariablesSubtab(QWidget* parent) {
 		this, SLOT(_setDefaultSampleRate()));
 
    
-    _pg = new PGroup;
+    layout()->addWidget( _pg = new PGroup );
     _pg->Add(
         new PEnumDropdownHLI<RenderParams>(
             "PEnumDropdownHLI ( Refinement )",
@@ -42,15 +42,6 @@ SliceVariablesSubtab::SliceVariablesSubtab(QWidget* parent) {
             &RenderParams::SetRefinementLevel()
         )
     );
-
-    /*_PEnumHLI = new PEnumDropdownHLI<RenderParams>(
-        "PEnumDropdownHLI ( Refinement )",
-        {}, 
-        {},
-        &RenderParams::GetRefinementLevel(),
-        &RenderParams::SetRefinementLevel()
-    );
-    layout->addWidget( _PEnumHLI );*/
 }
 
 void SliceVariablesSubtab::Update(
@@ -62,7 +53,7 @@ void SliceVariablesSubtab::Update(
     VAssert(_params);
     _variablesWidget->Update(dataMgr, paramsMgr, rParams);
 
-    //_PEnumHLI->Update(dataMgr, paramsMgr, rParams);
+    _pg->Update(rParams, paramsMgr);
 }
 
 void SliceVariablesSubtab::_setDefaultSampleRate() {
