@@ -20,7 +20,6 @@ set (SRCS
 	Plot.cpp
 	helloSubtabs.cpp
 	VariablesWidget.cpp
-	VariablesWidget2.cpp
 	GeometryWidget.cpp
 	CopyRegionWidget.cpp
 	RangeCombos.cpp
@@ -253,7 +252,6 @@ set (SRCS
 	StatisticsParams.h
 	TabManager.h
 	VariablesWidget.h
-	VariablesWidget2.h
 	VizSelectCombo.h
 	WireFrameEventRouter.h
 	ParamsWidgets.h
