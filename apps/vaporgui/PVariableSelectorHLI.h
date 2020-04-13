@@ -20,7 +20,7 @@ public:
         const std::string &label,
         typename PWidgetHLIBase<P, std::string>::GetterType getter,
         typename PWidgetHLIBase<P, std::string>::SetterType setter
-    ) : PVariableSelector<P>( label, {}, getter, setter ),
+    ) : PVariableSelector<P>( "", label ),
         PWidgetHLIBase<P, std::string> (
             (PWidget*)this,
             getter,
