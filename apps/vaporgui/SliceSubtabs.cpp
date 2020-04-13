@@ -2,6 +2,8 @@
 #include "SliceSubtabs.h"
 #include "TFEditor.h"
 #include "VLineItem.h"
+#include "PGroup.h"
+#include "PEnumDropdownHLI.h"
 
 #define MIN_SAMPLES 1 
 #define MAX_SAMPLES 2000
@@ -33,12 +35,12 @@ SliceVariablesSubtab::SliceVariablesSubtab(QWidget* parent) {
 
     layout()->addWidget( _pg = new PGroup );
     _pg->Add(
-        new PEnumDropdownHLI<RenderParams>(
+        new PEnumDropdownHLI<VAPoR::RenderParams>(
             "PEnumDropdownHLI ( Refinement )",
             {"2", "3"}, 
             {2, 3},
-            &RenderParams::GetRefinementLevel,
-            &RenderParams::SetRefinementLevel
+            &VAPoR::RenderParams::GetRefinementLevel,
+            &VAPoR::RenderParams::SetRefinementLevel
         )
     );
 }
