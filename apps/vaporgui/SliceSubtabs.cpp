@@ -37,8 +37,8 @@ SliceVariablesSubtab::SliceVariablesSubtab(QWidget* parent) {
             "PEnumDropdownHLI ( Refinement )",
             {"2", "3"}, 
             {2, 3},
-            &RenderParams::GetRefinementLevel(),
-            &RenderParams::SetRefinementLevel()
+            &RenderParams::GetRefinementLevel,
+            &RenderParams::SetRefinementLevel
         )
     );
 }
