@@ -50,7 +50,6 @@ void SliceVariablesSubtab::Update(
     VAssert(_params);
     _variablesWidget->Update(dataMgr, paramsMgr, rParams);
 
-    //_PVarHLI->Update(dataMgr, paramsMgr, rParams);
     _PStrHLI->Update(dataMgr, paramsMgr, rParams);
 }
 

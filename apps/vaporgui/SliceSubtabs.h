@@ -37,8 +37,8 @@ private slots:
     void _setDefaultSampleRate();
 
 private:
-    VAPoR::SliceParams*   _params;
-    PEnumDropdownHLI*     _PEnumHLI;
+    VAPoR::SliceParams* _params;
+    PEnumDropdownHLI*   _PEnumHLI;
 };
 
 class SliceAppearanceSubtab : public QWidget, public Ui_SliceAppearanceGUI {
