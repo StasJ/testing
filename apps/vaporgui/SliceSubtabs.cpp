@@ -3,6 +3,8 @@
 #include "TFEditor.h"
 #include "VLineItem.h"
 
+#include "GUIStateParams.h"
+
 #define MIN_SAMPLES 1 
 #define MAX_SAMPLES 2000
 #define MIN_QUALITY 1
