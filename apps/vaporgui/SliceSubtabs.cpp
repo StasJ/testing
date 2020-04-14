@@ -35,7 +35,7 @@ SliceVariablesSubtab::SliceVariablesSubtab(QWidget* parent) {
 		this, SLOT(_setDefaultSampleRate()));
 
     layout()->addWidget( _pg = new PGroup );
-    /*_pg->Add(
+    _pg->Add(
         new PEnumDropdownHLI<VAPoR::RenderParams>(
             "PEnumDropdownHLI ( Refinement )",
             {"2", "3"}, 
@@ -43,7 +43,7 @@ SliceVariablesSubtab::SliceVariablesSubtab(QWidget* parent) {
             &VAPoR::RenderParams::GetRefinementLevel,
             &VAPoR::RenderParams::SetRefinementLevel
         )
-    );*/
+    );
     _pg->Add(
         new PVariableSelectorHLI<VAPoR::RenderParams>(
             "PVariableSelector ( Scalar )",
