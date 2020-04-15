@@ -69,11 +69,8 @@ BannerGUI::BannerGUI(
             }
             else
             {
-                //QRect screenGeometry = QApplication::desktop()->screenGeometry();
-				QList<QScreen*> screens = QGuiApplication::screens();
-				VAssert( screens.size() > 0 );
-				
-				QRect screenGeometry = screens[0]->geometry();
+				QScreen* screen = QGuiApplication::primaryScreen();
+				QRect screenGeometry = screen->geometry();
 
                 int x = (screenGeometry.width()-image.size().width()) / 2;
                 int y = (screenGeometry.height()-image.size().height()) / 2;
