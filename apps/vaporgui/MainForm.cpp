@@ -49,6 +49,7 @@
 #include <QWhatsThis>
 #include <QStatusBar>
 #include <QDebug>
+#include <QScreen>
 
 #include <vapor/Version.h>
 #include <vapor/DataMgr.h>
@@ -271,7 +272,14 @@ MainForm::MainForm(
 	setAttribute(Qt::WA_DeleteOnClose);
 
 	// For vertical screens, reverse aspect ratio for window size
-	QSize screenSize = QDesktopWidget().availableGeometry().size();
+	// QSize screenSize = QDesktopWidget().availableGeometry().size();
+	
+	//QRect screenGeometry = QApplication::desktop()->screenGeometry();
+    QScreen* screen = QGuiApplication::primaryScreen();
+
+    QRect screenSize = screen->geometry();
+	//QRect screenSize = QApplication::desktop()->screenGeometry();
+
 	if (screenSize.width() < screenSize.height()) {
 		resize(
 			screenSize.width() * .7, 
