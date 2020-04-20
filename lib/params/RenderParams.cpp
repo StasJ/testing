@@ -65,6 +65,10 @@ string string_replace(string s, string olds, string news) {
         s = news;
 	return(s);
 }
+
+int X = 0;
+int Y = 1;
+int Z = 2;
 	
 };
 
@@ -484,6 +488,18 @@ vector<string> RenderParams::GetFieldVariableNames()  const {
 	return(varnames);
 }
 
+std::string RenderParams::GetXFieldVariableName()  const {
+    return GetFieldVariableNames()[X];
+}
+
+std::string RenderParams::GetYFieldVariableName()  const {
+    return GetFieldVariableNames()[Y];
+}
+
+std::string RenderParams::GetZFieldVariableName()  const {
+    return GetFieldVariableNames()[Z];
+}
+
 void RenderParams::SetFieldVariableNames(vector<string> varnames){
 
 	varnames = string_replace(varnames, "<no-variable>", "NULL");
@@ -495,6 +511,24 @@ void RenderParams::SetFieldVariableNames(vector<string> varnames){
 		varnames
 	);
 //	setAllBypass(false);
+}
+
+void RenderParams::SetXFieldVariableName( std::string varName ) {
+    vector< string > varNames = GetFieldVariableNames();
+    varNames[X] = varName;
+    SetFieldVariableNames( varNames );
+}
+
+void RenderParams::SetYFieldVariableName( std::string varName ) {
+    std::vector< std::string > varNames = GetFieldVariableNames();
+    varNames[Y] = varName;
+    SetFieldVariableNames( varNames );
+}
+
+void RenderParams::SetZFieldVariableName( std::string varName ) {
+    std::vector< std::string > varNames = GetFieldVariableNames();
+    varNames[Z] = varName;
+    SetFieldVariableNames( varNames );
 }
 
 vector<string> RenderParams::GetAuxVariableNames()  const 

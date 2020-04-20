@@ -5,6 +5,7 @@
 #include "PGroup.h"
 #include "PEnumDropdownHLI.h"
 #include "PVariableSelectorHLI.h"
+#include "VariablesWidget2.h"
 
 #define MIN_SAMPLES 1 
 #define MAX_SAMPLES 2000
@@ -34,11 +35,11 @@ SliceVariablesSubtab::SliceVariablesSubtab(QWidget* parent) {
 	connect(refinementCombo, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(_setDefaultSampleRate()));
 
-    layout()->addWidget( _pg = new PGroup );
+    layout()->addWidget( _pg = new PGroup() );
     _pg->Add(
         new PEnumDropdownHLI<VAPoR::RenderParams>(
             "PEnumDropdownHLI ( Refinement )",
-            {"2", "3"}, 
+            {"2D", "3D"}, 
             {2, 3},
             &VAPoR::RenderParams::GetRefinementLevel,
             &VAPoR::RenderParams::SetRefinementLevel
@@ -51,6 +52,8 @@ SliceVariablesSubtab::SliceVariablesSubtab(QWidget* parent) {
             &VAPoR::RenderParams::SetVariableName
         )
     );
+
+    _pg->Add( new VariablesWidget2() );
     /*_pg->Add(
         new PVariableSelectorHLI<VAPoR::RenderParams>(
             "PVariableSelector ( Color )",

@@ -17,10 +17,14 @@ public:
     
     PVariableSelector(const std::string &tag, const std::string &label="");
 
+    void SetDimensionality( int nDims );
+
 protected:
     void updateGUI() const override;
     bool requireDataMgr() const override { return true; }
     virtual int getDimensionality() const;
+
+    int _nDims;
 };
 
 

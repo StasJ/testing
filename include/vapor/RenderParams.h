@@ -155,12 +155,19 @@ public:
 	//! set to the empty string, "".
 	//
 	virtual void SetFieldVariableNames(vector <string> varNames);
+	virtual void SetXFieldVariableName( std::string varName);
+	virtual void SetYFieldVariableName( std::string varName);
+	virtual void SetZFieldVariableName( std::string varName);
 
 	//! Get the field variable names, e.g. used in flow integration.
 	//! \retval vector<string> variable names. A vector of length 3 
 	//! containing variable names. The default is 3 empty variable names.
 	//
 	vector<string> GetFieldVariableNames() const ;
+    std::string GetXFieldVariableName() const;
+    std::string GetYFieldVariableName() const;
+    std::string GetZFieldVariableName() const;
+    
 
 	//! Get the distribution variable names, e.g. used in flow integration.
 	//! \retval vector<string> variable names
