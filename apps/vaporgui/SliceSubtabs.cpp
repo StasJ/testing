@@ -53,7 +53,9 @@ SliceVariablesSubtab::SliceVariablesSubtab(QWidget* parent) {
         )
     );
 
-    _pg->Add( new VariablesWidget2() );
+    _variablesWidget2 = new VariablesWidget2();
+    layout()->addWidget( _variablesWidget2 );
+    //_pg->Add( new VariablesWidget2() );
     /*_pg->Add(
         new PVariableSelectorHLI<VAPoR::RenderParams>(
             "PVariableSelector ( Color )",
@@ -78,6 +80,7 @@ void SliceVariablesSubtab::Update(
     _params = dynamic_cast<VAPoR::SliceParams*>(rParams);
     VAssert(_params);
     _variablesWidget->Update(dataMgr, paramsMgr, rParams);
+    _variablesWidget2->Update(dataMgr, paramsMgr, rParams);
 
     _pg->Update(rParams, paramsMgr, dataMgr);
 }

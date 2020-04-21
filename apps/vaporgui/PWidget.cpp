@@ -14,8 +14,11 @@ PWidget::PWidget(const std::string &tag, QWidget *widget)
     this->setDisabled(true);
 }
 
-void PWidget::Update(VAPoR::ParamsBase *params, VAPoR::ParamsMgr *paramsMgr, VAPoR::DataMgr *dataMgr)
-{
+void PWidget::Update(
+    VAPoR::ParamsBase *params, 
+    VAPoR::ParamsMgr *paramsMgr, 
+    VAPoR::DataMgr *dataMgr
+) {
     _params = params;
     _paramsMgr = paramsMgr;
     _dataMgr = dataMgr;

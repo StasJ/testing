@@ -17,6 +17,7 @@ namespace VAPoR {
 
 class TFEditor;
 class PGroup;
+class VariablesWidget2;
 
 class BarbVariablesSubtab : public QWidget, public Ui_BarbVariablesGUI {
 
@@ -35,6 +36,7 @@ public:
 
 private:
     PGroup* _pg;
+    VariablesWidget2* _variablesWidget2;
 };
 
 class BarbAppearanceSubtab : public QWidget, public Ui_BarbAppearanceGUI {
