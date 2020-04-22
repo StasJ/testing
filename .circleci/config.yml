@@ -485,7 +485,7 @@ workflows:
       #- build_osx_installer
       #- build_win10_installer
       - release_on_github:
-      #    requires:
+          requires:
       #      - build_win10_installer
       #      - build_ubuntu16_installer
       #      - build_ubuntu18_installer
