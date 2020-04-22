@@ -428,8 +428,9 @@ MainForm::MainForm(
  */
 MainForm::~MainForm()
 {
-    if (_paramsWidgetDemo)
+    if (_paramsWidgetDemo) {
         _paramsWidgetDemo->close();
+	}
 
 	if (_modeStatusWidget) delete _modeStatusWidget;
     if (_banner) delete _banner;
