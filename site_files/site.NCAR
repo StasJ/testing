@@ -11,7 +11,7 @@ elseif (UNIX AND NOT APPLE)
     set (QT_QMAKE_EXECUTABLE  ${QTDIR}/gcc_64/bin/qmake )
 else ()
 	set (THIRD_PARTY_DIR    C:/2019-Aug)
-    set (QTDIR              ${THIRD_PARTY_DIR}/Qt/5.13.2/msvc2015_64)
+    set (QTDIR              ${THIRD_PARTY_DIR}/Qt/5.12.4/msvc2015_64)
     set (CMAKE_PREFIX_PATH  ${QTDIR}/lib/cmake/Qt5) 
 endif ()
 
@@ -34,13 +34,12 @@ else ()
 	set (NUMPY_INCLUDE_DIR "${PYTHONPATH}/site-packages/numpy/core/include")
 endif ()
 
-
-cmake_host_system_information(RESULT HOSTNAME QUERY HOSTNAME)
-if (HOSTNAME MATCHES "cisl-garibaldi")
-	if (BUILD_GUI)
-		set (EXTRA_LIBS_SEARCH ${EXTRA_LIBS_SEARCH} dbus)
-	endif ()
+if (UNIX AND NOT APPLE)
+    file(STRINGS /etc/os-release distro REGEX "^NAME=")
+    string(REGEX REPLACE "NAME=\"(.*)\"" "\\1" distro "${distro}")
+    if (${distro} MATCHES "CentOS Linux") 
+        if (BUILD_GUI)
+            set (EXTRA_LIBS_SEARCH ${EXTRA_LIBS_SEARCH} dbus)
+        endif ()
+    endif ()
 endif ()
-
-
-
