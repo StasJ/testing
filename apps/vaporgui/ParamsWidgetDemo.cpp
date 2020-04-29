@@ -28,7 +28,11 @@ ParamsWidgetDemo::ParamsWidgetDemo()
     PSection *section;
     
     section = new PSection("Numbers");
-    section->Add(new PIntegerInput("demo_int", "PIntegerInput"));
+
+    PIntegerInput* piu = new PIntegerInput("demo_int", "PIntegerInput");
+    piu->hide();
+    section->Add( piu );
+    //section->Add(new PIntegerInput("demo_int", "PIntegerInput"));
     section->Add(new PDoubleInput("demo_double", "PDoubleInput"));
     section->Add((new PIntegerSliderEdit("demo_int", "PIntegerSliderEdit"))->SetRange(0, 100));
     section->Add((new PDoubleSliderEdit("demo_double", "Dynamic Double"))->EnableDynamicUpdate());
