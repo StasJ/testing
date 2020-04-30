@@ -20,6 +20,9 @@ namespace VAPoR {
 }
 
 class RenderEventRouter;
+class PEnumDropdown;
+//class PEnumDropdownHLI;
+class PGroup;
 
 //!
 //! \class VariablesWidget
@@ -127,6 +130,10 @@ private:
 	QComboBox *varCombo, const vector <string> &varnames, bool doZero,
 	string currentVar
  );
+
+ //PEnumDropdownHLI* _dropdown;
+ PEnumDropdown* _dropdown;
+ PGroup* _pg;
 
  void updateCombos();
  void updateScalarCombo();
