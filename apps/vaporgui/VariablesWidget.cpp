@@ -28,6 +28,7 @@
 #include "vapor/ParamsMgr.h"
 #include "vapor/DataMgr.h"
 #include "VariablesWidget.h"
+#include "PEnumDropdownHLI.h"
 
 #define TWODIMS 2
 #define THREEDIMS 3
