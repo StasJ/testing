@@ -23,6 +23,8 @@ VariablesWidget2::VariablesWidget2()
     connect( _dimCombo, &VComboBox::ValueChanged,
         this, &VariablesWidget2::_dimChanged );
 
+    _dimLineItem->hide();
+
     _pg = new PGroup();
     _scalarCombo = new PVariableSelectorHLI<VAPoR::RenderParams>(
             "Variable Name",
