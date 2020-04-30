@@ -25,8 +25,8 @@ BarbVariablesSubtab::BarbVariablesSubtab(QWidget* parent) {
 		(DimFlags)(TWOD | THREED)
 	);
 
-    _variablesWidget2 = new VariablesWidget2();
-    layout()->addWidget( _variablesWidget2 );
+    //_variablesWidget2 = new VariablesWidget2();
+    //layout()->addWidget( _variablesWidget2 );
 }
 
 void BarbVariablesSubtab::Update(

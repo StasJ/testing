@@ -47,6 +47,7 @@ set (SRCS
 	TransformTable.cpp
 	VaporTable.cpp
 	FidelityWidget.cpp
+	FidelityWidget2.cpp
 	QSliderEdit.cpp
 	QRange.cpp
 	QSinglePoint.cpp
@@ -202,6 +203,7 @@ set (SRCS
     SliceSubtabs.h
     VaporTable.h 
 	FidelityWidget.h
+	FidelityWidget2.h
 	QSliderEdit.h
 	QRange.h
 	QSinglePoint.h
