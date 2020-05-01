@@ -6,6 +6,7 @@
 #include "PEnumDropdownHLI.h"
 #include "PVariableSelectorHLI.h"
 #include "VComboBox.h"
+#include "FidelityWidget.h"
 #include "FidelityWidget2.h"
 
 #include "vapor/RenderParams.h"
@@ -79,9 +80,12 @@ VariablesWidget2::VariablesWidget2()
 
     layout()->addWidget( _pg );
  
-    _fidelityWidget = new FidelityWidget2( this );
+    //_fidelityWidget = new FidelityWidget2( this );
+    _fidelityWidget = new FidelityWidget2();
     layout()->addWidget( _fidelityWidget );
- 
+    layout()->addWidget( new FidelityWidget(nullptr) );
+
+    layout()->addWidget( new VSection( "Bar of foo" ) ); 
     // 
     // Cannot add widgets directly to the layout because it's not vertical.
     // Widgets must be added with the Add() method, which only accepts PWidgets.

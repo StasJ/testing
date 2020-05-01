@@ -14,7 +14,7 @@ class PEnumDropdown : public PLineItem {
     Q_OBJECT
     
     VComboBox *_vComboBox;
-    const std::vector<long> _enumMap;
+    std::vector<long> _enumMap;
     
 public:
     //! If itemValues is empty, the item values will be initialized to the index of each item.
@@ -24,6 +24,8 @@ public:
         const std::vector<long> &itemValues = {}, 
         const std::string &label = ""
     );
+    void SetItems(  std::vector< std::string >& items ); 
+    void SetValues( std::vector<long>& itemValues );
 
 protected:
     void updateGUI() const override;

@@ -59,11 +59,16 @@ SliceVariablesSubtab::SliceVariablesSubtab(QWidget* parent) {
 
     _variablesWidget2 = new VariablesWidget2();
     layout()->addWidget( _variablesWidget2 );
+
+    VariableFlags variableFlags = (VariableFlags)(SCALAR);
     _variablesWidget2->Reinit(
-        (VariableFlags)(SCALAR),
+        variableFlags,
         (DimFlags)(THREED)
     );
 
+    _fidelityWidget2 = new FidelityWidget2();
+    layout()->addWidget( _fidelityWidget2 );
+    _fidelityWidget2->Reinit( variableFlags );
 }
 
 void SliceVariablesSubtab::Update(
