@@ -8,13 +8,12 @@
 #include "VComboBox.h"
 #include "FidelityWidget.h"
 #include "FidelityWidget2.h"
+#include "Foo.h"
 
 #include "vapor/RenderParams.h"
 
 #include <QLayout>
 #include <QLabel>
-
-#include "foo.h"
 
 const std::string VariablesWidget2::_sectionTitle = "Variable Selection";
 
@@ -23,8 +22,9 @@ VariablesWidget2::VariablesWidget2()
     _activeDim( 3 ),
     _initialized( false )
 {
-    //foo<int>* _foo = new foo<int>( 42 );
+
     Foo<int>* _foo = new Foo<int>( 42 );
+    _foo->PrintType();
 
     _dimCombo = new VComboBox( {"3D", "2D"} );
     _dimLineItem = new VLineItem( "Variable Dimension", _dimCombo );
@@ -35,7 +35,16 @@ VariablesWidget2::VariablesWidget2()
     _dimLineItem->hide();
 
     _pg = new PGroup();
-    _scalarCombo = new PVariableSelectorHLI<VAPoR::RenderParams>(
+    _enumHLI =
+        new PEnumDropdownHLI<VAPoR::RenderParams>(
+            "Level of Detail",
+            {},
+            {},
+            &VAPoR::RenderParams::GetCompressionLevel,
+            &VAPoR::RenderParams::SetCompressionLevel
+        );
+    _pg->Add(_enumHLI);
+    /*_scalarCombo = new PVariableSelectorHLI<VAPoR::RenderParams>(
             "Variable Name",
             &VAPoR::RenderParams::GetVariableName,
             &VAPoR::RenderParams::SetVariableName
@@ -82,6 +91,8 @@ VariablesWidget2::VariablesWidget2()
         );
     _heightCombo->SetDimensionality( 2 );
     _pg->Add(_heightCombo);
+
+    */
 
     layout()->addWidget( _pg );
  
@@ -175,7 +186,7 @@ void VariablesWidget2::Reinit(
 
     // If the renderer is not both 2D and 3D, hide
     // the dimension selector and set the _activeDim
-    if (! ( ( _dimFlags & 2 ) && ( _dimFlags & 3 ) )
+    /*if (! ( ( _dimFlags & 2 ) && ( _dimFlags & 3 ) )
     ) { 
         _dimCombo->hide();
         if (dimFlags & THREED) {
@@ -217,7 +228,9 @@ void VariablesWidget2::Reinit(
     }
     else {
         _heightCombo->hide();
-    }
+    }*/
+
+
 
     //_rParams->SetDefaultVariables( _activeDim, false );
 
@@ -265,19 +278,19 @@ void VariablesWidget2::_dimChanged() {
 
     _rParams->SetDefaultVariables( _activeDim, false );
     
-    _scalarCombo->SetDimensionality( _activeDim );
+    /*_scalarCombo->SetDimensionality( _activeDim );
     _xFieldCombo->SetDimensionality( _activeDim );
     _yFieldCombo->SetDimensionality( _activeDim );
     _zFieldCombo->SetDimensionality( _activeDim );
-    _colorCombo->SetDimensionality(  _activeDim );
+    _colorCombo->SetDimensionality(  _activeDim );*/
 }
 
 int VariablesWidget2::GetActiveDimension() const {
-
+    return _activeDim;
 }
 
 DimFlags VariablesWidget2::GetDimFlags() const {
-
+    return _dimFlags;
 }
 
 void VariablesWidget2::Configure2DFieldVars() {

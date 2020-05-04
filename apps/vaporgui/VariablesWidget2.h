@@ -9,10 +9,31 @@ namespace VAPoR {
     class RenderParams;
 }
 
-//class foo;
-template<typename T> class Foo;
+//#define BREAK_FOO = true
+#define BREAK_HLI = true
+
+#if defined( BREAK_FOO )
+    class Foo;
+
+    // do not break HLI
+    //template<typename T> class PVariableSelectorHLI;
+    template<typename T> class PEnumDropdownHLI;
+
+#elif defined( BREAK_HLI )
+    //class PVariableSelectorHLI;
+    class PEnumDropdownHLI;
+
+    // do not break foo 
+    template<typename T> class Foo;
+
+#else
+    template<typename T> class Foo;
+    template<typename T> class PEnumDropdownHLI;
+#endif
+
+
+
 class PGroup;
-class PVariableSelector;
 class VComboBox;
 class VLineItem;
 class FidelityWidget2;
@@ -43,8 +64,23 @@ public:
     void Configure3DFieldVars();
 
 private:
-    //foo* _foo;
+
+#if defined( BREAK_FOO )
+    Foo* _foo;
+
+    // do not break HLI
+    PEnumDropdownHLI<VAPoR::RenderParams>* _enumHLI;
+
+#elif defined( BREAK_HLI )
+    PEnumDropdownHLI* _enumHLI;
+   
+    // do not break foo
     Foo<int>* _foo;
+
+#else
+    Foo<int>* _foo;
+    PEnumDropdownHLI<VAPoR::RenderParams>* _enumHLI;
+#endif
 
     size_t _activeDim;
     bool   _initialized;
@@ -57,20 +93,13 @@ private:
 
     PGroup* _pg;
 
-    /*PVariableSelectorHLI* _scalarCombo;
-    PVariableSelectorHLI* _xFieldCombo;
-    PVariableSelectorHLI* _yFieldCombo;
-    PVariableSelectorHLI* _zFieldCombo;
-    PVariableSelectorHLI* _colorCombo;
-    PVariableSelectorHLI* _heightCombo;
-    */
     
-    PVariableSelector* _scalarCombo;
+    /*PVariableSelector* _scalarCombo;
     PVariableSelector* _xFieldCombo;
     PVariableSelector* _yFieldCombo;
     PVariableSelector* _zFieldCombo;
     PVariableSelector* _colorCombo;
-    PVariableSelector* _heightCombo;
+    PVariableSelector* _heightCombo;*/
     
 
     FidelityWidget2* _fidelityWidget;

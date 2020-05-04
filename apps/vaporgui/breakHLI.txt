@@ -1,0 +1,92 @@
+1  ////////////  Different kind of symbol
+
+
+    In file included from /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.cpp:6:
+    /Users/pearse/VAPOR/apps/vaporgui/PEnumDropdownHLI.h:6:25: error: redefinition of 'PEnumDropdownHLI' as different kind
+          of symbol
+    template<class P> class PEnumDropdownHLI : public PEnumDropdown , public PWidgetHLIBase<P, long>
+                            ^
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.h:24:11: note: previous definition is here
+        class PEnumDropdownHLI;
+              ^
+
+2  //////////   Allocation of incomplete type
+
+
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.cpp:39:13: error: allocation of incomplete type 'PEnumDropdownHLI'
+            new PEnumDropdownHLI<VAPoR::RenderParams>(
+                ^~~~~~~~~~~~~~~~
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.h:24:11: note: forward declaration of 'PEnumDropdownHLI'
+        class PEnumDropdownHLI;
+              ^
+
+
+3  //////////   Expected '' for function-style cast
+
+
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.cpp:39:49: error: expected '(' for function-style cast or type
+          construction
+        new PEnumDropdownHLI<VAPoR::RenderParams>(
+
+
+4   /////////   
+
+                             ~~~~~~~~~~~~~~~~~~~^
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.cpp:40:30: error: expected ')'
+                "Level of Detail",
+                                 ^
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.cpp:39:50: note: to match this '('
+            new PEnumDropdownHLI<VAPoR::RenderParams>(
+                                                 ^
+
+5   //////////
+
+
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.cpp:46:14: error: cannot initialize a parameter of type 'PWidget *'
+          with an lvalue of type 'PEnumDropdownHLI *'
+        _pg->Add(_enumHLI);
+                 ^~~~~~~~
+    /Users/pearse/VAPOR/apps/vaporgui/PGroup.h:19:26: note: passing argument to parameter 'pw' here
+        PGroup *Add(PWidget *pw);
+                             ^
+
+
+/////////
+
+
+    5 errors generated.
+    make[2]: *** [apps/vaporgui/CMakeFiles/vapor.dir/VariablesWidget2.cpp.o] Error 1
+    make[2]: *** Waiting for unfinished jobs....
+    In file included from /Users/pearse/VAPOR/apps/vaporgui/SliceSubtabs.cpp:8:
+
+6  ///////////
+
+
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.h:24:11: error: redefinition of 'PEnumDropdownHLI' as different
+          kind of symbol
+        class PEnumDropdownHLI;
+              ^
+    /Users/pearse/VAPOR/apps/vaporgui/PEnumDropdownHLI.h:6:25: note: previous definition is here
+    template<class P> class PEnumDropdownHLI : public PEnumDropdown , public PWidgetHLIBase<P, long>
+                            ^
+
+
+7  ///////////
+
+    In file included from /Users/pearse/VAPOR/apps/vaporgui/SliceSubtabs.cpp:8:
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.h:75:5: error: unknown type name 'PEnumDropdownHLI'; did you mean
+          'PEnumDropdown'?
+        PEnumDropdownHLI* _enumHLI;
+        ^~~~~~~~~~~~~~~~
+        PEnumDropdown
+    /Users/pearse/VAPOR/apps/vaporgui/PEnumDropdown.h:13:7: note: 'PEnumDropdown' declared here
+    class PEnumDropdown : public PLineItem {
+          ^
+
+//////////////
+
+
+2 errors generated.
+make[2]: *** [apps/vaporgui/CMakeFiles/vapor.dir/SliceSubtabs.cpp.o] Error 1
+make[1]: *** [apps/vaporgui/CMakeFiles/vapor.dir/all] Error 2
+make: *** [all] Error 2

@@ -1,0 +1,38 @@
+2  ////////////    Different kind of symbol
+
+
+    In file included from /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.cpp:11:
+    /Users/pearse/VAPOR/apps/vaporgui/Foo.h:6:7: error: redefinition of 'Foo' as different kind of symbol
+    class Foo {
+          ^
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.h:16:11: note: previous definition is here
+        class Foo;
+              ^
+
+
+2  ///////////      Expected unqualified-id
+
+
+
+    /Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.cpp:26:8: error: expected unqualified-id
+        Foo<int>* _foo = new Foo<int>( 42 );
+           ^
+
+3  //////////
+
+/Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.cpp:27:9: error: member access into incomplete type 'Foo'
+    _foo->PrintType();
+        ^
+/Users/pearse/VAPOR/apps/vaporgui/VariablesWidget2.h:16:11: note: forward declaration of 'Foo'
+    class Foo;
+          ^
+
+
+////////////
+
+
+3 errors generated.
+make[2]: *** [apps/vaporgui/CMakeFiles/vapor.dir/VariablesWidget2.cpp.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [apps/vaporgui/CMakeFiles/vapor.dir/all] Error 2
+make: *** [all] Error 2
