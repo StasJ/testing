@@ -186,6 +186,7 @@ set (SRCS
 	VDoubleValidator.h
 	hide_std_error_util.cpp
 	hide_std_error_util.h
+    Foo.h
 
 	# Need to include all files that request .ui files
 	TwoDSubtabs.h

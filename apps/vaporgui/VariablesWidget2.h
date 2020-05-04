@@ -9,9 +9,10 @@ namespace VAPoR {
     class RenderParams;
 }
 
+//class foo;
+template<typename T> class Foo;
 class PGroup;
 class PVariableSelector;
-//class PVariableSelectorHLI;
 class VComboBox;
 class VLineItem;
 class FidelityWidget2;
@@ -42,6 +43,8 @@ public:
     void Configure3DFieldVars();
 
 private:
+    //foo* _foo;
+    Foo<int>* _foo;
 
     size_t _activeDim;
     bool   _initialized;
@@ -54,12 +57,21 @@ private:
 
     PGroup* _pg;
 
+    /*PVariableSelectorHLI* _scalarCombo;
+    PVariableSelectorHLI* _xFieldCombo;
+    PVariableSelectorHLI* _yFieldCombo;
+    PVariableSelectorHLI* _zFieldCombo;
+    PVariableSelectorHLI* _colorCombo;
+    PVariableSelectorHLI* _heightCombo;
+    */
+    
     PVariableSelector* _scalarCombo;
     PVariableSelector* _xFieldCombo;
     PVariableSelector* _yFieldCombo;
     PVariableSelector* _zFieldCombo;
     PVariableSelector* _colorCombo;
     PVariableSelector* _heightCombo;
+    
 
     FidelityWidget2* _fidelityWidget;
 
