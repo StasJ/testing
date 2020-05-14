@@ -15,6 +15,7 @@
 #include "VariablesWidget.h"
 #include "SliceEventRouter.h"
 #include "EventRouter.h"
+#include "RenderEventRouter.h"
 
 using namespace VAPoR;
 
@@ -27,9 +28,17 @@ static RenderEventRouterRegistrar<SliceEventRouter> registrar(
 
 
 SliceEventRouter::SliceEventRouter( QWidget *parent, ControlExec *ce) 
-                    : QTabWidget(parent),
-	                    RenderEventRouter( ce, SliceParams::GetClassType())
-{
+    : QTabWidget( parent ),
+      RenderEventRouter( ce, SliceParams::GetClassType()
+) {
+    _vSliderEdit = new VSliderEdit();
+    _vli1 = new VLineItem("VLineItem1", _vSliderEdit);
+    addTab( _vli1, "VLineItem/VSliderEdit" );
+    
+    _vComboBox = new VComboBox( {"foo"} );
+    _vli2 = new VLineItem("VLineItem2", _vComboBox);
+    addTab( _vli2, "VLineItem/VComboBox" );
+
 	_variables = new SliceVariablesSubtab(this);
 	QScrollArea *qsvar = new QScrollArea(this);
 	qsvar->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -37,13 +46,6 @@ SliceEventRouter::SliceEventRouter( QWidget *parent, ControlExec *ce)
 	qsvar->setWidget(_variables);
 	qsvar->setWidgetResizable(true);
 	addTab(qsvar, "Variables");
-
-	_appearance = new SliceAppearanceSubtab(this);
-	QScrollArea* qsapp = new QScrollArea(this);
-	qsapp->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	qsapp->setWidget(_appearance);
-	qsapp->setWidgetResizable(true);
-	addTab(qsapp,"Appearance");
 
 	_geometry = new SliceGeometrySubtab(this);
 	QScrollArea *qsgeo = new QScrollArea(this);
@@ -58,6 +60,13 @@ SliceEventRouter::SliceEventRouter( QWidget *parent, ControlExec *ce)
 	qsAnnotation->setWidget(_annotation);
 	qsAnnotation->setWidgetResizable(true);
 	addTab(qsAnnotation, "Annotations");
+
+	_appearance = new SliceAppearanceSubtab(this);
+	QScrollArea* qsapp = new QScrollArea(this);
+	qsapp->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	qsapp->setWidget(_appearance);
+	qsapp->setWidgetResizable(true);
+	addTab(qsapp,"Appearance");
 
 #if 0	
 	QScrollArea *qsimg = new QScrollArea(this);
@@ -111,6 +120,8 @@ void SliceEventRouter::GetWebHelp(
 }
 
 void SliceEventRouter::_updateTab(){
+    _vSliderEdit->SetValue( 0 );
+    _vComboBox->SetIndex( 0 );
 
 	// The variable tab updates itself:
 	//
