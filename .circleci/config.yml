@@ -117,7 +117,10 @@ jobs:
       - run:
           name: make installer
           command: |
-            cd /VAPOR/build
+            cd /VAPOR
+            git pull
+            git checkout $CIRCLE_BRANCH
+            cd build
             cmake -DCMAKE_BUILD_TYPE:String=Release -DDIST_INSTALLER:string=ON ..
             make -j7
             make installer
@@ -196,6 +199,7 @@ jobs:
             ls -lrth /usr/local/VAPOR-Deps
             cd /VAPOR
             git pull
+            git checkout $CIRCLE_BRANCH
             cd build
             cmake3 -DCMAKE_BUILD_TYPE:String=Release -DDIST_INSTALLER:string=ON ..
             make
@@ -251,6 +255,8 @@ jobs:
           name: make VAPOR
           command: |
             cp site_files/site.NCAR site.local
+            git pull
+            git checkout $CIRCLE_BRANCH
             mkdir build
             cd build
             /usr/local/bin/cmake ..
@@ -322,6 +328,8 @@ jobs:
           name: make VAPOR
           command: |
             cp site_files/site.NCAR site.local
+            git pull
+            git checkout $CIRCLE_BRANCH
             mkdir build
             cd build
             /usr/local/bin/cmake -DCPACK_BINARY_DRAGNDROP=ON -DCMAKE_BUILD_TYPE:String=Release -DDIST_INSTALLER:string=ON ..
@@ -354,7 +362,11 @@ jobs:
       - run:
           name: CMake
           command: |
-            cd /VAPOR/build
+            cd /VAPOR
+            git pull
+            git checkout $CIRCLE_BRANCH
+            mkdir build
+            cd build
             cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=true ..
             clang-tidy -checks=cppcoreguidelines* -header-filter=.* -p ./ /VAPOR/apps/vaporgui/MainForm.cpp &> /tmp/tidy.txt
 
@@ -369,6 +381,9 @@ jobs:
       - run:
           name: check MainForm.cpp
           command: |
+            cd /VAPOR
+            git pull
+            git checkout $CIRCLE_BRANCH
             sudo mkdir build
             cd build
       - run:
@@ -406,6 +421,8 @@ jobs:
           name: Build Vapor
           command: |
             Copy-Item site_files\* -Destination .
+            git pull
+            git checkout $CIRCLE_BRANCH
             mkdir build
             cd build
             & 'C:\\Program Files\\CMake\\bin\\cmake.exe' -S C:\Users\circleci\project -B C:\Users\circleci\project\build -DCMAKE_BUILD_TYPE:STRING=Release -G 'Visual Studio 14 2015' -A x64
