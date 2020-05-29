@@ -51,6 +51,7 @@ jobs:
           name: make installer
           command: |
             cd /VAPOR
+            git pull
             git checkout $CIRCLE_BRANCH
             cd build
             cmake -DCMAKE_BUILD_TYPE:String=Release -DDIST_INSTALLER:string=ON ..
