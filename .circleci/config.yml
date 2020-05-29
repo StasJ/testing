@@ -188,7 +188,7 @@ jobs:
 
   build_centos7_installer:
     docker:
-      - image: sgpearse/vapor3-centos7:1.0
+      - image: sgpearse/vapor3-centos7
 
     steps:
       - checkout
