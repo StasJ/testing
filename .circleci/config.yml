@@ -188,7 +188,7 @@ jobs:
 
   build_centos7_installer:
     docker:
-      - image: sgpearse/vapor3-centos7:latest
+      - image: docker pull sgpearse/vapor3-centos7:1.0
 
     steps:
       - checkout
@@ -501,14 +501,14 @@ workflows:
       #      - test_win10_workspace
       #- clang_tidy_ubuntu18
       #- build_osx_installer
-      - build_ubuntu16_installer
+      #- build_ubuntu16_installer
       #- build_win10_installer
-      - build_ubuntu18_installer
+      #- build_ubuntu18_installer
       - build_centos7_installer
       - release_on_github:
           requires:
-            - build_ubuntu18_installer
             - build_centos7_installer
+      #      - build_ubuntu18_installer
       #      - build_ubuntu16_installer
       #      - build_win10_installer
       #      - build_osx_installer

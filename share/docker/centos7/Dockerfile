@@ -1,7 +1,9 @@
 # To build:
 #   docker image build -t centos7:1.0 .
 
-FROM centos:centos7
+#FROM centos:centos7
+
+FROM centos:centos7.4.1708
 MAINTAINER The CentOS Project <cloud-ops@centos.org>
 
 CMD [ "/bin/bash" ]
