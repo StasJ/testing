@@ -50,7 +50,9 @@ jobs:
       - run:
           name: make installer
           command: |
-            cd /VAPOR/build
+            cd /VAPOR
+            git checkout $CIRCLE_BRANCH
+            cd build
             cmake -DCMAKE_BUILD_TYPE:String=Release -DDIST_INSTALLER:string=ON ..
             make -j7
             make installer
@@ -482,13 +484,13 @@ workflows:
       #- clang_tidy_ubuntu18
       #- build_osx_installer
       #- build_ubuntu18_installer
-      #- build_ubuntu16_installer
       #- build_centos7_installer
-      - build_win10_installer
+      #- build_win10_installer
+      - build_ubuntu16_installer
       - release_on_github:
           requires:
-            - build_win10_installer
-      #      - build_ubuntu16_installer
+            - build_ubuntu16_installer
+      #      - build_win10_installer
       #      - build_ubuntu18_installer
       #      - build_centos7_installer
       #      - build_osx_installer
