@@ -3,15 +3,15 @@
 
 #FROM centos:centos7
 
-FROM centos:centos7.4.1708
+FROM centos:7.4.1708
 MAINTAINER The CentOS Project <cloud-ops@centos.org>
 
 CMD [ "/bin/bash" ]
 
 
-RUN yum -y clean all \
-    && yum -y clean metadata \
-    && yum -y update
+#RUN yum -y clean all \
+#    && yum -y clean metadata \
+#    && yum -y update
 
 RUN yum -y install epel-release \
     && yum -y install cmake3 \
@@ -47,7 +47,8 @@ RUN alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
 RUN mkdir -p /usr/local/VAPOR-Deps
 
 #Hack to download a file from google drive
-RUN fileid="1e7F3kDoKctBmB3NOF4dES2395oScb9_0" \
+#RUN fileid="1e7F3kDoKctBmB3NOF4dES2395oScb9_0" \
+RUN fileid="1q9U5FJIvWLvwNbKLVluCiSH-uAnQVgU1" \
     && filename="/usr/local/VAPOR-Deps/2019-Aug-CentOS.tar.xz" \
     && curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null \
     && curl -Lb ./cookie \
