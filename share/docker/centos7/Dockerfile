@@ -14,6 +14,7 @@ CMD [ "/bin/bash" ]
 #    && yum -y update
 
 RUN yum -y install epel-release \
+    && yum -y install dbus \
     && yum -y install cmake3 \
     && yum -y install make \
     && yum -y install bsdtar \
@@ -46,9 +47,11 @@ RUN alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
 
 RUN mkdir -p /usr/local/VAPOR-Deps
 
-#Hack to download a file from google drive
-#RUN fileid="1e7F3kDoKctBmB3NOF4dES2395oScb9_0" \
-RUN fileid="1q9U5FJIvWLvwNbKLVluCiSH-uAnQVgU1" \
+# Qt 5.12.4
+#RUN fileid="1q9U5FJIvWLvwNbKLVluCiSH-uAnQVgU1" \
+
+# Qt 5.13.2
+RUN fileid="1e7F3kDoKctBmB3NOF4dES2395oScb9_0" \
     && filename="/usr/local/VAPOR-Deps/2019-Aug-CentOS.tar.xz" \
     && curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null \
     && curl -Lb ./cookie \
