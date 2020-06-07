@@ -41,12 +41,13 @@ void PQuickFidelitySelector::updateGUI() const
     auto vn = rp->GetFirstVariableName();
     int nLod = dm->GetCRatios(vn).size();
     int nRef = dm->GetNumRefLevels(vn);
-    int minOptions = max(nLod, nRef);
+    int minOptions = vn.empty() ? 0 : max(nLod, nRef);
     
     vector<string> items;
     if (minOptions >= 2) items.push_back("Low");
     if (minOptions >= 3) items.push_back("Medium");
-    items.push_back("High");
+    if (minOptions >= 1) items.push_back("High");
+    else                 items.push_back("<none>");
     
     _vComboBox->SetOptions(items);
     

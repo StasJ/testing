@@ -16,8 +16,7 @@ namespace VAPoR {
 }
 
 class TFEditor;
-
-#include "PVariablesWidget.h"
+class PGroup;
 
 class BarbVariablesSubtab : public QWidget, public Ui_BarbVariablesGUI {
 

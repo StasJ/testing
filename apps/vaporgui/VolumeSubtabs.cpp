@@ -10,7 +10,6 @@
 #include "PSliderEdit.h"
 #include "PVariableSelector.h"
 
-
 using namespace VAPoR;
 
 void VolumeVariablesSubtab::Update(DataMgr *dataMgr, ParamsMgr *paramsMgr, RenderParams *params)

@@ -7,6 +7,8 @@
 #include "ui_WireFrameAnnotationGUI.h"
 #include "Flags.h"
 #include "TFEditor.h"
+#include "PVariablesWidget.h"
+#include "PGroup.h"
 
 namespace VAPoR {
 	class ControlExec;
@@ -14,8 +16,6 @@ namespace VAPoR {
 	class ParamsMgr;
 	class DataMgr;
 }
-
-#include "PVariablesWidget.h"
 
 class WireFrameVariablesSubtab : public QWidget, public Ui_WireFrameVariablesGUI {
 

@@ -7,6 +7,8 @@
 #include "Flags.h"
 #include <vapor/MapperFunction.h>
 #include <vapor/VolumeParams.h>
+#include "PVariablesWidget.h"
+#include "PGroup.h"
 
 namespace VAPoR {
 	class ControlExec;
@@ -18,8 +20,6 @@ namespace VAPoR {
 class TFEditorVolume;
 class QSliderEdit;
 class PGroup;
-
-#include "PVariablesWidget.h"
 
 class VolumeVariablesSubtab : public QWidget, public Ui_VolumeVariablesGUI {
 
