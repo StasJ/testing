@@ -41,14 +41,12 @@ void PWidget::Update(VAPoR::ParamsBase *params, VAPoR::ParamsMgr *paramsMgr, VAP
         }
     } else {
         setVisible(true);
-    }
+	}
     
-    if (_enableBasedOnParam) {
-        int value = params->GetValueLong(_enableBasedOnParamTag, 0);
-        setEnabled(value == _enableBasedOnParamValue);
-    } else {
+    if (_enableBasedOnParam)
+        setEnabled(_enableBasedOnParam->IsEqual(params));
+    else
         setEnabled(true);
-    }
     
     updateGUI();
 }
@@ -60,17 +58,25 @@ const std::string &PWidget::getTag() const
 
 PWidget *PWidget::ShowBasedOnParam(const std::string &tag, int whenEqualTo)
 {
-    _showBasedOnParam      = true;
-    _showBasedOnParamTag   = tag;
-    _showBasedOnParamValue = whenEqualTo;
+    _showBasedOnParam = std::unique_ptr<ParamTester>(new ParamsTesterLong(tag, whenEqualTo, false));
+    return this;
+}
+
+PWidget *PWidget::ShowBasedOnParam(const std::string &tag, const std::string &whenEqualTo, bool invert)
+{
+    _showBasedOnParam = std::unique_ptr<ParamTester>(new ParamsTesterString(tag, whenEqualTo, invert));
     return this;
 }
 
 PWidget *PWidget::EnableBasedOnParam(const std::string &tag, int whenEqualTo)
 {
-    _enableBasedOnParam      = true;
-    _enableBasedOnParamTag   = tag;
-    _enableBasedOnParamValue = whenEqualTo;
+    _enableBasedOnParam = std::unique_ptr<ParamTester>(new ParamsTesterLong(tag, whenEqualTo, false));
+    return this;
+}
+
+PWidget *PWidget::EnableBasedOnParam(const std::string &tag, const std::string &whenEqualTo, bool invert)
+{
+    _enableBasedOnParam = std::unique_ptr<ParamTester>(new ParamsTesterString(tag, whenEqualTo, invert));
     return this;
 }
 
@@ -172,3 +178,6 @@ void PWidget::_setParamsString(const std::string &v)
     else
         getParams()->SetValueString(getTag(), "", v);
 }
+
+bool PWidget::ParamsTesterLong::  _isEqual(VAPoR::ParamsBase *p) const { return p->GetValueLong(_tag, 0)    == _value; }
+bool PWidget::ParamsTesterString::_isEqual(VAPoR::ParamsBase *p) const { return p->GetValueString(_tag, "") == _value; }
