@@ -69,7 +69,7 @@ VolumeAppearanceSubtab::VolumeAppearanceSubtab(QWidget* parent) {
     op->ShowBasedOnParam(VolumeParams::_algorithmTag, VolumeOSPRay::GetName());
     op->Add(new PCheckbox("osp_usePT", "Pathtracing"));
     op->Add((new PCheckbox("osp_enable_clipping", "Enable Clipping Planes"))->SetTooltip("Breaks depth buffer due to a bug in OSPRay"));
-    op->Add(new PCheckbox("osp_useBackplate", "Backplate"));
+    op->Add((new PCheckbox("osp_useBackplate", "Backplate"))->EnableBasedOnParam("NULL"));
     op->Add((new PDoubleSliderEdit("osp_light_intensity", "Light Intensity"))->SetRange(0, 10)->EnableDynamicUpdate()->EnableBasedOnParam("osp_usePT"));
     op->Add(new PCheckbox("osp_force_regular", "Force Regular"));
     op->Add(new PCheckbox("osp_test_volume", "Test Volume"));
