@@ -98,6 +98,7 @@ public:
 private:
     VAPoR::FlowParams* _params;
     TFEditor*   _TFEditor;
+    PGroup *_pw;
 };
 
 //
