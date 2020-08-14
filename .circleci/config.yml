@@ -394,8 +394,8 @@ jobs:
           name: Install dependencies
           command: |
             #choco install visualcpp-build-tools -version 14.0.25420.1 -y
-            choco install visualcpp-build-tools -y
-            #choco install visualstudio2019buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
+            #choco install visualcpp-build-tools -y
+            choco install visualstudio2019buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
             #choco install visualstudio2019-workload-vctools -y
             #choco install visualstudio2019-workload-nativedesktop -y
             #choco install visualstudio2019buildtools
