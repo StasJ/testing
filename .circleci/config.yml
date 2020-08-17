@@ -432,12 +432,12 @@ jobs:
             & 'C:\\Program Files\\CMake\\bin\\cmake.exe' -S C:\Users\circleci\project -B C:\Users\circleci\project\build -DCMAKE_BUILD_TYPE:STRING=Release -G 'Visual Studio 14 2015' -A x64
             #& 'C:\\Program Files\\CMake\\bin\\cmake.exe' -S C:\Users\circleci\project -B C:\Users\circleci\project\build -DCMAKE_BUILD_TYPE:STRING=Release -G 'Visual Studio 16 2019' -A x64
             msbuild C:\Users\circleci\project\build\PACKAGE.vcxproj /p:Configuration=Release /p:Platform=x64
+          no_output_timeout: 45m
       - run:
           name: Copy to workspace
           command: |
             mkdir -p C:\Users\circleci\project\tmp\workspace\installers
             Copy-Item C:\Users\circleci\project\build\*.exe -Destination C:\Users\circleci\project\tmp\workspace\installers\VAPOR3-3.2.0-win64-961ce7007-vs2015.exe
-          no_output_timeout: 45m
 
       - persist_to_workspace:
           root: *workspace_root
