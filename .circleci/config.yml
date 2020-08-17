@@ -413,7 +413,7 @@ jobs:
             python .circleci/downloadWin3rdParty.py
             #'C:\Users\circleci\project\nsis-3.06.1-setup.exe /S /NCRC'
             #setx /M PATH "%PATH%;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin;C:\Program Files (x86)\NSIS;C:\Program Files\Git\cmd"
-            #setx /M PATH "%PATH%;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin"
+            setx /M PATH "%PATH%;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin"
             #setx /M PATH "%PATH%;C:\Program Files (x86)\NSIS"
             #setx /M PATH "%PATH%;C:\Program Files\Git\cmd"
       - run:
