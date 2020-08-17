@@ -205,6 +205,7 @@ void MainForm::_initMembers() {
 
 	_dataImportWRF_Action = NULL;
 	_dataImportCF_Action = NULL;
+	_dataImportHDF5_Action = NULL;
 	_dataImportMPAS_Action = NULL;
 	_dataLoad_MetafileAction = NULL;
 	_dataClose_MetafileAction = NULL;
@@ -807,6 +808,13 @@ void MainForm::_createFileMenu() {
 		"output files to import into the current session"
 	);
 
+	_dataImportHDF5_Action = new QAction( this );
+	_dataImportHDF5_Action->setText(tr("HDF5"));
+	_dataImportHDF5_Action->setToolTip(
+		"Specify one or more HDF5 "
+		"output files to import into the current session"
+	);
+
 	_dataImportMPAS_Action = new QAction( this );
 	_dataImportMPAS_Action->setText(tr("MPAS"));
 	_dataImportMPAS_Action->setToolTip(
@@ -862,6 +870,7 @@ void MainForm::_createFileMenu() {
 	_importMenu = _File->addMenu("Import");
 	_importMenu->addAction(_dataImportWRF_Action);
     _importMenu->addAction(_dataImportCF_Action);
+    _importMenu->addAction(_dataImportHDF5_Action);
     _importMenu->addAction(_dataImportMPAS_Action);
 	_File->addSeparator();
 
@@ -884,6 +893,10 @@ void MainForm::_createFileMenu() {
 	connect( 
 		_dataImportCF_Action, SIGNAL( triggered() ),
 		this, SLOT( importCFData() ) 
+	);
+	connect( 
+		_dataImportHDF5_Action, SIGNAL( triggered() ),
+		this, SLOT( importHDF5Data() ) 
 	);
 	connect( 
 		_dataImportMPAS_Action, SIGNAL( triggered() ),
@@ -1593,6 +1606,16 @@ void MainForm::importCFData()
 	vector <string> files;
 	loadDataHelper(
 		files, "NetCDF CF files", "", "cf", true
+	);
+	
+}
+
+void MainForm::importHDF5Data()
+{
+
+	vector <string> files;
+	loadDataHelper(
+		files, "HDF5 files", "", "hdf5", true
 	);
 	
 }

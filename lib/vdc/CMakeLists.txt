@@ -54,6 +54,7 @@ set (HEADERS
 	${PROJECT_SOURCE_DIR}/include/vapor/DCWRF.h
 	${PROJECT_SOURCE_DIR}/include/vapor/DCCF.h
 	${PROJECT_SOURCE_DIR}/include/vapor/DCMPAS.h
+	${PROJECT_SOURCE_DIR}/include/vapor/DCHDF5.h
 	${PROJECT_SOURCE_DIR}/include/vapor/VDC.h
 	${PROJECT_SOURCE_DIR}/include/vapor/VDCNetCDF.h
 	${PROJECT_SOURCE_DIR}/include/vapor/DataMgr.h
