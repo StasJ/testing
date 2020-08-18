@@ -394,7 +394,8 @@ jobs:
           name: Install dependencies
           command: |
             #choco install visualcpp-build-tools -version 14.0.25420.1 -y
-            choco install visualcpp-build-tools -y
+            choco install vcbuildtools
+            #choco install visualcpp-build-tools -y
             #choco install visualstudio2019buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
             #choco install visualstudio2019-workload-vctools -y
             #choco install visualstudio2019-workload-nativedesktop -y
@@ -437,7 +438,7 @@ jobs:
           name: Copy to workspace
           command: |
             mkdir -p C:\Users\circleci\project\tmp\workspace\installers
-            Copy-Item C:\Users\circleci\project\build\*.exe -Destination C:\Users\circleci\project\tmp\workspace\installers\VAPOR3-3.2.0-win64-961ce7007-vs2015-chocoNSIS3.04.exe
+            Copy-Item C:\Users\circleci\project\build\*.exe -Destination C:\Users\circleci\project\tmp\workspace\installers\VAPOR3-3.2.0-win64-961ce7007-vcbuildtools-chocoNSIS3.04.exe
 
       - persist_to_workspace:
           root: *workspace_root
