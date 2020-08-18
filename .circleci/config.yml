@@ -425,7 +425,7 @@ jobs:
             setx /M PATH "%PATH%;C:\Program Files (x86)\MSBuild\14.0\bin;C:\Program Files (x86)\NSIS;C:\Program Files\Git\cmd" 
             setx /M PATH "%PATH%;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin"
             git reset -- hard origin/master
-            git checkout 961ce7007d98cb54d24190c5e4e5593d348bc895
+            #git checkout 961ce7007d98cb54d24190c5e4e5593d348bc895
             git branch
             Copy-Item site_files\* -Destination .
             mkdir build
@@ -438,7 +438,7 @@ jobs:
           name: Copy to workspace
           command: |
             mkdir -p C:\Users\circleci\project\tmp\workspace\installers
-            Copy-Item C:\Users\circleci\project\build\*.exe -Destination C:\Users\circleci\project\tmp\workspace\installers\VAPOR3-3.2.0-win64-961ce7007-vcbuildtools-chocoNSIS3.04.exe
+            Copy-Item C:\Users\circleci\project\build\*.exe -Destination C:\Users\circleci\project\tmp\workspace\installers\VAPOR3-3.2.0-win64-master-vcbuildtools-chocoNSIS3.04.exe
 
       - persist_to_workspace:
           root: *workspace_root
