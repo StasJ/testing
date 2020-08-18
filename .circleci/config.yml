@@ -403,7 +403,7 @@ jobs:
             choco install git --force -y
             choco install cmake -y
             # NSIS has a broken link when installing through choco.  https://github.com/actions/virtual-environments/pull/1392
-            choco install nsis -y
+            choco install nsis --version 3.04 -y
             #C:\Users\circleci\project\nsis-3.06.1-setup.exe
             #./nsis-3.06.1-setup.exe /S /NCRC
             #nsis-3.06.1-setup.exe /S /NCRC
