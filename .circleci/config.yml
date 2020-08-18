@@ -437,7 +437,7 @@ jobs:
           name: Copy to workspace
           command: |
             mkdir -p C:\Users\circleci\project\tmp\workspace\installers
-            Copy-Item C:\Users\circleci\project\build\*.exe -Destination C:\Users\circleci\project\tmp\workspace\installers\VAPOR3-3.2.0-win64-961ce7007-vs2015.exe
+            Copy-Item C:\Users\circleci\project\build\*.exe -Destination C:\Users\circleci\project\tmp\workspace\installers\VAPOR3-3.2.0-win64-961ce7007-vs2015-chocoNSIS.exe
 
       - persist_to_workspace:
           root: *workspace_root
