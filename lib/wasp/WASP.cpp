@@ -419,7 +419,7 @@ void swapbytes(void *ptr, size_t ws, size_t nelem) {
 		unsigned char *p1 = uptr;
 		unsigned char *p2 = uptr + ws-1;
 		unsigned char t;
-		for (int j = 0; j< ws >> 1; j++) {
+		for (int j = 0; j< (ws >> 1); j++) {
 			t = *p1;
 			*p1 = *p2;
 			*p2 = t;
