@@ -32,8 +32,7 @@ void PWidget::Update(VAPoR::ParamsBase *params, VAPoR::ParamsMgr *paramsMgr, VAP
     if (requireParamsMgr() && !paramsMgr) VAssert(!"Params manager required but missing");
     
     if (_showBasedOnParam) {
-        int value = params->GetValueLong(_showBasedOnParamTag, 0);
-        if (value == _showBasedOnParamValue) {
+        if (_showBasedOnParam->IsEqual(params)) {
             setVisible(true);
         } else {
             setVisible(false);

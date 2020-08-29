@@ -3,7 +3,6 @@
 #include <string>
 #include <QWidget>
 #include <functional>
-#include <memory>
 
 namespace VAPoR {
     class ParamsBase;
