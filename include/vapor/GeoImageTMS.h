@@ -30,9 +30,9 @@ public:
  GeoImageTMS();
  virtual ~GeoImageTMS();
 
- static bool IsTMSFile( std::string path );
- static std::string TilePath( std::string file, size_t tileX, size_t tileY, int lod );
- static int GetNumTMSLODs( std::string file );
+ //static bool IsTMSFile( std::string path );
+ //static std::string TilePath( std::string file, size_t tileX, size_t tileY, int lod );
+ //static int GetNumTMSLODs( std::string file );
 
  int Initialize(string path, vector <double> times);
 

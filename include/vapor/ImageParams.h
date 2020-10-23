@@ -1,6 +1,7 @@
 #ifndef IMAGEPARAMS_H
 #define IMAGEPARAMS_H
 
+#include <vapor/TMSTools.h>
 #include <vapor/RenderParams.h>
 #include <vapor/DataMgr.h>
 #include <vapor/GeoImageTMS.h>
@@ -40,8 +41,8 @@ public:
   {
     BeginGroup("Set image path");
     SetValueString( _fileNameTag, "Set image file path", file );
-    if ( GeoImageTMS::IsTMSFile( file ) ) {
-      int numTMSLODs = GeoImageTMS::GetNumTMSLODs( file );
+    if ( IsTMSFile( file ) ) {
+      int numTMSLODs = GetAvailableTMSLODs( file );
       _setNumTMSLODs( numTMSLODs );
     }
     EndGroup();

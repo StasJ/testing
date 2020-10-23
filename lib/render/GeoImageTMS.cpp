@@ -11,6 +11,7 @@
 #include <geo_normalize.h>
 #endif
 
+#include <vapor/TMSTools.h>
 #include <vapor/Proj4API.h>
 #include <vapor/GeoUtil.h>
 #include <vapor/GeoTileMercator.h>
@@ -53,10 +54,11 @@ GeoImageTMS::~GeoImageTMS()
 	if (_geotile) delete _geotile;
 }
 
-bool GeoImageTMS::IsTMSFile( std::string path ) {
+/*bool GeoImageTMS::IsTMSFile( std::string path ) {
     if ( path.rfind(".tms", path.size()-4) != string::npos ) {
         return true;
     }
+#include <vapor/TMSTools.h>
     return false;
 }
 
@@ -102,7 +104,7 @@ int GeoImageTMS::GetNumTMSLODs( std::string file ) {
         lod++;
     }
     return lod;
-}
+}*/
 
 int GeoImageTMS::Initialize(string dir, vector <double> times) {
 
@@ -115,7 +117,7 @@ int GeoImageTMS::Initialize(string dir, vector <double> times) {
 
 	// Find the maximum available LOD in the TMS database. 
 	//
-    int lod = GetNumTMSLODs( _dir ) - 1;
+    int lod = GetAvailableTMSLODs( _dir ) - 1;
 	if (lod<0) {
 		SetErrMsg("Failed to initialize TMS directory %s", _dir.c_str());
 		return(-1);
