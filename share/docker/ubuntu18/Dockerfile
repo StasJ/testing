@@ -25,17 +25,22 @@ RUN apt-get update \
 # Acquire 3rd party libraries
 #
 RUN mkdir -p /usr/local/VAPOR-Deps
-RUN fileid="1j4IO4VCU0Wvyu2T3BH0e9I0qiiwCIrEd" \
+
+# Qt 5.13.2
+#RUN fileid="1j4IO4VCU0Wvyu2T3BH0e9I0qiiwCIrEd" \
+
+# Ospray
+RUN fileid="18KtuXQsy2J7pFvvZe0Ug-yjnEmlPiE2p"  \
     && filename="/usr/local/VAPOR-Deps/2019-Aug-Ubuntu.tar.xz" \
     && curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null \
     && curl -Lb ./cookie \
     "https://drive.google.com/uc?export=download&confirm=`awk '/download/ {print $NF}' ./cookie`&id=${fileid}" \
     -o ${filename}
+RUN ls -lrth /usr/local/VAPOR-Deps
 RUN chmod -R 777 /usr
 RUN chown -R root:root /usr
-RUN tar -xf /usr/local/VAPOR-Deps/2019-Aug-Ubuntu.tar.xz \ 
-    -C /usr/local/VAPOR-Deps \
-    && chown -R root:root /usr
+RUN tar -xf /usr/local/VAPOR-Deps/2019-Aug-Ubuntu.tar.xz -C /usr/local/VAPOR-Deps
+RUN chown -R root:root /usr
 RUN chmod -R 777 /usr
 
 #RUN ls -lrth /usr/local/VAPOR-Deps/2019-Aug
