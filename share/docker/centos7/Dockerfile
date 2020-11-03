@@ -68,7 +68,8 @@ RUN chown -R root:root /usr/local/VAPOR-Deps/2019-Aug-CentOS.tar.xz
 RUN chmod -R 777 /usr/local/VAPOR-Deps/2019-Aug-CentOS.tar.xz
 
 RUN bsdtar -xf /usr/local/VAPOR-Deps/2019-Aug-CentOS.tar.xz -C /usr/local/VAPOR-Deps \
-    && chown -R root:root /
+    && chown -R root:root /root \
+    && chown -R root:root /usr
 RUN rm /usr/local/VAPOR-Deps/2019-Aug-CentOS.tar.xz
 
 RUN chown -R root:root /usr/local/VAPOR-Deps
