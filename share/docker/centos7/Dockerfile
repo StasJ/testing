@@ -53,7 +53,7 @@ RUN mkdir -p /usr/local/VAPOR-Deps
 #RUN fileid="1e7F3kDoKctBmB3NOF4dES2395oScb9_0" \
 
 # Ospray
-RUN fileid="1S9DwySMnQrBuUUZGKolD__WQrjTmLgyn" \
+RUN fileid="1S9DwySMnQrBuUUZGKolD__WQrjTmLgyn"  \
     && filename="/usr/local/VAPOR-Deps/2019-Aug-CentOS.tar.xz" \
     && curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null \
     && curl -Lb ./cookie \

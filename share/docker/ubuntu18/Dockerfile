@@ -30,7 +30,7 @@ RUN mkdir -p /usr/local/VAPOR-Deps
 #RUN fileid="1j4IO4VCU0Wvyu2T3BH0e9I0qiiwCIrEd" \
 
 # Ospray
-RUN fileid="18KtuXQsy2J7pFvvZe0Ug-yjnEmlPiE2p"  \
+RUN fileid="18KtuXQsy2J7pFvvZe0Ug-yjnEmlPiE2p" \
     && filename="/usr/local/VAPOR-Deps/2019-Aug-Ubuntu.tar.xz" \
     && curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null \
     && curl -Lb ./cookie \
