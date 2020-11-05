@@ -47,6 +47,7 @@ void VStringLineEdit::_valueChanged() {
     std::string value = _lineEdit->text().toStdString();
     if ( value != _strValue ) {
         _strValue = value;
+        std::cout << "VStringLineEdit::_valueChanged() " << _strValue << " " << value << std::endl;
         emit ValueChanged( _strValue );
     }
 }
