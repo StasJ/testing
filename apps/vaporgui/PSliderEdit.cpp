@@ -44,7 +44,7 @@ void PDoubleSliderEdit::updateGUI() const
     _sliderEdit->SetMinimum(p->GetValueDouble(getTag() + USER_RANGE_MIN_TAG, _defaultRangeMin));
     _sliderEdit->SetMaximum(p->GetValueDouble(getTag() + USER_RANGE_MAX_TAG, _defaultRangeMax));
     _sliderEdit->SetValue(getParamsDouble());
-    std::cout << "PDoubleSliderEdit::updadteGUI() " << getParamsDouble() << std::endl;
+    //std::cout << "PDoubleSliderEdit::updadteGUI() " << getParamsDouble() << std::endl;
 }
 
 void PDoubleSliderEdit::valueChanged(double v)
@@ -55,6 +55,7 @@ void PDoubleSliderEdit::valueChanged(double v)
 void PDoubleSliderEdit::valueChangedIntermediate(double v)
 {
     dynamicSetParamsDouble(v);
+    std::cout << "intermediate " << getParamsDouble() << std::endl;
 }
 
 void PDoubleSliderEdit::minimumChanged(double v)
