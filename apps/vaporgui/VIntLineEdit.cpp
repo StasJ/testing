@@ -45,10 +45,12 @@ void VIntLineEdit::_valueChanged() {
             SetValueInt( _value );
             return;
         }
-        
+
         value = (int)std::stod( str );
+        SetValueInt( value );
+
+        // If value is changed, emiit
         if ( value != _value ) {
-            SetValueInt( value );
             emit ValueChanged( _value );
         }
     } catch (const std::invalid_argument&) {
