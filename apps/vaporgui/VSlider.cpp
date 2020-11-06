@@ -78,7 +78,6 @@ void VSlider::SetRange( double min, double max ) {
 
 double VSlider::GetValue() const {
     int sliderVal = _slider->value();
-    //std::cout << "      sliderVal " << sliderVal << std::endl;
 
     // Return min/max values if the slider is at the end.
     // note - Qt does not move the sliders to positions 0, 1, 99, or 100 until
@@ -94,13 +93,11 @@ double VSlider::GetValue() const {
 
 void VSlider::_sliderChanged() {
     double value = GetValue();
-    //std::cout << "_sliderChangeD() " << value << std::endl;
     emit ValueChanged( value );
 }
 
 void VSlider::_sliderChangedIntermediate( int position ) {
     double value = GetValue();
-    //std::cout << "_sliderChangeDI() " << value << std::endl;
     emit ValueChangedIntermediate( value );
 }
 

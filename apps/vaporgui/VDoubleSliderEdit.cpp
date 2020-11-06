@@ -69,7 +69,6 @@ void VDoubleSliderEdit::SetSciNotation( bool value ) {
         return;
     }
     _lineEdit->SetSciNotation( value );
-    std::cout << "  VDoubleSliderEdit::FormatChanged( " << value << std::endl;
     emit FormatChanged();
 }
 
@@ -82,7 +81,6 @@ void VDoubleSliderEdit::SetNumDigits( int digits ) {
         return;
     }
     _lineEdit->SetNumDigits( digits );
-    std::cout << "  VDoubleSliderEdit::FormatChanged( " << digits << std::endl;
     emit FormatChanged();
 }
 
@@ -91,7 +89,6 @@ double VDoubleSliderEdit::GetValue() const {
 }
 
 void VDoubleSliderEdit::SetValue( double value ) {
-    std::cout << "VDoubleSliderEdit::SetValue " << value << " " << _value << std::endl;
     // If the new value is unchanged or illegal, reset _lineEdit's text and return
     if ( 
     //if ( value == _value ||
@@ -108,7 +105,6 @@ void VDoubleSliderEdit::SetValue( double value ) {
     _slider->SetValue( _value );
 
     if ( QObject::sender() != nullptr ) {
-        std::cout << "  VDoubleSliderEdit::ValueChanged( " << _value << std::endl;
         emit ValueChanged( _value );
     }
 }
@@ -133,7 +129,6 @@ void VDoubleSliderEdit::SetMinimum( double min ) {
     // If sender() is a nullptr, then this fuction is being called from Update().
     // Don't emit anythong.  Otherwise, emit our signal.
     if ( QObject::sender() != nullptr ) {
-        std::cout << "  VDoubleSliderEdit::MinimumChanged ( " << min << std::endl;
         emit MinimumChanged( min );
     }
 }
@@ -158,7 +153,6 @@ void VDoubleSliderEdit::SetMaximum( double max ) {
     // If sender() is a nullptr, then this fuction is being called from Update().
     // Don't emit anythong.  Otherwise, emit our signal.
     if ( QObject::sender() != nullptr ) {
-        std::cout << "  VDoubleSliderEdit::MaximumChanged ( " << max << std::endl;
         emit MaximumChanged( max );
     }
 }

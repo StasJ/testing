@@ -16,7 +16,6 @@ void PDynamicMixin::dynamicSetParamsDouble(double v)
     if (pw->_dynamicUpdateIsOn) {
         pw->dynamicUpdateBegin();
         pw->_setParamsDouble(v);
-        std::cout << "pw->_setParamsDouble(v); " << v << std::endl;
         pw->getParams()->IntermediateChange();
     }
 }
