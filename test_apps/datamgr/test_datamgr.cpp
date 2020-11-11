@@ -1,3 +1,4 @@
+#include <omp.h>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -176,17 +177,29 @@ void test_get_value(
 
 	g->SetInterpolationOrder(1);
 
-	Grid::ConstIterator itr = g->cbegin();
 	Grid::ConstIterator enditr = g->cend();
 
-	Grid::ConstCoordItr c_itr = g->ConstCoordBegin();
+
 	Grid::ConstCoordItr c_enditr = g->ConstCoordEnd();
 
 	const float epsilon = 0.000001;
 
 	float t0 = GetTime();
+
+	
 	size_t ecount = 0;
-	for ( ; itr!=enditr; ++itr, ++c_itr) {
+//	omp_set_num_threads(8);
+	#pragma omp parallel
+	{
+	cout << "Thread " << omp_get_thread_num() << " of " << omp_get_num_threads() << endl;
+
+	Grid::ConstIterator itr = g->cbegin();
+	Grid::ConstCoordItr c_itr = g->ConstCoordBegin();
+	int nthreads = omp_get_num_threads();
+	size_t my_ecount = 0;
+	size_t my_count = 0;
+
+	for ( ; itr!=enditr; itr+=nthreads, c_itr+=nthreads) {
 		float v0 = *itr;
 
 		float v1 = g->GetValue(*c_itr);
@@ -194,19 +207,24 @@ void test_get_value(
 		if (v0 != v1) {
 			if (v0 == 0.0) {
 				if (abs(v1) > epsilon) {
-					ecount ++;
-					v1 = g->GetValue(*c_itr);
+					my_ecount ++;
 				}
 			}
 			else {
 				if (abs((v1-v0)/v0) > epsilon) { 
-					ecount ++;
-					v1 = g->GetValue(*c_itr);
-
+					my_ecount ++;
 				}
 			}
 		}
+		my_count ++;
     }
+	#pragma omp critical
+	{
+		ecount += my_ecount;
+		cout << "Thread " << omp_get_thread_num() << " count " << my_count << endl;
+	}
+	}
+
 	cout << "error count: " << ecount << endl;
 	cout << "time: " << GetTime() - t0 << endl;
 	cout << endl;
