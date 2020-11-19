@@ -38,7 +38,6 @@ public:
 	std::vector <S> payloads
  ) ;
 
-
  void GetPayloadContained(T x, T y, std::vector <S> &payloads) const ;
 
  void GetStats(
