@@ -6,7 +6,7 @@
 #include <memory>
 #include <vapor/common.h>
 #include <vapor/UnstructuredGrid.h>
-#include <vapor/QuadTreeRectangle.hpp>
+#include <vapor/QuadTreeRectangleP.h>
 
 
 #ifdef WIN32

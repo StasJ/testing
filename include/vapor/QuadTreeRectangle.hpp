@@ -179,7 +179,7 @@ public:
 	return(os);
  }
 
-private:
+public:
  class rectangle_t {
  public:
   rectangle_t() : _left(0.0f), _top(0.0f), _right(0.0f), _bottom(0.0f) {}
@@ -253,6 +253,8 @@ private:
  private:
     T _left, _top, _right, _bottom;
  };
+
+private:
 
 
  class node_t {

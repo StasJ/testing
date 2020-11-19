@@ -3,7 +3,7 @@
 #include <vapor/common.h>
 #include <vapor/Grid.h>
 #include <vapor/RegularGrid.h>
-#include <vapor/QuadTreeRectangle.hpp>
+#include <vapor/QuadTreeRectangleP.h>
 
 
 namespace VAPoR {
@@ -62,10 +62,10 @@ public:
  //! values specify the Y user coordinates.
  //! \param[in] zcoords  A 1D vector whose size matches that of the K
  //! dimension of this class, and whose values specify the Z user coordinates.
- //! \param[in] qtr A QuadTreeRectangle instance that contains a quad tree 
+ //! \param[in] qtr A QuadTreeRectangleP instance that contains a quad tree 
  //! that may be used to find the cell(s) containing a given point
  //! expressed in user coordintes. if \p qtr is NULL the class will
- //! generate its own QuadTreeRectangle instance. 
+ //! generate its own QuadTreeRectangleP instance. 
  //!
  //!
  //! \sa RegularGrid()
@@ -77,7 +77,7 @@ public:
 	const RegularGrid &xrg,
 	const RegularGrid &yrg,
 	const std::vector <double> &zcoords,
-	std::shared_ptr<const QuadTreeRectangle<float, size_t> > qtr
+	std::shared_ptr<const QuadTreeRectangleP<float, size_t> > qtr
  );
 
  //! \copydoc StructuredGrid::StructuredGrid()
@@ -108,10 +108,10 @@ public:
  //! \param[in] zrg A 3D RegularGrid instance whose
  //! I, J, K dimensionality matches that of this class instance, and whose
  //! values specify the Z user coordinates.
- //! \param[in] qtr A QuadTreeRectangle instance that contains a quad tree 
+ //! \param[in] qtr A QuadTreeRectangleP instance that contains a quad tree 
  //! that may be used to find the cell(s) containing a given point
  //! expressed in user coordintes. if \p qtr is NULL the class will
- //! generate its own QuadTreeRectangle instance. 
+ //! generate its own QuadTreeRectangleP instance. 
  //!
  //!
  //! \sa RegularGrid()
@@ -123,7 +123,7 @@ public:
 	const RegularGrid &xrg,
 	const RegularGrid &yrg,
 	const RegularGrid &zrg,
-	std::shared_ptr <const QuadTreeRectangle<float, size_t> > qtr
+	std::shared_ptr <const QuadTreeRectangleP<float, size_t> > qtr
  );
 
  //! \copydoc StructuredGrid::StructuredGrid()
@@ -149,10 +149,10 @@ public:
  //! \param[in] yrg A 2D RegularGrid instance whose
  //! I and J dimensionality matches that of this class instance, and whose
  //! values specify the Y user coordinates.
- //! \param[in] qtr A QuadTreeRectangle instance that contains a quad tree 
+ //! \param[in] qtr A QuadTreeRectangleP instance that contains a quad tree 
  //! that may be used to find the cell(s) containing a given point
  //! expressed in user coordintes. if \p qtr is NULL the class will
- //! generate its own QuadTreeRectangle instance. 
+ //! generate its own QuadTreeRectangleP instance. 
  //!
  //!
  //! \sa RegularGrid()
@@ -163,7 +163,7 @@ public:
 	const std::vector <float *> &blks,
 	const RegularGrid &xrg,
 	const RegularGrid &yrg,
-	std::shared_ptr <const QuadTreeRectangle<float, size_t> > qtr
+	std::shared_ptr <const QuadTreeRectangleP<float, size_t> > qtr
  );
 
  CurvilinearGrid() = default;
@@ -173,7 +173,7 @@ public:
 	}
  }
 
- std::shared_ptr <const QuadTreeRectangle<float, size_t> > GetQuadTreeRectangle() const {
+ std::shared_ptr <const QuadTreeRectangleP<float, size_t> > GetQuadTreeRectangle() const {
     return(_qtr);
  }
 
@@ -314,20 +314,14 @@ private:
  RegularGrid _yrg;
  RegularGrid _zrg;
  bool _terrainFollowing;
- std::shared_ptr <const QuadTreeRectangle<float, size_t> > _qtr;
-
- mutable struct {
-	size_t k = 0;
-	float z0 = 0.0;
-	float z1 = 0.0;
- } _insideGridCache;
+ std::shared_ptr <const QuadTreeRectangleP<float, size_t> > _qtr;
 
  void _curvilinearGrid(
 	const RegularGrid &xrg,
 	const RegularGrid &yrg,
 	const RegularGrid &zrg,
 	const std::vector <double> &zcoords,
-	std::shared_ptr <const QuadTreeRectangle<float, size_t> > qtr
+	std::shared_ptr <const QuadTreeRectangleP<float, size_t> > qtr
  );
 
  bool _insideFace(
@@ -356,7 +350,7 @@ private:
 	double zwgt[2]
  ) const;
 
- std::shared_ptr <QuadTreeRectangle<float, size_t> >_makeQuadTreeRectangle() const;
+ std::shared_ptr <QuadTreeRectangleP<float, size_t> >_makeQuadTreeRectangle() const;
 
 };
 };

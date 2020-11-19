@@ -2,7 +2,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
-#include <vapor/QuadTreeRectangle.hpp>
+#include <vapor/QuadTreeRectangleP.h>
 #include <vapor/GridHelper.h>
 using namespace Wasp;
 using namespace VAPoR;
@@ -400,7 +400,7 @@ CurvilinearGrid *GridHelper::_make_grid_curvilinear(
 	// classes. This a peformance optimization, necessary be creating
 	// a QuadTreeRectangle is expensive.
 	//
-	std::shared_ptr<const QuadTreeRectangle<float, size_t> > qtr = _qtrCache.get(qtr_key);
+	std::shared_ptr<const QuadTreeRectangleP<float, size_t> > qtr = _qtrCache.get(qtr_key);
 
 	CurvilinearGrid *g;
 	if (dims.size() == 3 && cvarsinfo[2].GetDimNames().size() == 3) {
@@ -559,7 +559,7 @@ UnstructuredGrid2D *GridHelper::_make_grid_unstructured2d(
 	// classes. This a peformance optimization, necessary be creating
 	// a QuadTreeRectangle is expensive.
 	//
-	std::shared_ptr<const QuadTreeRectangle<float, size_t> > qtr = _qtrCache.get(qtr_key);
+	std::shared_ptr<const QuadTreeRectangleP<float, size_t> > qtr = _qtrCache.get(qtr_key);
 
 	UnstructuredGrid2D *g = new UnstructuredGrid2D(
 		vertexDims, faceDims, edgeDims, bs, blkptrs, 
@@ -715,7 +715,7 @@ UnstructuredGridLayered *GridHelper::_make_grid_unstructured_layered(
 	// classes. This a peformance optimization, necessary be creating
 	// a QuadTreeRectangle is expensive.
 	//
-	std::shared_ptr<const QuadTreeRectangle<float, size_t> > qtr = _qtrCache.get(qtr_key);
+	std::shared_ptr<const QuadTreeRectangleP<float, size_t> > qtr = _qtrCache.get(qtr_key);
 
 	UnstructuredGridLayered *g = new UnstructuredGridLayered(
 		vertexDims, faceDims, edgeDims, bs, blkptrs, 

@@ -6,7 +6,7 @@
 #include <memory>
 #include <vapor/common.h>
 #include <vapor/UnstructuredGrid2D.h>
-#include <vapor/QuadTreeRectangle.hpp>
+#include <vapor/QuadTreeRectangleP.h>
 
 
 #ifdef WIN32
@@ -44,13 +44,13 @@ public:
 	const UnstructuredGridCoordless &xug,
 	const UnstructuredGridCoordless &yug,
 	const UnstructuredGridCoordless &zug,
-	std::shared_ptr<const QuadTreeRectangle<float, size_t> >qtr
+	std::shared_ptr<const QuadTreeRectangleP<float, size_t> >qtr
  );
 
  UnstructuredGridLayered() = default;
  virtual ~UnstructuredGridLayered() = default;
 
- std::shared_ptr<const QuadTreeRectangle<float, size_t> >GetQuadTreeRectangle() const {
+ std::shared_ptr<const QuadTreeRectangleP<float, size_t> >GetQuadTreeRectangle() const {
 	return(_ug2d.GetQuadTreeRectangle());
  }
 
