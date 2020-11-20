@@ -36,7 +36,7 @@ UnstructuredGrid2D::UnstructuredGrid2D(
     const UnstructuredGridCoordless &xug,
     const UnstructuredGridCoordless &yug,
     const UnstructuredGridCoordless &zug,
-	std::shared_ptr <const QuadTreeRectangleP<float, size_t> > qtr
+	std::shared_ptr <const QuadTreeRectangleP> qtr
 ) : UnstructuredGrid(
 		vertexDims, faceDims, edgeDims, bs, blks, 2,
 		vertexOnFace, faceOnVertex, faceOnFace, location, 
@@ -455,12 +455,12 @@ bool UnstructuredGrid2D::_insideGridNodeCentered(
 
 	// Find the indices for the faces that might contain the point
 	//
-	vector <size_t> face_indices;
+	vector <Size_tArr3> face_indices;
 	_qtr->GetPayloadContained(pt[0], pt[1], face_indices);
 
 	for (int i=0; i<face_indices.size(); i++) {
-		if (_insideFace(face_indices[i], pt, nodes, lambda, nlambda)) {
-			face_index = face_indices[i];
+		if (_insideFace(face_indices[i][0], pt, nodes, lambda, nlambda)) {
+			face_index = face_indices[i][0];
 			return(true);
 		}
 	}
@@ -514,7 +514,10 @@ bool UnstructuredGrid2D::_insideFace(
 	return ret;
 }
 
-std::shared_ptr <QuadTreeRectangleP<float, size_t> >UnstructuredGrid2D::_makeQuadTreeRectangle() const {
+std::shared_ptr <QuadTreeRectangleP>UnstructuredGrid2D::_makeQuadTreeRectangle() const {
+
+	
+#ifdef	DEAD
 
 	size_t maxNodes = GetMaxVertexPerCell();
 	vector <Size_tArr3> nodes(maxNodes);
@@ -522,20 +525,26 @@ std::shared_ptr <QuadTreeRectangleP<float, size_t> >UnstructuredGrid2D::_makeQua
 	size_t coordDim = GetGeometryDim();
 	VAssert(coordDim == 2);
 
-	double minu[3], maxu[3];
-	GetUserExtents(minu, maxu);
 
+#endif
 	const vector <size_t> &dims = GetDimensions();
 	size_t reserve_size = dims[0];
 
-	std::shared_ptr <QuadTreeRectangleP<float, size_t> >qtr = 
-		std::make_shared <QuadTreeRectangleP<float, size_t>>(
+	DblArr3 minu, maxu;
+	GetUserExtents(minu, maxu);
+
+	std::shared_ptr <QuadTreeRectangleP>qtr = 
+		std::make_shared <QuadTreeRectangleP>(
 			(float) minu[0], (float) minu[1], (float) maxu[0], (float) maxu[1], 
 			16, reserve_size
 		);
 
-std::vector <class QuadTreeRectangle<float,size_t>::rectangle_t > rectangles;
-std::vector <size_t> payloads;
+	qtr->Insert(this);
+	return(qtr);
+
+#ifdef	DEAD
+std::vector <class QuadTreeRectangle<float,Size_tArr3>::rectangle_t > rectangles;
+std::vector <Size_tArr3> payloads;
 rectangles.reserve(reserve_size);
 payloads.reserve(reserve_size);
 
@@ -562,12 +571,13 @@ payloads.reserve(reserve_size);
 			if (coords[1] > bottom) bottom = coords[1];
 		}
 //		qtr->Insert(left, top, right, bottom, cell[0]);
-		rectangles.push_back(QuadTreeRectangle<float,size_t>::rectangle_t (left, top, right, bottom));
-		payloads.push_back(cell[0]);
+		rectangles.push_back(QuadTreeRectangle<float,Size_tArr3>::rectangle_t (left, top, right, bottom));
+		payloads.push_back(Size_tArr3 {cell[0],0,0});
 	}
 
 qtr->Insert(rectangles,  payloads);
 
 
 	return(qtr);
+#endif
 }

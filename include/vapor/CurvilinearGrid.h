@@ -77,7 +77,7 @@ public:
 	const RegularGrid &xrg,
 	const RegularGrid &yrg,
 	const std::vector <double> &zcoords,
-	std::shared_ptr<const QuadTreeRectangleP<float, size_t> > qtr
+	std::shared_ptr<const QuadTreeRectangleP > qtr
  );
 
  //! \copydoc StructuredGrid::StructuredGrid()
@@ -123,7 +123,7 @@ public:
 	const RegularGrid &xrg,
 	const RegularGrid &yrg,
 	const RegularGrid &zrg,
-	std::shared_ptr <const QuadTreeRectangleP<float, size_t> > qtr
+	std::shared_ptr <const QuadTreeRectangleP > qtr
  );
 
  //! \copydoc StructuredGrid::StructuredGrid()
@@ -163,7 +163,7 @@ public:
 	const std::vector <float *> &blks,
 	const RegularGrid &xrg,
 	const RegularGrid &yrg,
-	std::shared_ptr <const QuadTreeRectangleP<float, size_t> > qtr
+	std::shared_ptr <const QuadTreeRectangleP > qtr
  );
 
  CurvilinearGrid() = default;
@@ -173,7 +173,7 @@ public:
 	}
  }
 
- std::shared_ptr <const QuadTreeRectangleP<float, size_t> > GetQuadTreeRectangle() const {
+ std::shared_ptr <const QuadTreeRectangleP > GetQuadTreeRectangle() const {
     return(_qtr);
  }
 
@@ -314,14 +314,14 @@ private:
  RegularGrid _yrg;
  RegularGrid _zrg;
  bool _terrainFollowing;
- std::shared_ptr <const QuadTreeRectangleP<float, size_t> > _qtr;
+ std::shared_ptr <const QuadTreeRectangleP> _qtr;
 
  void _curvilinearGrid(
 	const RegularGrid &xrg,
 	const RegularGrid &yrg,
 	const RegularGrid &zrg,
 	const std::vector <double> &zcoords,
-	std::shared_ptr <const QuadTreeRectangleP<float, size_t> > qtr
+	std::shared_ptr <const QuadTreeRectangleP> qtr
  );
 
  bool _insideFace(
@@ -350,7 +350,7 @@ private:
 	double zwgt[2]
  ) const;
 
- std::shared_ptr <QuadTreeRectangleP<float, size_t> >_makeQuadTreeRectangle() const;
+ std::shared_ptr <QuadTreeRectangleP>_makeQuadTreeRectangle() const;
 
 };
 };
