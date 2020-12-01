@@ -245,7 +245,7 @@ int FlowRenderer::_paintGL( bool fast )
         // First step is to re-calculate deltaT
         rv = _velocityField.CalcDeltaTFromCurrentTimeStep( _cache_deltaT );
         if( rv == flow::FIELD_ALL_ZERO ) {
-            MyBase::SetErrMsg("The velocity field seems to contain only zero values!");
+            MyBase::SetErrMsg("The velocity field seems to contain only invalid values!");
             return flow::PARAMS_ERROR;
         }
         else if( rv != 0 ) {
@@ -441,9 +441,10 @@ int FlowRenderer::_renderAdvection(const flow::Advection* adv)
         // First calculate the starting time stamp. Copied from legacy.
         double startingTime = _timestamps[0];
         if (!_cache_isSteady) {
-            int pastNumOfTimeSteps = dynamic_cast<FlowParams*>(GetActiveParams())->GetPastNumOfTimeSteps();
+            int pastNumOfTimeSteps = rp->GetPastNumOfTimeSteps();
             startingTime = _timestamps[0];
-            if( _cache_currentTS - pastNumOfTimeSteps > 0 )
+            // note that _cache_currentTS is cast to a signed integer.
+            if( int(_cache_currentTS) - pastNumOfTimeSteps > 0 )
                 startingTime = _timestamps[ _cache_currentTS - pastNumOfTimeSteps ];
         }
         
@@ -527,15 +528,18 @@ int  FlowRenderer::_renderAdvectionHelper(bool renderDirection)
     if (radiusBase == -1) {
         vector<double> mind, maxd;
 
-        // Need to find a non-empty variable from all velocity variables.
-        std::string nonEmptyVarName;
-        for( auto it  = _velocityField.VelocityNames.cbegin(); 
-                  it != _velocityField.VelocityNames.cend(); ++it ) {
-            if( !it->empty() ) {
-                nonEmptyVarName = *it;
-                break;
+        // Need to find a non-empty variable from color mapping or velocity variables.
+        std::string nonEmptyVarName = rp->GetColorMapVariableName();
+        if( nonEmptyVarName.empty() ) {
+            for( auto it  = _velocityField.VelocityNames.cbegin();
+                      it != _velocityField.VelocityNames.cend(); ++it ) {
+                if( !it->empty() ) {
+                    nonEmptyVarName = *it;
+                    break;
+                }
             }
         }
+        assert( !nonEmptyVarName.empty() );
 
         _dataMgr->GetVariableExtents(
                 rp->GetCurrentTimestep(), nonEmptyVarName,
@@ -1422,5 +1426,4 @@ double FlowRenderer::_getElapsedSeconds( const struct timeval* begin,
     return (end->tv_sec - begin->tv_sec) + ((end->tv_usec - begin->tv_usec)/1000000.0);
 }
 #endif
-
 
