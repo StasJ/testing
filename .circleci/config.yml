@@ -22,9 +22,9 @@ jobs:
           name: make installer
           command: |
             git checkout master
-            cd /VAPOR/build
             git pull
-            git checkout $CIRCLE_BRANCH
+            cd /VAPOR/build
+            #git checkout $CIRCLE_BRANCH
             cmake -DCMAKE_BUILD_TYPE:String=Release -DDIST_INSTALLER:string=ON ..
             make -j7
             make installer
@@ -90,6 +90,7 @@ jobs:
           name: make VAPOR
           command: |
             git checkout master
+            git pull
             cp site_files/site.NCAR site.local
             mkdir build
             cd build
