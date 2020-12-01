@@ -204,7 +204,7 @@ jobs:
             h=$h$sha$endl
             #i=$'Windows10: `shasum -a 256 VAPOR3*win64*`\n'
             message="$e$f$g$h"
-            echo $message > "sha256_for_"${time}
+            echo $message > "/tmp/workspace/installers/sha256_for_"${time}
             ghr -b "Installers are timestamped with the unix command date + \"%d_%m_%y-%H:%M\"" -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -prerelease -c ${CIRCLE_SHA1} -replace 3.3_PreRelease /tmp/workspace/installers
 
 
