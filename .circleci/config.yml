@@ -205,7 +205,7 @@ jobs:
             #i=$'Windows10: `shasum -a 256 VAPOR3*win64*`\n'
             message="$e$f$g$h"
             echo $message
-            ghr -b "${message}" -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -prerelease -c ${CIRCLE_SHA1} -recreate 3.3_PreRelease /tmp/workspace/installers
+            ghr -b "${message}" -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -prerelease -c ${CIRCLE_SHA1} -replace 3.3_PreRelease /tmp/workspace/installers
 
 
 workflows:
