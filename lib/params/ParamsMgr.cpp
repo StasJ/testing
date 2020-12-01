@@ -144,7 +144,6 @@ ParamsMgr::~ParamsMgr() {
 }
 
 void ParamsMgr::LoadState() {
-	BeginSaveStateGroup("Load state");
 	_destroy();
 
 	_init(_appParamNames, NULL);
@@ -154,11 +153,9 @@ void ParamsMgr::LoadState() {
 	if (_dataMgrMap.size()) {
 		addDataMgrNew();
 	}
-	EndSaveStateGroup();
 }
 
 void ParamsMgr::LoadState(const XmlNode *node) {
-	BeginSaveStateGroup("Load state");
 	_destroy();
 
 	XmlNode *mynode = new XmlNode(*node);
@@ -187,7 +184,6 @@ void ParamsMgr::LoadState(const XmlNode *node) {
 		map <string, DataMgr *>::const_iterator itr = _dataMgrMap.find(dataSetName);
 		if (itr != _dataMgrMap.end()) addDataMgrMerge(itr->first);
 	}
-	EndSaveStateGroup();
 }
 
 int ParamsMgr::LoadState(string stateFile) {
@@ -1414,7 +1410,9 @@ void ParamsMgr::PMgrStateSave::Save(
 
 	// It not inside a group push this element onto the stack
 	//
-	_undoStack.push_back(make_pair(description, new XmlNode(*_rootNode)));
+    if (GetUndoEnabled())
+        _undoStack.push_back(make_pair(description, new XmlNode(*_rootNode)));
+    
 //#define DEBUG
 #ifdef	DEBUG
 	cout << "ParamsMgr::PMgrStateSave::Save() : saving node " << 

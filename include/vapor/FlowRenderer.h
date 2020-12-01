@@ -72,7 +72,7 @@ private:
     // Some of them are initialized to be at an illegal state.
     int                 _cache_refinementLevel      = 0;;
     int                 _cache_compressionLevel     = 0;;
-    float               _cache_velocityMltp         = 1.0;;
+    float               _cache_velocityMltp         = 1.0f;
     bool                _cache_isSteady             = false;
     long                _cache_steadyNumOfSteps     = 0;
     size_t              _cache_currentTS            = 0;
@@ -82,7 +82,7 @@ private:
     long                _cache_randNumOfSeeds       = 5;
     int                 _cache_seedInjInterval      = 0;
     float               _cache_rakeBiasStrength     = 0.0f;
-    float               _cache_deltaT               = 0.05f;
+    double              _cache_deltaT               = 0.05;
     FlowSeedMode        _cache_seedGenMode          = FlowSeedMode::UNIFORM;
     FlowDir             _cache_flowDir              = FlowDir::FORWARD;
     FlowStatus          _velocityStatus             = FlowStatus::SIMPLE_OUTOFDATE;
@@ -128,21 +128,11 @@ private:
 
     int _updateAdvectionPeriodicity( flow::Advection* advc );
 
-    // A function to populate particle properties.
-    // If useAsColor == true, then this calculated property will be stored in a field
-    //    of a Particle that will be used for coloring the particle.
-    // If useAsColor == false, then this property is simply kept by the Particle without
-    //    any impact to the visualization.
-    int  _populateParticleProperties( const std::string& varname,
-                                      const FlowParams*  params,
-                                      bool  useAsColor );
-
-    // Color the last particle in a stream
-    int  _colorLastParticle();
+    int _outputFlowLines();
 
     void _dupSeedsNewTime( std::vector<flow::Particle>& seeds,
                            size_t  firstN,                      // First N particles to duplicate
-                           float   newTime )   const;           // New time to assign to particles
+                           double  newTime )   const;           // New time to assign to particles
 
 
 #ifndef WIN32

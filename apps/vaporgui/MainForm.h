@@ -180,6 +180,7 @@ private:
  QSpinBox* _interactiveRefinementSpin;
  QDockWidget* _tabDockWindow;
     
+ bool _animationCapture = false;
  int _progressSavedFB = -1;
  bool _progressEnabled = false;
  bool _needToReenableProgressAfterAnimation = false;
@@ -303,10 +304,11 @@ private:
 	const vector <string> &options = vector <string> ()
  );
 
+ enum DatasetExistsAction { Prompt, AddNew, ReplaceFirst };
  void loadDataHelper(
 	const std::vector <string> &files, string prompt, 
                      string filter, string format, bool multi,
-                     bool promptToReplaceExistingDataset = true
+                     DatasetExistsAction existsAction = Prompt
  );
  void _createCaptureMenu();
  void _createToolsMenu();
@@ -322,7 +324,7 @@ private:
  void createToolBars();
  void _createProgressWidget();
  void _disableProgressWidget();
- virtual void sessionOpenHelper(string fileName);
+ virtual void sessionOpenHelper(string fileName, bool loadDatasets = true);
     
  template<class T> bool isDatasetValidFormat(const std::vector<std::string> &paths) const;
  bool determineDatasetFormat(const std::vector<std::string> &paths, std::string *fmt) const;
@@ -337,13 +339,13 @@ private:
 
  void _fileSaveHelper(string path);
 
- string _getDataSetName(string file, bool promptToReplaceExistingDataset = true);
+ string _getDataSetName(string file, DatasetExistsAction existsAction = Prompt);
 
 private slots:   
  void _plotClosed();
  void _statsClosed();
  void _pythonClosed();
- void sessionOpen(QString qfileName="");
+ void sessionOpen(QString qfileName="", bool loadDatasets = true);
  void fileSave();
  void fileSaveAs();
  void fileExit();
