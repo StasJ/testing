@@ -222,10 +222,10 @@ workflows:
           filters:
             branches:
               only: installers
-      - build_osx_installer:
-          filters:
-            branches:
-              only: installers
+#      - build_osx_installer:
+#          filters:
+#            branches:
+#              only: installers
 #      - build_win10_installer:
 #          filters:
 #            branches:
@@ -234,5 +234,5 @@ workflows:
           requires:
             - build_ubuntu18_installer
             - build_centos7_installer
-            - build_osx_installer
+#            - build_osx_installer
 #            - build_win10_installer
