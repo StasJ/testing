@@ -525,7 +525,7 @@ std::shared_ptr <QuadTreeRectangleP>UnstructuredGrid2D::_makeQuadTreeRectangle()
 	std::shared_ptr <QuadTreeRectangleP>qtr = 
 		std::make_shared <QuadTreeRectangleP>(
 			(float) minu[0], (float) minu[1], (float) maxu[0], (float) maxu[1], 
-			16, reserve_size
+			12, reserve_size
 		);
 
 	qtr->Insert(this);

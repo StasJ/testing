@@ -815,7 +815,7 @@ bool CurvilinearGrid::_insideGrid(
 
 std::shared_ptr <QuadTreeRectangleP>CurvilinearGrid::_makeQuadTreeRectangle() const {
 
-	const vector <size_t> &dims = GetDimensions();
+	const vector <size_t> &dims = GetCellDimensions();
 	size_t reserve_size = dims[0] * dims[1];
 
 	DblArr3 minu, maxu;
@@ -824,10 +824,10 @@ std::shared_ptr <QuadTreeRectangleP>CurvilinearGrid::_makeQuadTreeRectangle() co
 	std::shared_ptr <QuadTreeRectangleP>qtr = 
 		std::make_shared <QuadTreeRectangleP>(
 			(float) minu[0], (float) minu[1], (float) maxu[0], (float) maxu[1],
-			16, reserve_size
+			12, reserve_size
 	);
 
-	qtr->Insert(this);
+	qtr->Insert(this, dims[0]*dims[1]);
 	return(qtr);
 
 }
