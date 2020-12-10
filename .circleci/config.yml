@@ -49,7 +49,4 @@ jobs:
 workflows:
   build:
     jobs:
-      - build_osx_installer:
-          filters:
-            branches:
-              only: buildOSXInstaller
+      - build_osx_installer
