@@ -40,7 +40,8 @@ jobs:
 workflows:
   build:
     jobs:
-      - build_centos7_installer:
+      - build_centos7_installer
+      #- build_centos7_installer:
           #filters:
             #branches:
               #only: $CIRCLE_BRANCH
