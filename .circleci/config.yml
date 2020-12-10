@@ -41,7 +41,7 @@ workflows:
   build:
     jobs:
       - build_centos7_installer:
-          filters:
-            branches:
-              only: $CIRCLE_BRANCH
+          #filters:
+            #branches:
+              #only: $CIRCLE_BRANCH
               #only: buildCentOSInstaller
