@@ -189,10 +189,8 @@ void test_get_value(
 	size_t n = VProduct(g->GetDimensions());
 	
 	size_t ecount = 0;
-	omp_set_num_threads(1);
 	#pragma omp parallel
 	{
-	cout << "Thread " << omp_get_thread_num() << " of " << omp_get_num_threads() << endl;
 
 	size_t my_ecount = 0;
 	size_t my_count = 0;
@@ -227,7 +225,6 @@ void test_get_value(
 	#pragma omp critical
 	{
 		ecount += my_ecount;
-		cout << "Thread " << omp_get_thread_num() << " count " << my_count << endl;
 	}
 	}
 
