@@ -1,8 +1,5 @@
 version: 2.1
 
-orbs:
-  win: circleci/windows@2.2.0
-
 references:
   workspace_root: &workspace_root
     /tmp/workspace
@@ -41,8 +38,3 @@ workflows:
   build:
     jobs:
       - build_centos7_installer
-      #- build_centos7_installer:
-          #filters:
-            #branches:
-              #only: $CIRCLE_BRANCH
-              #only: buildCentOSInstaller
