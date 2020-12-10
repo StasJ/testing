@@ -23,6 +23,7 @@ jobs:
           command: |
             cd /VAPOR/build
             git checkout master
+            git pull
             git reset --hard origin/master
             cmake -DCMAKE_BUILD_TYPE:String=Release -DDIST_INSTALLER:string=ON ..
             make -j7
@@ -46,11 +47,9 @@ jobs:
       - run:
           name: cmake3 and make
           command: |
-            ls -lrth /usr/local/VAPOR-Deps
-            cd /VAPOR
-            git pull
-            cd build
+            cd /VAPOR/build
             git checkout master
+            git pull
             git reset --hard origin/master
             cmake3 -DCMAKE_BUILD_TYPE:String=Release -DDIST_INSTALLER:string=ON ..
             make
@@ -155,13 +154,24 @@ jobs:
       - run:
           name: push assets with ghr
           command: |
-            a=$'These installers are built weekly, and may not be stable.\n\n'
-            b=$'Official releases may be found below.\n\n'
-            c="Last built on "
-            d=`date +"%m-%d-%y".`
-            message="${a}${b}${c}${d}${e}"
-            echo $message
-            ghr -b "${message}" -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -prerelease -c ${CIRCLE_SHA1} -replace Weekly /tmp/workspace/installers
+            #a=$'These installers are built weekly, and may not be stable.\n\n'
+            #b=$'Official releases may be found below.\n\n'
+            #c="Last built on "
+            #d=`date +"%m-%d-%y".`
+            #message="${a}${b}${c}${d}${e}"
+            #echo $message
+            #ghr -b "${message}" -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -prerelease -c ${CIRCLE_SHA1} -replace Weekly /tmp/workspace/installers
+            cd /tmp/workspace/installers
+            time=`date +"%d_%m_%y-%H:%M"`
+            ubu="VAPOR3-3.2.0-Ubuntu18-Weekly.sh"
+            mv $ubu ${ubu/Weekly/$time}
+            osx="VAPOR3-3.3.0-Darwin-Weekly.dmg"
+            mv $osx ${osx/Weekly/$time}
+            cent="VAPOR3-3.3.0-CentOS7-Weekly.sh"
+            mv $cent ${cent/Weekly/$time}
+            brew install ghr
+            ghr -b "Installers are timestamped with the unix command date + \"%d_%m_%y-%H:%M\"" -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -prerelease -c ${CIRCLE_SHA1} -replace Weekly /tmp/workspace/installers
+
 
 workflows:
   build:
@@ -177,7 +187,7 @@ workflows:
   weekly:
     triggers:
       - schedule:
-           cron: "35 14 * * 4" # Thursday @ 2:00pm UTC
+           cron: "50 15 * * 4" # Thursday @ 15:50 UTC
                 # * * * * * 
                 # | | | | |  
                 # | | | | | 
