@@ -34,7 +34,4 @@ jobs:
 workflows:
   build:
     jobs:
-      - build_ubuntu18_installer:
-          filters:
-            branches:
-              only: buildUbuntuInstaller
+      - build_ubuntu18_installer
