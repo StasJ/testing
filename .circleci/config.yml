@@ -214,14 +214,14 @@ jobs:
 workflows:
   installers:
     jobs:
-#      - build_ubuntu18_installer:
-#          filters:
-#            branches:
-#              only: installers
-#      - build_centos7_installer:
-#          filters:
-#            branches:
-#              only: installers
+      - build_ubuntu18_installer:
+          filters:
+            branches:
+              only: installers
+      - build_centos7_installer:
+          filters:
+            branches:
+              only: installers
       - build_osx_installer:
           filters:
             branches:
@@ -232,7 +232,7 @@ workflows:
 #              only: installers
       - release_preInstallers:
           requires:
-#            - build_ubuntu18_installer
-#            - build_centos7_installer
+            - build_ubuntu18_installer
+            - build_centos7_installer
             - build_osx_installer
 #            - build_win10_installer
