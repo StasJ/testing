@@ -91,7 +91,7 @@ jobs:
           name: make VAPOR
           command: |
             git checkout master
-            git pull --no-commit && git commit -m --allow-empty "Merge"
+            git pull --no-commit && git commit --allow-empty -m "Merge"
             git reset --hard origin/master
             cp site_files/site.NCAR site.local
             mkdir build
