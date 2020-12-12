@@ -187,11 +187,11 @@ jobs:
           command: |
             cd /tmp/workspace/installers
             time=`date +"%d_%m_%y-%H:%M"`
-            ubu="VAPOR3-3.2.0-Ubuntu18-Weekly.sh"
+            ubu="VAPOR3-3.3.0-Ubuntu18-Weekly.sh"
             mv $ubu ${ubu/Weekly/$time}
-            osx="VAPOR3-3.2.0-Darwin-Weekly.dmg"
+            osx="VAPOR3-3.3.0-Darwin-Weekly.dmg"
             mv $osx ${osx/Weekly/$time}
-            cent="VAPOR3-3.2.0-CentOS7-Weekly.sh"
+            cent="VAPOR3-3.3.0-CentOS7-Weekly.sh"
             mv $cent ${cent/Weekly/$time}
             brew install ghr
             endl=$'\n'
