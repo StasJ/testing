@@ -117,7 +117,7 @@ def testGrid( grid ):
         universal_newlines=True 
     )
 
-    outputFileName = resultsDir + grid + ".txt"
+    outputFileName = resultsDir + grid + "_results.txt"
     outputFile = open( outputFileName, "w" )
     outputFile.write( programOutput.stdout )
     outputFile.close()
@@ -140,7 +140,7 @@ def testDataMgr( dataMgrType, dataMgr, makeBaseline=False ):
     if ( makeBaseline ):
         outputFileName = resultsDir + dataMgrType + "_baseline.txt"
     else:
-        outputFileName = resultsDir + dataMgrType + ".txt"
+        outputFileName = resultsDir + dataMgrType + "_results.txt"
 
     outputFile = open( outputFileName, "w" )
     outputFile.write( programOutput.decode("utf-8") )
