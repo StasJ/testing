@@ -177,6 +177,8 @@ If you wish to go down this route, you may follow the build instructions for `Wi
 +-----------------+----------------------------------------------------------------+
 | Qt              | 5.13.2                                                         |
 +-----------------+----------------------------------------------------------------+
+| Ospray          | 2.4.0                                                          |
++-----------------+----------------------------------------------------------------+
 
 .. note:: Different versions of Qt have presented bugs.  It's reocmmended that developers use the same library versions as those listed above, especially for Qt.
 
@@ -256,6 +258,8 @@ The THIRD_PARTY_DIR variable in this file may be overloaded to re-target the loc
 | PYTHONVERSION       | Version of Python                                               |
 +---------------------+-----------------------------------------------------------------+
 | NUMPY_INCLUDE_DIR   | Directory containing numpy's header files                       |
++---------------------+-----------------------------------------------------------------+
+| OSPRAYDIR           | Directory containing Ospray's librarieses                       |
 +---------------------+-----------------------------------------------------------------+
 
 Adding to the Code Base
