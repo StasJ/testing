@@ -14,7 +14,7 @@ While each renderer is unique, controlling their parameters is mostly the same. 
 
 See the :ref:`Renderers <renderers>` section for more information on how each of these tabs work for a given renderer.  Again, they all operate in the same way for the most part.
 
-.. figure:: ../../_images/variablesTab.png
+.. figure:: ../_images/variablesTab.png
     :align: center
     :width: 500 
     :figclass: align-center
@@ -37,7 +37,7 @@ The appearance tab controls the color, opacity, and any renderer-specific parame
 
 The Transfer Function consists of a `Probability Density Function (PDF) <https://en.wikipedia.org/wiki/Probability_density_function>`_ of your currently selected variable.  Underneath the PDF is a color bar that shows the colors that get applied to the values located directly above it.
 
-.. figure:: ../../_images/transferFunctionDocumentation.png
+.. figure:: ../_images/transferFunctionDocumentation.png
     :align: center
     :figclass: align-center
 
@@ -47,7 +47,7 @@ In the figure above, we can see that our transfer function is operating on the v
 
 Below the histogram is a button to update the histogram, which is calculated only when the user requests it to save on compute time.  Options to change the color interpolation type are also available.
 
-.. figure:: ../../_images/TFOptions.png
+.. figure:: ../_images/TFOptions.png
     :align: center
     :width: 500
     :figclass: align-center
@@ -63,7 +63,7 @@ Vapor's default color map is called CoolWarm.  This is arbitrary, and may not su
 
 The colors in the color map be moved by creating a color-control-point, and dragging it.  To create a new color-control-point, right click on the Colorbar, and then click "New Color Control Point."  The color at this control point may now be dragged to suit your needs.
 
-.. figure:: ../../_images/colorControlPoint.gif
+.. figure:: ../_images/colorControlPoint.gif
     :align: center
     :figclass: align-center
 
@@ -76,7 +76,7 @@ Controlling Opacity
 
 Opacity is controlled by the green line on top of the PDF.  The higher this green line is on the PDF's Y axis, the more opaque the colors will be at that point.  For example, the green bar is set to Y=0 over the blue values in the image below.  All of these values will be masked out.  The green bar then ramps up, and the values become more opaque, until we reach full opacity in the red region.
 
-.. figure:: ../../_images/opacityMap.png
+.. figure:: ../_images/opacityMap.png
     :align: center
     :width: 500 
     :figclass: align-center
@@ -90,7 +90,7 @@ ____________
 
 The Geometry tab controls where your renderer is drawing, within the space of your simulation.  By excluding regions of data from being drawn, occluded features may be seen more clearly. Compute time will also be reduced, as well as the memory needed for a given renderer.
 
-.. figure:: ../../_images/geometryWidget.png
+.. figure:: ../_images/geometryWidget.png
     :align: center
     :width: 500
     :figclass: align-center
@@ -99,7 +99,7 @@ The Geometry tab controls where your renderer is drawing, within the space of yo
     
 If you have a region of interest in another renderer, that region can be copied in the Geometry tab.
 
-.. figure:: ../../_images/copyRegionWidget.png
+.. figure:: ../_images/copyRegionWidget.png
     :align: center
     :width: 500 
     :figclass: align-center
@@ -109,7 +109,7 @@ If you have a region of interest in another renderer, that region can be copied 
 
 Users can apply transforms to scale, translate, and rotate their renderers on X, Y, or Z.  The origin used for these transforms may also be adjusted.
 
-.. figure:: ../../_images/transformTable.png
+.. figure:: ../_images/transformTable.png
     :align: center
     :width: 500 
     :figclass: align-center
@@ -120,14 +120,14 @@ Users can apply transforms to scale, translate, and rotate their renderers on X,
 
 Users may also control the geometry of their renderer by using the `Region Mouse Mode`, located at the top left corner of the application.  This will enable a red box with handlebars that can be right-clicked to grow or shrink the region being rendered on any axis.
 
-.. figure:: ../../_images/selectRegionMouseMode.png
+.. figure:: ../_images/selectRegionMouseMode.png
     :align: center
     :width: 400 
     :figclass: align-center
 
     Select the Region Mouse Mode for interactive geometry adjustment
 
-.. figure:: ../../_images/regionMouseMode.png
+.. figure:: ../_images/regionMouseMode.png
     :align: center
     :width: 500 
     :figclass: align-center
@@ -141,14 +141,14 @@ ______________
 
 Quantifying the colors to your viewers can be done by adding a colorbar in the Annotation tab.
 
-.. figure:: ../../_images/colorbarTab.png
+.. figure:: ../_images/colorbarTab.png
     :align: center
     :width: 500 
     :figclass: align-center
 
     Colorbar size and position controlls, located in the Annotation tab
 
-.. figure:: ../../_images/colorbar.png
+.. figure:: ../_images/colorbar.png
     :align: center
     :figclass: align-center
 

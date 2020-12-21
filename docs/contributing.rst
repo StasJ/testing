@@ -82,14 +82,14 @@ ____________________
 
 After installing Git and registering with GitHub, it's time to "Fork" Vapor's code base by clicking the Fork button on the upper right corner of `Vapor's GitHub repository <https://github.com/NCAR/VAPOR>`_.  This creates your own repository on GitHub that contains a copy of Vapor's current master branch.  
 
-.. figure:: ../_images/forkVapor.png
+.. figure:: _images/forkVapor.png
      :align: center
      :figclass: align-center
      :width: 60%
 
      Click the "Fork" button in the top-left corner of we website.
 
-.. figure:: ../_images/newFork.png
+.. figure:: _images/newFork.png
      :align: center
      :figclass: align-center
 
@@ -101,7 +101,7 @@ After completing your work, your changes can be submitted for review through a P
 
 For more information on the Forking Workflow, please see `Atlassian has a tutorial <https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow>`_ on basics and best practices.
 
-.. figure:: ../_images/mergeFork.png
+.. figure:: _images/mergeFork.png
      :align: center
      :figclass: align-center
 
@@ -227,7 +227,7 @@ Cmake provides an interface to set build variables called *ccmake*.  From your b
 
     ccmake ..
 
-.. figure:: ../_images/ccmake.png
+.. figure:: _images/ccmake.png
      :align: center
      :figclass: align-center
 

@@ -45,7 +45,7 @@ To load data, do one of the following from the ``File`` menu:
 +------------------------------------------------+----+------------------------------------------------+
 | Loading a .vdc file                            |    | Importing data                                 |
 +------------------------------------------------+----+------------------------------------------------+
-| .. image :: ../_images/loadData.png            | or | .. image :: ../_images/importWRF.png           |
+| .. image :: _images/loadData.png               | or | .. image :: _images/importWRF.png              |
 +------------------------------------------------+----+------------------------------------------------+
 
 Creating a Renderer
@@ -54,7 +54,7 @@ Now that we've loaded some data to visualize, we can create a new :ref:`Renderer
 
 Vapor3 displays all of your renderers in a table in the upper left corner of the application.  Next to this table are controls that  let you create ``New`` renderers, ``Delete`` renderers, or ``Duplicate`` existing renderers.  
 
-.. figure:: ../_images/rendererTable.png
+.. figure:: _images/rendererTable.png
     :width: 500
     :align: center
     :figclass: align-center
@@ -63,7 +63,7 @@ Vapor3 displays all of your renderers in a table in the upper left corner of the
 
 Click on ``New``.  This will raise a window that will let you choose from the currently available renderers.  Pick the Slice Renderer by double-clicking on the ``Slice`` button.
 
-.. figure:: ../_images/newRenderer.png
+.. figure:: _images/newRenderer.png
     :width: 500
     :align: center
     :figclass: align-center

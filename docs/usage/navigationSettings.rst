@@ -24,7 +24,7 @@ Projection strings can also be modified if a dataset is georeferenced.
 
 Finally, camera position and direction values are displayed here and may be changed numerically for convenience.
 
-.. figure:: ../../_images/viewpointTab.png
+.. figure:: ../_images/viewpointTab.png
     :align: center
     :width: 500 
     :figclass: align-center

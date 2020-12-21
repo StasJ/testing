@@ -18,7 +18,7 @@ Importing data
 
 Users can import their data through Vapor's ``File`` menu.
 
-.. figure:: ../_images/importWRF.png
+.. figure:: _images/importWRF.png
     :width: 400
     :align: center
     :figclass: align-center
@@ -48,7 +48,7 @@ Alternatively, the tools can be added to the user's system path by clicking on t
 
 .. _commandLineTools:
 
-.. figure:: ../_images/installCLTools.png
+.. figure:: _images/installCLTools.png
     :align: center
     :figclass: align-center
 
@@ -64,7 +64,7 @@ This process is supported with :ref:`WRF-ARW <wrf>`, :ref:`NetCDF-CF <netCDF-CF>
 
 Once the conversion is complete, users can load VDC files into Vapor.  Read on for instructions for your data type.
 
-.. figure:: ../_images/loadData.png
+.. figure:: _images/loadData.png
     :width: 400
     :align: center
     :figclass: align-center
@@ -88,7 +88,7 @@ In the directory where Vapor 3 is installed, there is a command line utility cal
 
     ``wrfvdccreate wrfout_d02_2005-08-29_02 katrina.vdc``
 
-.. figure:: ../_images/wrfvdccreate.png
+.. figure:: _images/wrfvdccreate.png
     :align: center
     :figclass: align-center
 
@@ -101,7 +101,7 @@ Once we have a .vdc file, the metadata has been recorded and we can transform th
 
     ``wrf2vdce wrfout_d02_2005-08-29_02 katrina.vdc``
 
-.. figure:: ../_images/wrf2vdc.png
+.. figure:: _images/wrf2vdc.png
     :align: center
     :figclass: align-center
 
@@ -190,7 +190,7 @@ In this `sample dataset of a sphere <https://drive.google.com/open?id=1wJtPX0DPg
 
     ``vdccreate -dimension 64x64x64 -numts 1 -vars3d exampleVar sphere64.vdc``
 
-.. figure:: ../_images/vdccreate.png
+.. figure:: _images/vdccreate.png
     :align: center
     :figclass: align-center
 
@@ -203,13 +203,13 @@ Now that a .vdc metadata file has been created, the VDC transform can take place
 
     ``raw2vdc -ts 0 -varname exampleVar sphere64.vdc sphere64.raw``
 
-.. figure:: ../_images/sphere.png
+.. figure:: _images/sphere.png
     :align: center
     :figclass: align-center
 
     A volume rendering of our sphere, converted from raw binary data.
 
-.. figure:: ../_images/raw2vdc.png
+.. figure:: _images/raw2vdc.png
     :align: center
     :figclass: align-center
 
