@@ -123,17 +123,17 @@ After forking your new Vapor repository and cloning from it, you can download pr
 
 Unzip the following file linked below into the root of your C:\\ directory.
 
-    `Windows third party libraries <https://drive.google.com/open?id=1NRMu4_g8ZXu9bILBVRDsuUKIGBiT2016>`_
+    `Windows third party libraries <https://drive.google.com/open?id=1sE-mTQCa8MCUOVEgw-6ksT80ebmDVsu4>`_
 
 *Linux and OSX*
 
 If building on Linux or OSX, the third party libraries must be placed in /usr/local/VAPOR-Deps/.
 
-    `OSX third-party libraries <https://drive.google.com/open?id=1p47yeyjyUfxlc7-eglsXkjCGYJLqqtEs>`_
+    `OSX third-party libraries <https://drive.google.com/open?id=1Q-IXlP_OgZSXsWKmT-smyrW9xnR-dUfg>`_
 
-    `Ubuntu third-party libraries <https://drive.google.com/open?id=1j4IO4VCU0Wvyu2T3BH0e9I0qiiwCIrEd>`_
+    `Ubuntu third-party libraries <https://drive.google.com/open?id=1v0AwfOnDsf8hMzBqg4OcEtcEyH5YpnIn>`_
 
-    `CentOS third-party libraries <https://drive.google.com/open?id=1e7F3kDoKctBmB3NOF4dES2395oScb9_0>`_
+    `CentOS third-party libraries <https://drive.google.com/open?id=1S9DwySMnQrBuUUZGKolD__WQrjTmLgyn>`_
 
 .. _contributing.build3rdParty:
 
